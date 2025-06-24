@@ -1,0 +1,933 @@
+<!DOCTYPE html>
+
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Atomic Simulation</title>
+
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap" rel="stylesheet">
+
+    <style>
+
+        body {
+
+            font-family: 'Inter', sans-serif;
+
+            overflow: hidden;
+
+        }
+
+        input[type="number"]::-webkit-inner-spin-button,
+
+        input[type="number"]::-webkit-outer-spin-button {
+
+            -webkit-appearance: none;
+
+            margin: 0;
+
+        }
+
+        input[type="number"] {
+
+            -moz-appearance: textfield;
+
+        }
+
+    </style>
+
+</head>
+
+<body class="bg-gray-900 text-white flex flex-col items-center justify-center h-screen antialiased">
+
+
+
+    <div class="w-full max-w-7xl mx-auto p-4 flex flex-col lg:flex-row gap-4 h-full">
+
+
+
+        <!-- Simulation Canvas -->
+
+        <div class="flex-grow w-full lg:w-3/4 h-2/3 lg:h-full bg-gray-800 rounded-2xl shadow-2xl overflow-hidden relative">
+
+            <canvas id="simulationCanvas"></canvas>
+
+            <div id="loading" class="absolute inset-0 bg-gray-800 bg-opacity-80 flex items-center justify-center z-20">
+
+                <p class="text-2xl font-medium">Initializing Simulation...</p>
+
+            </div>
+
+        </div>
+
+
+
+        <!-- Controls and Info Panel -->
+
+        <div class="w-full lg:w-1/4 h-1/3 lg:h-full flex flex-col gap-4">
+
+            <div class="bg-gray-800 p-6 rounded-2xl shadow-lg flex-grow flex flex-col overflow-y-auto">
+
+                <h1 class="text-2xl font-bold mb-1 text-indigo-300">Atomic Controls</h1>
+
+                <p class="text-sm text-gray-400 mb-6">Adjust conditions to observe molecular formation.</p>
+
+
+
+                <!-- Temperature Control -->
+
+                <div class="mb-6">
+
+                    <label for="temperature" class="block mb-2 text-sm font-medium text-gray-300">Temperature</label>
+
+                    <div class="flex items-center gap-4">
+
+                        <span class="text-indigo-400 text-lg">❄️</span>
+
+                        <input id="temperature" type="range" min="1" max="1000" value="300" class="w-full h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer">
+
+                        <span class="text-red-400 text-lg">🔥</span>
+
+                    </div>
+
+                    <div class="text-center mt-2 text-gray-400">Value: <span id="tempValue">300</span> K</div>
+
+                </div>
+
+
+
+                <!-- Pressure Control -->
+
+                <div class="mb-6">
+
+                    <label for="pressure" class="block mb-2 text-sm font-medium text-gray-300">Pressure</label>
+
+                     <div class="flex items-center gap-4">
+
+                        <span class="text-gray-400 text-lg">💨</span>
+
+                        <input id="pressure" type="range" min="1" max="100" value="20" class="w-full h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer">
+
+                        <span class="text-gray-400 text-lg">🗜️</span>
+
+                    </div>
+
+                    <div class="text-center mt-2 text-gray-400">Value: <span id="pressureValue">20</span> atm</div>
+
+                </div>
+
+                
+
+                <!-- Atom Count Controls -->
+
+                <div class="mb-6 pt-6 border-t border-gray-700">
+
+                     <h2 class="text-xl font-bold mb-3 text-indigo-300">Initial Atom Counts</h2>
+
+                     <div class="space-y-3">
+
+                        <div class="flex justify-between items-center">
+
+                            <label for="hCount" class="font-medium text-gray-300">Hydrogen:</label>
+
+                            <input id="hCount" type="number" value="40" min="0" max="100" class="bg-gray-700 w-20 text-center rounded-md py-1 border border-gray-600 focus:ring-2 focus:ring-indigo-500 focus:outline-none">
+
+                        </div>
+
+                         <div class="flex justify-between items-center">
+
+                            <label for="oCount" class="font-medium text-gray-300">Oxygen:</label>
+
+                            <input id="oCount" type="number" value="15" min="0" max="50" class="bg-gray-700 w-20 text-center rounded-md py-1 border border-gray-600 focus:ring-2 focus:ring-indigo-500 focus:outline-none">
+
+                        </div>
+
+                         <div class="flex justify-between items-center">
+
+                            <label for="cCount" class="font-medium text-gray-300">Carbon:</label>
+
+                            <input id="cCount" type="number" value="10" min="0" max="50" class="bg-gray-700 w-20 text-center rounded-md py-1 border border-gray-600 focus:ring-2 focus:ring-indigo-500 focus:outline-none">
+
+                        </div>
+
+                     </div>
+
+                </div>
+
+
+
+
+
+                 <div class="mt-auto pt-6 border-t border-gray-700">
+
+                    <h2 class="text-xl font-bold mb-3 text-indigo-300">System State</h2>
+
+                    <div id="moleculeInfo" class="space-y-2 text-sm text-gray-300">
+
+                        <!-- Molecule counts will be injected here -->
+
+                    </div>
+
+                </div>
+
+            </div>
+
+             <button id="resetButton" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-4 rounded-xl transition duration-300 shadow-md flex-shrink-0">
+
+                Reset Simulation
+
+            </button>
+
+        </div>
+
+
+
+    </div>
+
+
+
+    <script>
+
+        document.addEventListener('DOMContentLoaded', () => {
+
+            const canvas = document.getElementById('simulationCanvas');
+
+            const ctx = canvas.getContext('2d');
+
+            const loadingIndicator = document.getElementById('loading');
+
+            
+
+            let parentContainer = canvas.parentElement;
+
+            let animationFrameId;
+
+            let lastUpdateTime = 0;
+
+            let time = 0;
+
+
+
+            // --- CONFIGURATION ---
+
+            const ATOM_CONFIG = {
+
+                'H': { radius: 8, color: 'rgba(239, 239, 239, 0.9)', mass: 1, maxBonds: 1 },
+
+                'O': { radius: 12, color: 'rgba(239, 68, 68, 0.9)', mass: 16, maxBonds: 2 },
+
+                'C': { radius: 14, color: 'rgba(74, 85, 104, 0.9)', mass: 12, maxBonds: 4 }
+
+            };
+
+
+
+            const BOND_LENGTH = 1.2; // Multiplier for sum of radii
+
+            const REPULSION_FORCE = 0.5;
+
+
+
+            // --- Simulation State ---
+
+            let atoms = [];
+
+            let temperature = 300;
+
+            let pressure = 20;
+
+
+
+            // --- UI Elements ---
+
+            const tempSlider = document.getElementById('temperature');
+
+            const pressureSlider = document.getElementById('pressure');
+
+            const tempValue = document.getElementById('tempValue');
+
+            const pressureValue = document.getElementById('pressureValue');
+
+            const hCountInput = document.getElementById('hCount');
+
+            const oCountInput = document.getElementById('oCount');
+
+            const cCountInput = document.getElementById('cCount');
+
+            const moleculeInfo = document.getElementById('moleculeInfo');
+
+            const resetButton = document.getElementById('resetButton');
+
+
+
+            // --- CLASSES ---
+
+
+
+            /**
+
+             * Represents a single atom in the simulation.
+
+             */
+
+            class Atom {
+
+                constructor(x, y, type) {
+
+                    this.x = x;
+
+                    this.y = y;
+
+                    this.type = type;
+
+                    this.config = ATOM_CONFIG[type];
+
+                    this.radius = this.config.radius;
+
+                    this.color = this.config.color;
+
+                    this.mass = this.config.mass;
+
+                    this.maxBonds = this.config.maxBonds;
+
+                    
+
+                    this.vx = (Math.random() - 0.5) * 2;
+
+                    this.vy = (Math.random() - 0.5) * 2;
+
+                    
+
+                    this.bonds = []; // Stores references to bonded atoms
+
+                    this.id = Math.random();
+
+                }
+
+
+
+                getBondsCount() {
+
+                    return this.bonds.length;
+
+                }
+
+
+
+                canBond() {
+
+                    return this.getBondsCount() < this.maxBonds;
+
+                }
+
+
+
+                isBondedTo(otherAtom) {
+
+                    return this.bonds.some(bond => bond.id === otherAtom.id);
+
+                }
+
+
+
+                addBond(otherAtom) {
+
+                    if (this.canBond() && otherAtom.canBond() && !this.isBondedTo(otherAtom)) {
+
+                        this.bonds.push(otherAtom);
+
+                        otherAtom.bonds.push(this);
+
+                        return true;
+
+                    }
+
+                    return false;
+
+                }
+
+
+
+                removeBond(otherAtom) {
+
+                    const thisIndex = this.bonds.findIndex(bond => bond.id === otherAtom.id);
+
+                    if (thisIndex > -1) this.bonds.splice(thisIndex, 1);
+
+                    
+
+                    const otherIndex = otherAtom.bonds.findIndex(bond => bond.id === this.id);
+
+                    if (otherIndex > -1) otherAtom.bonds.splice(otherIndex, 1);
+
+                }
+
+
+
+                updatePosition(temp, press) {
+
+                    // Thermal motion (jiggle)
+
+                    const thermalEnergy = (temp / 1000) * 0.3; // Adjusted for new temp range
+
+                    this.vx += (Math.random() - 0.5) * thermalEnergy;
+
+                    this.vy += (Math.random() - 0.5) * thermalEnergy;
+
+
+
+                    // Pressure influence
+
+                    const pressureFactor = 1 + (press / 100) * 0.5;
+
+                    this.x += this.vx * pressureFactor;
+
+                    this.y += this.vy * pressureFactor;
+
+
+
+                    // Wall collisions
+
+                    if (this.x < this.radius || this.x > canvas.width - this.radius) {
+
+                        this.vx *= -0.9;
+
+                        this.x = Math.max(this.radius, Math.min(canvas.width - this.radius, this.x));
+
+                    }
+
+                    if (this.y < this.radius || this.y > canvas.height - this.radius) {
+
+                        this.vy *= -0.9;
+
+                         this.y = Math.max(this.radius, Math.min(canvas.height - this.radius, this.y));
+
+                    }
+
+                    
+
+                    // Dampen velocity over time to prevent runaway speeds
+
+                    this.vx *= 0.99;
+
+                    this.vy *= 0.99;
+
+                }
+
+
+
+                draw(ctx, time) {
+
+                    // Draw atom body
+
+                    ctx.beginPath();
+
+                    ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+
+                    ctx.fillStyle = this.color;
+
+                    ctx.shadowColor = this.color;
+
+                    ctx.shadowBlur = 10;
+
+                    ctx.fill();
+
+                    ctx.shadowBlur = 0;
+
+                    
+
+                    // Draw open orbitals
+
+                    const availableBonds = this.maxBonds - this.getBondsCount();
+
+                    if (availableBonds > 0) {
+
+                        const orbitalRadius = this.radius + 5;
+
+                        const baseAngle = time * 0.002;
+
+                        ctx.fillStyle = 'rgba(199, 210, 254, 0.8)'; // Indigo-200
+
+                        for (let i = 0; i < availableBonds; i++) {
+
+                            const angle = baseAngle + (i * (2 * Math.PI) / availableBonds);
+
+                            const ox = this.x + orbitalRadius * Math.cos(angle);
+
+                            const oy = this.y + orbitalRadius * Math.sin(angle);
+
+                            ctx.beginPath();
+
+                            ctx.arc(ox, oy, 2, 0, 2 * Math.PI);
+
+                            ctx.fill();
+
+                        }
+
+                    }
+
+
+
+                    // Draw atom symbol
+
+                    ctx.fillStyle = '#111827'; // Dark text for contrast on bright atoms
+
+                    ctx.font = `bold ${this.radius}px Inter`;
+
+                    ctx.textAlign = 'center';
+
+                    ctx.textBaseline = 'middle';
+
+                    ctx.fillText(this.type, this.x, this.y);
+
+                }
+
+            }
+
+
+
+            // --- SIMULATION LOGIC ---
+
+
+
+            function init() {
+
+                resizeCanvas();
+
+                atoms = [];
+
+                const initialCounts = {
+
+                    'H': parseInt(hCountInput.value) || 0,
+
+                    'O': parseInt(oCountInput.value) || 0,
+
+                    'C': parseInt(cCountInput.value) || 0,
+
+                };
+
+
+
+                for (const [type, count] of Object.entries(initialCounts)) {
+
+                    for (let i = 0; i < count; i++) {
+
+                        const x = Math.random() * (canvas.width - 40) + 20;
+
+                        const y = Math.random() * (canvas.height - 40) + 20;
+
+                        atoms.push(new Atom(x, y, type));
+
+                    }
+
+                }
+
+                
+
+                // Set initial slider values from state
+
+                tempSlider.value = temperature;
+
+                tempValue.textContent = temperature;
+
+                pressureSlider.value = pressure;
+
+                pressureValue.textContent = pressure;
+
+                
+
+                loadingIndicator.style.display = 'none';
+
+                if (animationFrameId) cancelAnimationFrame(animationFrameId);
+
+                lastUpdateTime = performance.now();
+
+                animate();
+
+            }
+
+            
+
+            function handleInteractions() {
+
+                for (let i = 0; i < atoms.length; i++) {
+
+                    for (let j = i + 1; j < atoms.length; j++) {
+
+                        const atomA = atoms[i];
+
+                        const atomB = atoms[j];
+
+
+
+                        const dx = atomB.x - atomA.x;
+
+                        const dy = atomB.y - atomA.y;
+
+                        const distance = Math.sqrt(dx * dx + dy * dy);
+
+                        const totalRadius = atomA.radius + atomB.radius;
+
+
+
+                        if (distance < totalRadius) {
+
+                            const overlap = totalRadius - distance;
+
+                            const angle = Math.atan2(dy, dx);
+
+                            const force = overlap * REPULSION_FORCE;
+
+                            
+
+                            atomA.vx -= Math.cos(angle) * force / atomA.mass;
+
+                            atomA.vy -= Math.sin(angle) * force / atomA.mass;
+
+                            atomB.vx += Math.cos(angle) * force / atomB.mass;
+
+                            atomB.vy += Math.sin(angle) * force / atomB.mass;
+
+                        }
+
+
+
+                        if (atomA.isBondedTo(atomB)) {
+
+                            const idealDist = (atomA.radius + atomB.radius) * 0.8;
+
+                            const stretch = distance - idealDist;
+
+                            const springForce = stretch * 0.01;
+
+                            
+
+                            const angle = Math.atan2(dy, dx);
+
+                            atomA.vx += Math.cos(angle) * springForce / atomA.mass;
+
+                            atomA.vy += Math.sin(angle) * springForce / atomA.mass;
+
+                            atomB.vx -= Math.cos(angle) * springForce / atomB.mass;
+
+                            atomB.vy -= Math.sin(angle) * springForce / atomB.mass;
+
+
+
+                            const breakProbability = (temperature / 1000) * 0.0015;
+
+                            if (Math.random() < breakProbability) {
+
+                                atomA.removeBond(atomB);
+
+                            }
+
+
+
+                        } else if (distance < totalRadius * BOND_LENGTH) {
+
+                            if (atomA.canBond() && atomB.canBond()) {
+
+                                const bondProbability = (1 - (temperature / 1200)) * (1 + pressure / 200);
+
+                                if (Math.random() < bondProbability) {
+
+                                    atomA.addBond(atomB);
+
+                                }
+
+                            }
+
+                        }
+
+                    }
+
+                }
+
+            }
+
+            
+
+            function updateAndDraw(currentTime) {
+
+                const deltaTime = currentTime - lastUpdateTime;
+
+                lastUpdateTime = currentTime;
+
+                time += deltaTime;
+
+
+
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+                
+
+                handleInteractions();
+
+
+
+                ctx.strokeStyle = 'rgba(167, 139, 250, 0.6)';
+
+                ctx.lineWidth = 3;
+
+                const drawnBonds = new Set();
+
+                atoms.forEach(atom => {
+
+                    atom.bonds.forEach(bondedAtom => {
+
+                        const bondId1 = `${atom.id}-${bondedAtom.id}`;
+
+                        const bondId2 = `${bondedAtom.id}-${atom.id}`;
+
+                        if (!drawnBonds.has(bondId1) && !drawnBonds.has(bondId2)) {
+
+                            ctx.beginPath();
+
+                            ctx.moveTo(atom.x, atom.y);
+
+                            ctx.lineTo(bondedAtom.x, bondedAtom.y);
+
+                            ctx.stroke();
+
+                            drawnBonds.add(bondId1);
+
+                        }
+
+                    });
+
+                });
+
+
+
+                atoms.forEach(atom => {
+
+                    atom.updatePosition(temperature, pressure);
+
+                    atom.draw(ctx, time);
+
+                });
+
+
+
+                updateInfoPanel();
+
+            }
+
+
+
+            function animate(currentTime) {
+
+                updateAndDraw(currentTime);
+
+                animationFrameId = requestAnimationFrame(animate);
+
+            }
+
+
+
+            function updateInfoPanel() {
+
+                const molecules = { 'H₂O': 0, 'CO₂': 0, 'CH₄': 0, 'O₂': 0, 'Other': 0 };
+
+                const checkedAtoms = new Set();
+
+
+
+                atoms.forEach(atom => {
+
+                    if (checkedAtoms.has(atom.id) || atom.getBondsCount() === 0) return;
+
+
+
+                    const connectedComponent = getConnectedComponent(atom);
+
+                    connectedComponent.forEach(a => checkedAtoms.add(a.id));
+
+
+
+                    const formula = getMolecularFormula(connectedComponent);
+
+                    if (molecules.hasOwnProperty(formula)) {
+
+                        molecules[formula]++;
+
+                    } else if (connectedComponent.length > 1) {
+
+                        molecules['Other']++;
+
+                    }
+
+                });
+
+
+
+                moleculeInfo.innerHTML = `
+
+                    <div class="flex justify-between items-center"><span class="font-semibold text-blue-300">Water (H₂O):</span> <span class="font-mono bg-gray-700 px-2 py-1 rounded">${molecules['H₂O']}</span></div>
+
+                    <div class="flex justify-between items-center"><span class="font-semibold text-gray-300">Carbon Dioxide (CO₂):</span> <span class="font-mono bg-gray-700 px-2 py-1 rounded">${molecules['CO₂']}</span></div>
+
+                    <div class="flex justify-between items-center"><span class="font-semibold text-green-300">Methane (CH₄):</span> <span class="font-mono bg-gray-700 px-2 py-1 rounded">${molecules['CH₄']}</span></div>
+
+                    <div class="flex justify-between items-center"><span class="font-semibold text-red-300">Oxygen (O₂):</span> <span class="font-mono bg-gray-700 px-2 py-1 rounded">${molecules['O₂']}</span></div>
+
+                    <div class="flex justify-between items-center"><span class="font-semibold text-purple-300">Other Molecules:</span> <span class="font-mono bg-gray-700 px-2 py-1 rounded">${molecules['Other']}</span></div>
+
+                `;
+
+            }
+
+
+
+            function getConnectedComponent(startAtom) {
+
+                const component = [];
+
+                const queue = [startAtom];
+
+                const visited = new Set([startAtom.id]);
+
+                
+
+                while(queue.length > 0) {
+
+                    const current = queue.shift();
+
+                    component.push(current);
+
+                    current.bonds.forEach(neighbor => {
+
+                        if (!visited.has(neighbor.id)) {
+
+                            visited.add(neighbor.id);
+
+                            queue.push(neighbor);
+
+                        }
+
+                    });
+
+                }
+
+                return component;
+
+            }
+
+
+
+            function getMolecularFormula(component) {
+
+                const counts = {};
+
+                component.forEach(atom => {
+
+                    counts[atom.type] = (counts[atom.type] || 0) + 1;
+
+                });
+
+                
+
+                // Use a more robust subscript mapping
+
+                const toSubscript = (n) => String(n).split('').map(char => '₀₁₂₃₄₅₆₇₈₉'[char]).join('');
+
+
+
+                const parts = ['C', 'H', 'O'].filter(el => counts[el]).map(el => {
+
+                    return `${el}${counts[el] > 1 ? toSubscript(counts[el]) : ''}`;
+
+                }).join('');
+
+                
+
+                if (counts.H === 2 && counts.O === 1 && component.length === 3) return 'H₂O';
+
+                if (counts.C === 1 && counts.O === 2 && component.length === 3) return 'CO₂';
+
+                if (counts.C === 1 && counts.H === 4 && component.length === 5) return 'CH₄';
+
+                if (counts.O === 2 && component.length === 2) return 'O₂';
+
+                
+
+                return parts;
+
+            }
+
+
+
+            // --- EVENT LISTENERS ---
+
+            
+
+            function resizeCanvas() {
+
+                canvas.width = parentContainer.clientWidth;
+
+                canvas.height = parentContainer.clientHeight;
+
+            }
+
+
+
+            window.addEventListener('resize', () => {
+
+                resizeCanvas();
+
+            });
+
+
+
+            tempSlider.addEventListener('input', (e) => {
+
+                temperature = parseInt(e.target.value);
+
+                tempValue.textContent = temperature;
+
+            });
+
+
+
+            pressureSlider.addEventListener('input', (e) => {
+
+                pressure = parseInt(e.target.value);
+
+                pressureValue.textContent = pressure;
+
+            });
+
+            
+
+            resetButton.addEventListener('click', () => {
+
+                loadingIndicator.style.display = 'flex';
+
+                setTimeout(init, 50);
+
+            });
+
+
+
+            // Initial load
+
+            init();
+
+        });
+
+    </script>
+
+</body>
+
+</html>

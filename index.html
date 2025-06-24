@@ -9,6 +9,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         body {
             font-family: 'Inter', sans-serif;
@@ -44,11 +45,26 @@
             padding: 0.25rem 0.75rem;
             border-radius: 9999px;
         }
-        canvas {
+        /* Styles for the enzyme simulation */
+        #simulationCanvas {
+            border: 1px solid #d1d5db;
+            border-radius: 0.375rem;
+            background-color: #f9fafb;
             display: block;
+            margin: 0 auto;
             width: 100%;
-            height: 100%;
+            height: auto;
         }
+        .message-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background-color: rgba(0,0,0,0.5); display: flex;
+            justify-content: center; align-items: center; z-index: 1000;
+        }
+        .message-box {
+            background-color: white; padding: 20px; border-radius: 8px;
+            box-shadow: 0 0 15px rgba(0,0,0,0.2); text-align: center; max-width: 300px;
+        }
+        .message-box button { margin-top: 15px; padding: 8px 15px; }
     </style>
 </head>
 <body class="antialiased">
@@ -73,7 +89,7 @@
 
     <!-- Navigation -->
     <nav class="bg-white sticky top-0 z-10 shadow-md">
-        <div class="max-w-4xl mx-auto">
+        <div class="max-w-7xl mx-auto">
             <div class="flex justify-center space-x-4 md:space-x-8 py-3">
                 <a href="#about" class="text-gray-600 hover:text-blue-600 font-medium">About</a>
                 <a href="#research" class="text-gray-600 hover:text-blue-600 font-medium">Research</a>
@@ -86,7 +102,7 @@
 
 
     <!-- Main Content -->
-    <main class="max-w-4xl mx-auto p-4 md:p-8">
+    <main class="max-w-7xl mx-auto p-4 md:p-8">
 
         <!-- About Section -->
         <section id="about" class="mb-16 scroll-mt-20">
@@ -108,7 +124,7 @@
                     <i class="fas fa-arrow-right ml-2"></i>
                 </a>
             </div>
-            <p class="mb-8 text-slate-600">I have authored and co-authored numerous publications in international peer-reviewed journals. Below is a selection of my work. CLick the link above to see more.</p>
+            <p class="mb-8 text-slate-600">I have authored and co-authored numerous publications in international peer-reviewed journals. Below is a selection of my work. For a complete list, please see my full CV.</p>
             <div class="grid md:grid-cols-2 gap-6">
                 <!-- Publication Card 1 -->
                 <div class="card p-6">
@@ -168,15 +184,95 @@
         <!-- Bioinformatics & Simulations Section -->
         <section id="simulations" class="mb-16 scroll-mt-20">
              <div class="section-header">
-                <h2 class="text-3xl font-bold text-slate-800">Bioinformatics & Simulations</h2>
+                <h2 class="text-3xl font-bold text-slate-800">Enzyme Simulator</h2>
                  <a href="#/simulations" class="inline-flex items-center px-4 py-2 bg-slate-100 hover:bg-slate-200 text-blue-600 rounded-full font-medium text-sm transition-colors">
                     Explore More Simulations
                     <i class="fas fa-arrow-right ml-2"></i>
                 </a>
             </div>
-            <p class="mb-4 text-slate-600">A core part of my work involves computational biology, biostatistics, and creating simulations to model complex genetic processes. Below is a simple interactive visualization representing the double helix structure central to my genomic research. This is a placeholder for more complex simulations demonstrating population dynamics or phylogenetic analysis.</p>
-            <div class="card h-96 w-full p-4">
-                 <canvas id="dnaCanvas"></canvas>
+            <p class="mb-4 text-slate-600">A core part of my work involves computational biology and biostatistics. This interactive simulation models a multi-protein enzyme system where protein chains fold based on amino acid properties to become active. Adjust protein sequences and substrate counts to see how they affect product formation over time.</p>
+            
+            <div class="card p-4 md:p-6">
+                <!-- START of new simulation HTML -->
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6">
+                    <!-- Column 1: Inputs and Canvas -->
+                    <div class="space-y-4">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div class="grid grid-cols-3 gap-2 items-end">
+                                <div class="col-span-2">
+                                    <label for="sequence1Input" class="block text-sm font-medium text-slate-700 mb-1">Protein 1 Sequence:</label>
+                                    <input type="text" id="sequence1Input" value="GROG" class="block w-full px-3 py-2 bg-white border border-slate-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
+                                </div>
+                                <div>
+                                    <label for="count1Input" class="block text-sm font-medium text-slate-700 mb-1">Count:</label>
+                                    <input type="number" id="count1Input" value="1" min="0" class="block w-full px-3 py-2 bg-white border border-slate-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
+                                </div>
+                            </div>
+                            <div class="grid grid-cols-3 gap-2 items-end">
+                                <div class="col-span-2">
+                                    <label for="sequence2Input" class="block text-sm font-medium text-slate-700 mb-1">Protein 2 Sequence:</label>
+                                    <input type="text" id="sequence2Input" value="GLOG" class="block w-full px-3 py-2 bg-white border border-slate-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
+                                </div>
+                                <div>
+                                    <label for="count2Input" class="block text-sm font-medium text-slate-700 mb-1">Count:</label>
+                                    <input type="number" id="count2Input" value="1" min="0" class="block w-full px-3 py-2 bg-white border border-slate-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
+                                </div>
+                            </div>
+                             <div>
+                                <label for="initialCInput" class="block text-sm font-medium text-slate-700 mb-1">Initial Substrate (C):</label>
+                                <input type="number" id="initialCInput" value="10" min="0" class="block w-full px-3 py-2 bg-white border border-slate-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
+                            </div>
+                            <div>
+                                <label for="targetSInput" class="block text-sm font-medium text-slate-700 mb-1">Target Product (S):</label>
+                                <input type="number" id="targetSInput" value="5" min="0" class="block w-full px-3 py-2 bg-white border border-slate-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
+                            </div>
+                        </div>
+                        <div class="grid grid-cols-2 gap-4">
+                            <button id="foldButton" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition duration-150 ease-in-out">Start Folding</button>
+                            <button id="resetButton" class="w-full bg-slate-500 hover:bg-slate-600 text-white font-semibold py-2 px-4 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-slate-400 transition duration-150 ease-in-out">Reset</button>
+                        </div>
+                        <div class="text-xs text-slate-500">
+                             <p>G:Glue (sticks if cardinally adjacent & >2 AAs apart). R/L:Reactive (active if in a G-G loop). F:Fixed. C:Substrate, S:Product.</p>
+                        </div>
+                        <canvas id="simulationCanvas" width="450" height="300"></canvas>
+                    </div>
+                    <!-- Column 2: Status and Chart -->
+                    <div class="space-y-4">
+                        <div class="p-3 bg-slate-50 border border-slate-200 rounded-lg text-sm grid grid-cols-2 sm:grid-cols-3 gap-2">
+                             <div>Score: <span id="scoreDisplay" class="font-semibold">0</span></div>
+                             <div>Best: <span id="bestScoreDisplay" class="font-semibold">0</span></div>
+                             <div>Stuck: <span id="stuckPairsDisplay" class="font-semibold">0</span></div>
+                             <div>Substrate (C): <span id="substrateCountDisplay" class="font-semibold">0</span></div>
+                             <div>Product (S): <span id="productCountDisplay" class="font-semibold">0</span></div>
+                             <div>Steps: <span id="stepsDisplay" class="font-semibold">0</span></div>
+                             <div class="col-span-2 sm:col-span-1">Frames: <span id="framesDisplay" class="font-semibold">0</span></div>
+                        </div>
+                        <div class="relative h-64 md:h-80">
+                            <canvas id="concentrationChartCanvas"></canvas>
+                        </div>
+                    </div>
+                </div>
+                 <!-- Scoreboard -->
+                <div class="mt-6">
+                    <h3 class="text-xl font-semibold text-slate-700 mb-2 text-center">Scoreboard</h3>
+                    <div class="overflow-x-auto bg-white rounded-md shadow-inner border">
+                        <table id="scoreboardTable" class="min-w-full divide-y divide-slate-200 text-sm">
+                            <thead class="bg-slate-50">
+                                <tr>
+                                    <th class="px-4 py-2 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Protein Setup</th>
+                                    <th class="px-4 py-2 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Initial C</th>
+                                    <th class="px-4 py-2 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Target S</th>
+                                    <th class="px-4 py-2 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">S Created</th>
+                                    <th class="px-4 py-2 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Frames</th>
+                                    <th class="px-4 py-2 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Goal Met</th>
+                                </tr>
+                            </thead>
+                            <tbody class="bg-white divide-y divide-slate-200" id="scoreboardBody">
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                <!-- END of new simulation HTML -->
             </div>
         </section>
 
@@ -222,11 +318,8 @@
         // Smooth scrolling for navigation links
         document.querySelectorAll('a[href^="#"]').forEach(anchor => {
             anchor.addEventListener('click', function (e) {
-                // Keep default behavior for external-like links, but smooth-scroll for on-page anchors
                 if (this.getAttribute('href').length > 1 && this.getAttribute('href').startsWith('#/')) {
-                    // This is for future routing, do nothing for now.
-                    // Or, if you want to prevent clicks on these placeholder links:
-                    // e.preventDefault();
+                    // Placeholder for future routing
                 } else {
                      e.preventDefault();
                      document.querySelector(this.getAttribute('href')).scrollIntoView({
@@ -236,101 +329,537 @@
             });
         });
 
-        // DNA Animation Simulation
-        const canvas = document.getElementById('dnaCanvas');
-        const ctx = canvas.getContext('2d');
-        let width, height;
-        let particles = [];
-        let time = 0;
+        // --- MULTI-PROTEIN ENZYME SIMULATOR SCRIPT ---
+        document.addEventListener('DOMContentLoaded', () => {
+             // --- DOM Elements ---
+            const canvas = document.getElementById('simulationCanvas');
+            if (!canvas) return; // Exit if canvas is not on the page
+            const ctx = canvas.getContext('2d');
+            const sequence1Input = document.getElementById('sequence1Input');
+            const count1Input = document.getElementById('count1Input');
+            const sequence2Input = document.getElementById('sequence2Input');
+            const count2Input = document.getElementById('count2Input');
+            const initialCInput = document.getElementById('initialCInput');
+            const targetSInput = document.getElementById('targetSInput');
+            const foldButton = document.getElementById('foldButton');
+            const resetButton = document.getElementById('resetButton');
+            const scoreDisplay = document.getElementById('scoreDisplay');
+            const bestScoreDisplay = document.getElementById('bestScoreDisplay');
+            const stuckPairsDisplay = document.getElementById('stuckPairsDisplay');
+            const substrateCountDisplay = document.getElementById('substrateCountDisplay');
+            const productCountDisplay = document.getElementById('productCountDisplay');
+            const stepsDisplay = document.getElementById('stepsDisplay');
+            const framesDisplay = document.getElementById('framesDisplay');
+            const scoreboardBody = document.getElementById('scoreboardBody');
+            const concentrationChartCanvas = document.getElementById('concentrationChartCanvas');
 
-        function resizeCanvas() {
-            const container = canvas.parentElement;
-            width = canvas.width = container.clientWidth;
-            height = canvas.height = container.clientHeight;
-        }
+            // --- Simulation Parameters ---
+            const GRID_SIZE = 20;
+            const AA_RADIUS = GRID_SIZE / 2 - 2;
+            const COMPOUND_RADIUS = GRID_SIZE / 3;
+            const STICKY_BOND_SCORE = 10;
+            const MAX_ATTEMPTS_PER_FRAME = 50;
+            const EXPLORATION_CHANCE = 0.05;
+            const DEFAULT_INITIAL_C_COUNT = 10;
+            const DEFAULT_TARGET_S_COUNT = 5;
+            const REACTION_DISTANCE = GRID_SIZE * 0.8;
+            const COMPOUND_MAX_SPEED = 2;
+            const R_L_LOOP_MIN_SEPARATION = 1;
+            const G_STICK_MIN_SEPARATION = 2;
+            const INACTIVITY_THRESHOLD_FRAMES = 300;
 
-        class Particle {
-            constructor(y, strand) {
-                this.y = y;
-                this.strand = strand; // 0 or 1
-                this.x = 0;
-                this.z = 0;
+            // --- Simulation State ---
+            let proteinInstances = [];
+            let bestProteinConfigurations = [];
+            let compoundsC = [];
+            let compoundsS = [];
+            let nextCompoundId = 0;
+            let nextProteinInstanceId = 0;
+            let totalCurrentScore = 0;
+            let totalHighestScoreAchieved = 0;
+            let simulationRunning = false;
+            let animationFrameId = null;
+            let totalStepsTaken = 0;
+            let totalFramesProcessed = 0;
+            let scoreboardData = [];
+            let activeRunParams = { initialC: DEFAULT_INITIAL_C_COUNT, targetS: DEFAULT_TARGET_S_COUNT, proteinSetupString: "" };
+
+            // Chart specific state
+            let concentrationChart;
+            let frameHistory = [];
+            let substrateHistory = [];
+            let productHistory = [];
+
+            // --- Custom Message Box ---
+            function showMessage(message) {
+                const existingOverlay = document.querySelector('.message-overlay');
+                if (existingOverlay) existingOverlay.remove();
+                const overlay = document.createElement('div');
+                overlay.className = 'message-overlay';
+                const box = document.createElement('div');
+                box.className = 'message-box';
+                const text = document.createElement('p');
+                text.textContent = message;
+                const closeButton = document.createElement('button');
+                closeButton.textContent = 'OK';
+                closeButton.className = 'bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-md';
+                closeButton.onclick = () => overlay.remove();
+                box.appendChild(text);
+                box.appendChild(closeButton);
+                overlay.appendChild(box);
+                document.body.appendChild(overlay);
             }
 
-            update(t) {
-                const angle = this.y * 0.1 + t;
-                const radius = width * 0.2;
-                if (this.strand === 0) {
-                    this.x = width / 2 + Math.cos(angle) * radius;
-                    this.z = Math.sin(angle);
+            function deepCopy(original) { return JSON.parse(JSON.stringify(original)); }
+            
+            function linearizeProteinChain(proteinChain, forceNewX, forceNewY) {
+                if (!proteinChain || proteinChain.aas.length === 0) return;
+                const startY = (forceNewY !== undefined) ? forceNewY : proteinChain.yBaseline;
+                proteinChain.yBaseline = startY;
+                const chainTotalWidth = proteinChain.aas.length * GRID_SIZE;
+                let startX;
+                if (forceNewX !== undefined) {
+                    startX = forceNewX;
                 } else {
-                    this.x = width / 2 + Math.cos(angle + Math.PI) * radius;
-                    this.z = Math.sin(angle + Math.PI);
+                    startX = (canvas.width - chainTotalWidth) / 2 + GRID_SIZE / 2;
+                }
+                startX = Math.max(AA_RADIUS, Math.min(canvas.width - chainTotalWidth + AA_RADIUS - GRID_SIZE, startX));
+                proteinChain.aas.forEach((aa, i) => {
+                    if (aa) {
+                        aa.x = startX + i * GRID_SIZE;
+                        aa.y = startY;
+                        if (aa.type === 'R' || aa.type === 'L') aa.isActive = false;
+                    }
+                });
+            }
+
+            function initializeChain() {
+                const seq1 = sequence1Input.value.toUpperCase();
+                const count1 = parseInt(count1Input.value) || 0;
+                const seq2 = sequence2Input.value.toUpperCase();
+                const count2 = parseInt(count2Input.value) || 0;
+                let proteinSetupString = "";
+                if (count1 > 0 && seq1) proteinSetupString += `S1(${seq1}):${count1};`;
+                if (count2 > 0 && seq2) proteinSetupString += `S2(${seq2}):${count2};`;
+                if (!proteinSetupString && (count1 > 0 || count2 > 0)) {
+                    proteinSetupString = "InvalidSeqSpecified";
+                } else if (!proteinSetupString) {
+                    proteinSetupString = "NoProteins";
+                }
+                if ((count1 > 0 && (seq1.length < 3 || !/^[GOFRL]+$/.test(seq1))) || (count2 > 0 && (seq2.length < 3 || !/^[GOFRL]+$/.test(seq2))) || (count1 === 0 && count2 === 0)) {
+                    showMessage("Invalid sequence or count. Ensure sequences use G,O,F,R,L (min length 3) and at least one protein has count > 0.");
+                    proteinInstances = []; compoundsC = []; compoundsS = [];
+                    return false;
+                }
+                proteinInstances = []; compoundsC = []; compoundsS = [];
+                nextCompoundId = 0; nextProteinInstanceId = 0;
+                activeRunParams.initialC = parseInt(initialCInput.value) || DEFAULT_INITIAL_C_COUNT;
+                activeRunParams.targetS = parseInt(targetSInput.value) || DEFAULT_TARGET_S_COUNT;
+                activeRunParams.proteinSetupString = proteinSetupString;
+                initialCInput.value = activeRunParams.initialC;
+                targetSInput.value = activeRunParams.targetS;
+                const createInstances = (sequenceStr, numInstances, typeId) => {
+                    for (let i = 0; i < numInstances; i++) {
+                        const chainLength = sequenceStr.length;
+                        const randomStartX = Math.random() * Math.max(0, (canvas.width - (chainLength * GRID_SIZE) - AA_RADIUS * 2)) + AA_RADIUS;
+                        const randomStartY = Math.random() * Math.max(0, (canvas.height - GRID_SIZE * 2)) + GRID_SIZE;
+                        const newProtein = { instanceId: nextProteinInstanceId++, typeId: typeId, sequenceString: sequenceStr, aas: [], stuckPairs: [], yBaseline: randomStartY, currentScore: 0, framesSinceLastActivity: 0 };
+                        for (let j = 0; j < sequenceStr.length; j++) {
+                            newProtein.aas.push({ type: sequenceStr[j], id: j, isActive: false });
+                        }
+                        linearizeProteinChain(newProtein, randomStartX, randomStartY);
+                        proteinInstances.push(newProtein);
+                    }
+                };
+                if (count1 > 0 && seq1) createInstances(seq1, count1, 0);
+                if (count2 > 0 && seq2) createInstances(seq2, count2, 1);
+                for (let i = 0; i < activeRunParams.initialC; i++) {
+                    compoundsC.push({ id: nextCompoundId++, x: Math.random() * (canvas.width - COMPOUND_RADIUS * 2) + COMPOUND_RADIUS, y: Math.random() * (canvas.height - COMPOUND_RADIUS * 2) + COMPOUND_RADIUS, vx: (Math.random() - 0.5) * COMPOUND_MAX_SPEED * 2, vy: (Math.random() - 0.5) * COMPOUND_MAX_SPEED * 2 });
+                }
+                totalCurrentScore = calculateTotalScore();
+                totalHighestScoreAchieved = totalCurrentScore;
+                bestProteinConfigurations = deepCopy(proteinInstances);
+                totalStepsTaken = 0; totalFramesProcessed = 0;
+                initializeChart(); updateButtonStates(); updateDisplays();
+                return true;
+            }
+
+            function draw() {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                if (proteinInstances.length === 0 && compoundsC.length === 0 && compoundsS.length === 0) return;
+                proteinInstances.forEach(proteinChain => {
+                    if (proteinChain.aas.length > 0) {
+                        ctx.beginPath();
+                        if (proteinChain.aas[0]) ctx.moveTo(proteinChain.aas[0].x, proteinChain.aas[0].y);
+                        for (let i = 1; i < proteinChain.aas.length; i++) {
+                            if (proteinChain.aas[i]) ctx.lineTo(proteinChain.aas[i].x, proteinChain.aas[i].y);
+                        }
+                        ctx.strokeStyle = "#9ca3af"; ctx.lineWidth = 2; ctx.stroke();
+                        proteinChain.aas.forEach(aa => {
+                            if (!aa) return;
+                            let aaColor = '', symbol = '';
+                            switch (aa.type) {
+                                case 'G': aaColor = '#7dd3fc'; symbol = 'G'; break;
+                                case 'O': aaColor = '#6b7280'; symbol = 'O'; break;
+                                case 'F': aaColor = '#1f2937'; symbol = 'F'; break;
+                                case 'R': aaColor = aa.isActive ? '#f97316' : '#8b5cf6'; symbol = 'R'; break;
+                                case 'L': aaColor = aa.isActive ? '#a3e635' : '#67e8f9'; symbol = 'L'; break;
+                                default: aaColor = 'black';
+                            }
+                            ctx.fillStyle = aaColor; ctx.beginPath(); ctx.arc(aa.x, aa.y, AA_RADIUS, 0, Math.PI * 2); ctx.fill();
+                            ctx.strokeStyle = '#4b5563'; ctx.lineWidth = 1; ctx.stroke();
+                            if (symbol) {
+                                ctx.fillStyle = (aa.type === 'F' || aa.type === 'O') ? 'white' : 'black';
+                                ctx.font = `bold ${AA_RADIUS * 0.9}px Inter, sans-serif`;
+                                ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+                                ctx.fillText(symbol, aa.x, aa.y + 1);
+                            }
+                        });
+                    }
+                });
+                ctx.fillStyle = '#facc15';
+                compoundsC.forEach(c => { ctx.beginPath(); ctx.arc(c.x, c.y, COMPOUND_RADIUS, 0, Math.PI * 2); ctx.fill(); });
+                ctx.fillStyle = '#22c55e';
+                compoundsS.forEach(s => { ctx.beginPath(); ctx.arc(s.x, s.y, COMPOUND_RADIUS, 0, Math.PI * 2); ctx.fill(); });
+            }
+
+            function areItemsAdjacent(item1, item2, type, distanceValue) {
+                if (!item1 || !item2) return false;
+                const dx = Math.abs(item1.x - item2.x); const dy = Math.abs(item1.y - item2.y);
+                if (type === 'radial') { return (dx * dx + dy * dy) <= distanceValue * distanceValue; }
+                else if (type === 'gridCardinal') { return (dx === distanceValue && dy === 0) || (dx === 0 && dy === distanceValue); }
+                else if (type === 'gridDiagonalOrCardinal') { return (dx === distanceValue && dy === 0) || (dx === 0 && dy === distanceValue) || (dx === distanceValue && dy === distanceValue); }
+                return false;
+            }
+
+            function calculateChainScore(chainAAs) {
+                let score = 0; if (!chainAAs || chainAAs.length < 2) return 0;
+                for (let i = 0; i < chainAAs.length; i++) {
+                    const aa1 = chainAAs[i]; if (!aa1 || aa1.type !== 'G') continue;
+                    for (let j = i + 1; j < chainAAs.length; j++) {
+                        const aa2 = chainAAs[j]; if (!aa2 || aa2.type !== 'G') continue;
+                        if (Math.abs(aa1.id - aa2.id) > G_STICK_MIN_SEPARATION) {
+                            if (areItemsAdjacent(aa1, aa2, 'gridCardinal', GRID_SIZE)) { score += STICKY_BOND_SCORE; }
+                        }
+                    }
+                }
+                return score;
+            }
+
+            function calculateTotalScore() { return proteinInstances.reduce((sum, pChain) => sum + pChain.currentScore, 0); }
+            
+            function updateDisplays() {
+                totalCurrentScore = calculateTotalScore();
+                scoreDisplay.textContent = totalCurrentScore;
+                bestScoreDisplay.textContent = totalHighestScoreAchieved;
+                stuckPairsDisplay.textContent = proteinInstances.reduce((sum, p) => sum + p.stuckPairs.length, 0);
+                substrateCountDisplay.textContent = compoundsC.length;
+                productCountDisplay.textContent = compoundsS.length;
+                stepsDisplay.textContent = totalStepsTaken;
+                framesDisplay.textContent = totalFramesProcessed;
+            }
+
+            function updateProteinStuckPairs(proteinChain) {
+                let newBondFormedThisUpdate = false;
+                const initialStuckPairCount = proteinChain.stuckPairs.length;
+                for (let i = 0; i < proteinChain.aas.length; i++) {
+                    const aa1 = proteinChain.aas[i]; if (!aa1 || aa1.type !== 'G') continue;
+                    for (let j = i + 1; j < proteinChain.aas.length; j++) {
+                        const aa2 = proteinChain.aas[j]; if (!aa2 || aa2.type !== 'G') continue;
+                        if (Math.abs(aa1.id - aa2.id) > G_STICK_MIN_SEPARATION) {
+                            if (areItemsAdjacent(aa1, aa2, 'gridCardinal', GRID_SIZE)) {
+                                const id1 = aa1.id, id2 = aa2.id;
+                                const isAlreadyStuck = proteinChain.stuckPairs.some(pair => (pair.id1 === id1 && pair.id2 === id2) || (pair.id1 === id2 && pair.id2 === id1));
+                                if (!isAlreadyStuck) { proteinChain.stuckPairs.push({ id1: id1, id2: id2 }); }
+                            }
+                        }
+                    }
+                }
+                if (proteinChain.stuckPairs.length > initialStuckPairCount) { newBondFormedThisUpdate = true; }
+                return newBondFormedThisUpdate;
+            }
+
+            function findProteinStuckCluster(startAAId, proteinChain) {
+                const cluster = new Set(); const queue = [startAAId]; const visited = new Set();
+                while (queue.length > 0) {
+                    const currentId = queue.shift(); if (visited.has(currentId)) continue;
+                    visited.add(currentId); cluster.add(currentId);
+                    proteinChain.stuckPairs.forEach(pair => {
+                        let partnerId = -1;
+                        if (pair.id1 === currentId) partnerId = pair.id2;
+                        else if (pair.id2 === currentId) partnerId = pair.id1;
+                        if (partnerId !== -1 && !visited.has(partnerId)) queue.push(partnerId);
+                    });
+                }
+                return cluster;
+            }
+
+            function updateProteinReactiveStatus(proteinChain) {
+                let wasAnyReactiveSiteActive = false;
+                proteinChain.aas.forEach(aa => { if (aa && (aa.type === 'R' || aa.type === 'L')) { if (aa.isActive) wasAnyReactiveSiteActive = true; aa.isActive = false; } });
+                if (proteinChain.aas.length < 3) return wasAnyReactiveSiteActive;
+                let isAnyReactiveSiteActiveNow = false;
+                for (const reactiveAA of proteinChain.aas) {
+                    if (!reactiveAA || (reactiveAA.type !== 'R' && reactiveAA.type !== 'L')) continue;
+                    const rIndex = proteinChain.aas.findIndex(aa => aa.id === reactiveAA.id);
+                    for (const pair of proteinChain.stuckPairs) {
+                        const aa1_from_pair = proteinChain.aas.find(aa => aa.id === pair.id1);
+                        const aa2_from_pair = proteinChain.aas.find(aa => aa.id === pair.id2);
+                        if (!aa1_from_pair || !aa2_from_pair || aa1_from_pair.type !== 'G' || aa2_from_pair.type !== 'G') continue;
+                        const index1 = proteinChain.aas.findIndex(aa => aa.id === aa1_from_pair.id);
+                        const index2 = proteinChain.aas.findIndex(aa => aa.id === aa2_from_pair.id);
+                        if (Math.abs(index1 - index2) > R_L_LOOP_MIN_SEPARATION) {
+                            const minIndex = Math.min(index1, index2); const maxIndex = Math.max(index1, index2);
+                            if (rIndex > minIndex && rIndex < maxIndex) { reactiveAA.isActive = true; isAnyReactiveSiteActiveNow = true; break; }
+                        }
+                    }
+                }
+                return isAnyReactiveSiteActiveNow || wasAnyReactiveSiteActive;
+            }
+
+            function moveCompounds() {
+                [compoundsC, compoundsS].forEach(compoundArray => {
+                    compoundArray.forEach(c => {
+                        c.x += c.vx; c.y += c.vy;
+                        if (c.x - COMPOUND_RADIUS < 0 || c.x + COMPOUND_RADIUS > canvas.width) { c.vx *= -1; c.x = Math.max(COMPOUND_RADIUS, Math.min(canvas.width - COMPOUND_RADIUS, c.x)); }
+                        if (c.y - COMPOUND_RADIUS < 0 || c.y + COMPOUND_RADIUS > canvas.height) { c.vy *= -1; c.y = Math.max(COMPOUND_RADIUS, Math.min(canvas.height - COMPOUND_RADIUS, c.y)); }
+                    });
+                });
+            }
+
+            function handleReactions() {
+                let reactionOccurredThisFrame = false;
+                for (const proteinChain of proteinInstances) {
+                    let proteinReacted = false;
+                    for (const reactiveAA of proteinChain.aas) {
+                        if (reactiveAA.isActive) {
+                            if (reactiveAA.type === 'R') {
+                                for (let i = compoundsC.length - 1; i >= 0; i--) {
+                                    const c = compoundsC[i];
+                                    if (areItemsAdjacent(reactiveAA, c, 'radial', REACTION_DISTANCE)) {
+                                        compoundsS.push({ id: nextCompoundId++, x: c.x, y: c.y, vx: (Math.random() - 0.5) * COMPOUND_MAX_SPEED * 2, vy: (Math.random() - 0.5) * COMPOUND_MAX_SPEED * 2 });
+                                        compoundsC.splice(i, 1); proteinChain.stuckPairs = [];
+                                        const randomRespawnX = Math.random() * (canvas.width - (proteinChain.aas.length * GRID_SIZE) - AA_RADIUS * 2) + AA_RADIUS;
+                                        const randomRespawnY = Math.random() * (canvas.height - GRID_SIZE * 3) + GRID_SIZE * 1.5;
+                                        linearizeProteinChain(proteinChain, randomRespawnX, randomRespawnY);
+                                        proteinChain.currentScore = calculateChainScore(proteinChain.aas); proteinChain.framesSinceLastActivity = 0;
+                                        reactionOccurredThisFrame = true; proteinReacted = true; break;
+                                    }
+                                }
+                            } else if (reactiveAA.type === 'L') {
+                                for (let i = compoundsS.length - 1; i >= 0; i--) {
+                                    const s = compoundsS[i];
+                                    if (areItemsAdjacent(reactiveAA, s, 'radial', REACTION_DISTANCE)) {
+                                        compoundsC.push({ id: nextCompoundId++, x: s.x, y: s.y, vx: (Math.random() - 0.5) * COMPOUND_MAX_SPEED * 2, vy: (Math.random() - 0.5) * COMPOUND_MAX_SPEED * 2 });
+                                        compoundsS.splice(i, 1); proteinChain.stuckPairs = [];
+                                        const randomRespawnX = Math.random() * (canvas.width - (proteinChain.aas.length * GRID_SIZE) - AA_RADIUS * 2) + AA_RADIUS;
+                                        const randomRespawnY = Math.random() * (canvas.height - GRID_SIZE * 3) + GRID_SIZE * 1.5;
+                                        linearizeProteinChain(proteinChain, randomRespawnX, randomRespawnY);
+                                        proteinChain.currentScore = calculateChainScore(proteinChain.aas); proteinChain.framesSinceLastActivity = 0;
+                                        reactionOccurredThisFrame = true; proteinReacted = true; break;
+                                    }
+                                }
+                            }
+                        }
+                        if (proteinReacted) break;
+                    }
+                    if (reactionOccurredThisFrame) break;
+                }
+                return reactionOccurredThisFrame;
+            }
+
+            function attemptProteinMoveStep(proteinChain) {
+                if (proteinChain.aas.length < 2) return { moved: false, newScore: proteinChain.currentScore };
+                const nonFixedAminoAcids = proteinChain.aas.filter(aa => aa.type !== 'F');
+                if (nonFixedAminoAcids.length === 0) return { moved: false, newScore: proteinChain.currentScore };
+                const selectedAA = nonFixedAminoAcids[Math.floor(Math.random() * nonFixedAminoAcids.length)];
+                const clusterIds = findProteinStuckCluster(selectedAA.id, proteinChain);
+                let clusterIsFixedByF_Type = false;
+                for (const id of clusterIds) { if (proteinChain.aas.find(a => a.id === id)?.type === 'F') { clusterIsFixedByF_Type = true; break; } }
+                if (clusterIsFixedByF_Type) return { moved: false, newScore: proteinChain.currentScore };
+                const potentialMoves = [{ dx: 0, dy: -GRID_SIZE }, { dx: 0, dy: GRID_SIZE }, { dx: -GRID_SIZE, dy: 0 }, { dx: GRID_SIZE, dy: 0 }, { dx: -GRID_SIZE, dy: -GRID_SIZE }, { dx: -GRID_SIZE, dy: GRID_SIZE }, { dx: GRID_SIZE, dy: -GRID_SIZE }, { dx: GRID_SIZE, dy: GRID_SIZE }];
+                potentialMoves.sort(() => Math.random() - 0.5);
+                for (const move of potentialMoves) {
+                    const dx = move.dx; const dy = move.dy; let canMoveCluster = true; const proposedClusterPositions = {};
+                    for (const id of clusterIds) {
+                        const aa = proteinChain.aas.find(a => a.id === id); if (!aa) { canMoveCluster = false; break; }
+                        const newX = aa.x + dx; const newY = aa.y + dy;
+                        if (newX < AA_RADIUS || newX >= canvas.width - AA_RADIUS || newY < AA_RADIUS || newY >= canvas.height - AA_RADIUS) { canMoveCluster = false; break; }
+                        proposedClusterPositions[id] = { x: newX, y: newY };
+                    }
+                    if (!canMoveCluster) continue;
+                    for (const id of clusterIds) {
+                        const newPos = proposedClusterPositions[id];
+                        for (const otherPChain of proteinInstances) {
+                            for (const otherAA of otherPChain.aas) {
+                                if (otherPChain.instanceId === proteinChain.instanceId && clusterIds.has(otherAA.id)) { continue; }
+                                if (otherAA.x === newPos.x && otherAA.y === newPos.y) { canMoveCluster = false; break; }
+                            }
+                            if (!canMoveCluster) break;
+                        }
+                        if (!canMoveCluster) break;
+                    }
+                    if (!canMoveCluster) continue;
+                    for (const id of clusterIds) {
+                        const aaInCluster = proteinChain.aas.find(a => a.id === id);
+                        const newPosOfAAInCluster = proposedClusterPositions[id];
+                        if (aaInCluster.id > 0) {
+                            const prevAA = proteinChain.aas.find(a => a.id === aaInCluster.id - 1);
+                            if (prevAA && !clusterIds.has(prevAA.id)) { if (!areItemsAdjacent(newPosOfAAInCluster, prevAA, 'gridDiagonalOrCardinal', GRID_SIZE)) { canMoveCluster = false; break; } }
+                        }
+                        if (aaInCluster.id < proteinChain.aas.length - 1) {
+                            const nextAA = proteinChain.aas.find(a => a.id === aaInCluster.id + 1);
+                            if (nextAA && !clusterIds.has(nextAA.id)) { if (!areItemsAdjacent(newPosOfAAInCluster, nextAA, 'gridDiagonalOrCardinal', GRID_SIZE)) { canMoveCluster = false; break; } }
+                        }
+                        if (!canMoveCluster) break;
+                    }
+                    if (!canMoveCluster) continue;
+                    const originalClusterPositions = {};
+                    clusterIds.forEach(id => {
+                        const aaToMove = proteinChain.aas.find(a => a.id === id);
+                        originalClusterPositions[id] = { x: aaToMove.x, y: aaToMove.y };
+                        aaToMove.x = proposedClusterPositions[id].x; aaToMove.y = proposedClusterPositions[id].y;
+                    });
+                    const newCalculatedScore = calculateChainScore(proteinChain.aas);
+                    if (newCalculatedScore > proteinChain.currentScore || Math.random() < EXPLORATION_CHANCE) {
+                        proteinChain.currentScore = newCalculatedScore; return { moved: true, newScore: newCalculatedScore };
+                    }
+                    else { clusterIds.forEach(id => { const aaToRevert = proteinChain.aas.find(a => a.id === id); aaToRevert.x = originalClusterPositions[id].x; aaToRevert.y = originalClusterPositions[id].y; }); }
+                }
+                return { moved: false, newScore: proteinChain.currentScore };
+            }
+
+            function recordRun(manualStop = false) {
+                const runData = { sequence: activeRunParams.proteinSetupString, initialC: activeRunParams.initialC, targetS: activeRunParams.targetS, productsCreated: compoundsS.length, framesTaken: totalFramesProcessed, goalMet: compoundsS.length >= activeRunParams.targetS && activeRunParams.targetS > 0 };
+                const existingRunIndex = scoreboardData.findIndex(r => r.sequence === runData.sequence && r.initialC === runData.initialC && r.targetS === runData.targetS && r.framesTaken === runData.framesTaken);
+                if (existingRunIndex === -1 || runData.goalMet) { scoreboardData.push(runData); }
+                else if (manualStop && !scoreboardData[existingRunIndex].goalMet && runData.productsCreated > scoreboardData[existingRunIndex].productsCreated) { scoreboardData[existingRunIndex] = runData; }
+                displayScoreboard();
+            }
+
+            function displayScoreboard() {
+                scoreboardData.sort((a, b) => {
+                    if (a.goalMet && !b.goalMet) return -1; if (!a.goalMet && b.goalMet) return 1;
+                    if (a.goalMet && b.goalMet) return a.framesTaken - b.framesTaken;
+                    if (b.productsCreated !== a.productsCreated) return b.productsCreated - a.productsCreated;
+                    return a.framesTaken - b.framesTaken;
+                });
+                scoreboardBody.innerHTML = "";
+                scoreboardData.forEach(run => {
+                    const row = scoreboardBody.insertRow();
+                    let displaySeq = run.sequence; if (displaySeq.length > 20) displaySeq = displaySeq.substring(0, 17) + "...";
+                    row.insertCell().textContent = displaySeq; row.insertCell().textContent = run.initialC; row.insertCell().textContent = run.targetS;
+                    row.insertCell().textContent = run.productsCreated; row.insertCell().textContent = run.framesTaken;
+                    row.insertCell().textContent = run.goalMet ? "Yes" : "No";
+                });
+            }
+
+            function initializeChart() {
+                if (concentrationChart) { concentrationChart.destroy(); }
+                frameHistory = []; substrateHistory = []; productHistory = [];
+                const chartCtx = concentrationChartCanvas.getContext('2d');
+                concentrationChart = new Chart(chartCtx, {
+                    type: 'line', data: { labels: frameHistory, datasets: [{ label: 'Substrate (C)', data: substrateHistory, borderColor: '#facc15', backgroundColor: 'rgba(250, 204, 21, 0.1)', tension: 0.1, fill: false, pointRadius: 0, }, { label: 'Product (S)', data: productHistory, borderColor: '#22c55e', backgroundColor: 'rgba(34, 197, 94, 0.1)', tension: 0.1, fill: false, pointRadius: 0, }] },
+                    options: { responsive: true, maintainAspectRatio: false, scales: { x: { title: { display: true, text: 'Frames' } }, y: { title: { display: true, text: 'Count' }, beginAtZero: true } }, animation: { duration: 0 } }
+                });
+            }
+
+            function updateChartData() {
+                if (!concentrationChart) return;
+                frameHistory.push(totalFramesProcessed);
+                substrateHistory.push(compoundsC.length);
+                productHistory.push(compoundsS.length);
+                concentrationChart.update('none');
+            }
+
+            function simulationStep() {
+                if (!simulationRunning) return;
+                proteinInstances.forEach(pChain => updateProteinReactiveStatus(pChain));
+                moveCompounds();
+                const reactionOccurredThisFrame = handleReactions();
+                if (compoundsS.length >= activeRunParams.targetS && activeRunParams.targetS > 0) {
+                    simulationRunning = false; recordRun(); updateButtonStates(); updateDisplays(); updateChartData(); draw();
+                    showMessage(`Target of ${activeRunParams.targetS} products reached in ${totalFramesProcessed} frames!`);
+                    return;
+                }
+                proteinInstances.forEach(pChain => {
+                    let proteinMovedThisChainIteration = false, newBondFormedThisChainIteration = false;
+                    for (let i = 0; i < MAX_ATTEMPTS_PER_FRAME / (proteinInstances.length || 1); i++) {
+                        const result = attemptProteinMoveStep(pChain);
+                        if (result.moved) {
+                            proteinMovedThisChainIteration = true;
+                            if (updateProteinStuckPairs(pChain)) { newBondFormedThisChainIteration = true; }
+                            updateProteinReactiveStatus(pChain);
+                        }
+                        totalStepsTaken++;
+                    }
+                    const currentReactiveSitesActive = pChain.aas.some(aa => aa.isActive);
+                    if (proteinMovedThisChainIteration || newBondFormedThisChainIteration || currentReactiveSitesActive || reactionOccurredThisFrame) {
+                        pChain.framesSinceLastActivity = 0;
+                    } else {
+                        pChain.framesSinceLastActivity++;
+                    }
+                    if (pChain.framesSinceLastActivity > INACTIVITY_THRESHOLD_FRAMES) {
+                        pChain.stuckPairs = [];
+                        const randomRespawnX = Math.random() * (canvas.width - (pChain.aas.length * GRID_SIZE) - AA_RADIUS * 2) + AA_RADIUS;
+                        const randomRespawnY = Math.random() * (canvas.height - GRID_SIZE * 3) + GRID_SIZE * 1.5;
+                        linearizeProteinChain(pChain, randomRespawnX, randomRespawnY);
+                        pChain.currentScore = calculateChainScore(pChain.aas);
+                        pChain.framesSinceLastActivity = 0;
+                        updateProteinReactiveStatus(pChain);
+                    }
+                });
+                totalCurrentScore = calculateTotalScore();
+                if (totalCurrentScore > totalHighestScoreAchieved) {
+                    totalHighestScoreAchieved = totalCurrentScore;
+                    bestProteinConfigurations = deepCopy(proteinInstances);
+                }
+                totalFramesProcessed++; updateDisplays(); updateChartData(); draw();
+                if (simulationRunning) { animationFrameId = requestAnimationFrame(simulationStep); }
+            }
+
+            function updateButtonStates() {
+                if (simulationRunning) {
+                    foldButton.textContent = "Stop Folding"; foldButton.disabled = false; resetButton.disabled = true;
+                    sequence1Input.disabled = true; count1Input.disabled = true; sequence2Input.disabled = true; count2Input.disabled = true;
+                    initialCInput.disabled = true; targetSInput.disabled = true;
+                } else {
+                    foldButton.textContent = "Start Folding"; foldButton.disabled = false; resetButton.disabled = false;
+                    sequence1Input.disabled = false; count1Input.disabled = false; sequence2Input.disabled = false; count2Input.disabled = false;
+                    initialCInput.disabled = false; targetSInput.disabled = false;
                 }
             }
 
-            draw() {
-                ctx.beginPath();
-                const scale = (this.z + 1) / 2;
-                const r = 2 + scale * 4;
-                const alpha = 0.5 + scale * 0.5;
-                ctx.fillStyle = this.strand === 0 ? `rgba(59, 130, 246, ${alpha})` : `rgba(30, 64, 175, ${alpha})`;
-                ctx.arc(this.x, this.y, r, 0, Math.PI * 2);
-                ctx.fill();
-            }
-        }
-
-        function init() {
-            resizeCanvas();
-            particles = [];
-            for (let i = 0; i < height; i += 8) {
-                particles.push(new Particle(i, 0));
-                particles.push(new Particle(i, 1));
-            }
-        }
-
-        function animate() {
-            ctx.clearRect(0, 0, width, height);
-            time += 0.02;
-
-            // Sort particles by z-index for 3D effect
-            particles.sort((a, b) => a.z - b.z);
-
-            particles.forEach(p => {
-                p.update(time);
-                p.draw();
+            foldButton.addEventListener('click', () => {
+                if (simulationRunning) {
+                    simulationRunning = false; if (animationFrameId) cancelAnimationFrame(animationFrameId);
+                    recordRun(true);
+                } else {
+                    if (!initializeChain()) { draw(); updateDisplays(); updateButtonStates(); return; }
+                    simulationRunning = true; simulationStep();
+                }
+                updateButtonStates();
             });
 
-            // Draw connections
-            for (let i = 0; i < particles.length; i += 2) {
-                // This logic needs to be more robust to find matching pairs
-                 const p1 = particles.find(p => p.y === Math.floor(i/2)*8 && p.strand === 0);
-                 const p2 = particles.find(p => p.y === Math.floor(i/2)*8 && p.strand === 1);
+            resetButton.addEventListener('click', () => {
+                simulationRunning = false; if (animationFrameId) cancelAnimationFrame(animationFrameId);
+                initializeChain();
+                initializeChart(); draw(); updateButtonStates(); updateDisplays();
+            });
 
-                if(p1 && p2) {
-                     ctx.beginPath();
-                     ctx.moveTo(p1.x, p1.y);
-                     ctx.lineTo(p2.x, p2.y);
-                     const avgZ = (p1.z + p2.z) / 2;
-                     const alpha = 0.2 + ((avgZ + 1)/2) * 0.3;
-                     ctx.strokeStyle = `rgba(100, 116, 139, ${alpha})`;
-                     ctx.stroke();
-                }
-            }
+            window.addEventListener('resize', () => {
+                // No need to re-initialize on resize, just redraw
+                draw();
+            });
 
-
-            requestAnimationFrame(animate);
-        }
-
-        window.addEventListener('resize', init);
-        
-        // Use a timeout to ensure the canvas is rendered before starting the animation
-        setTimeout(() => {
-             init();
-             animate();
-        }, 100);
-
+            // Initial load
+            initializeChain();
+            initializeChart();
+            draw();
+            updateButtonStates();
+            updateDisplays();
+            displayScoreboard();
+        });
     </script>
-
 </body>
 </html>

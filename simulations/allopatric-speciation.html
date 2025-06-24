@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Allopatric Speciation Animation</title>
+    <style>
+        /* Basic styling for the page */
+        body {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #0c1445; /* Dark blue for deep sea feel */
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            color: #f0f8ff;
+            text-align: center;
+        }
+        /* Styling for the canvas element */
+        canvas {
+            background-color: #1e3a8a; /* A medium blue for the water */
+            border-radius: 12px;
+            box-shadow: 0 8px 16px rgba(0,0,0,0.2);
+            max-width: 95%;
+            max-height: 75%; /* Adjusted to make space for text and button */
+            aspect-ratio: 16 / 9;
+        }
+        /* Container for all text content */
+        .content-container {
+            margin-top: 20px;
+            max-width: 800px;
+            width: 90%;
+            display: flex;
+            flex-direction: column;
+            gap: 15px; /* Space between text elements */
+        }
+        /* Styling for the stage description text */
+        #stage-description {
+            font-size: 1.2em;
+            font-weight: bold;
+        }
+        /* Styling for the explanation text */
+        #explanation {
+            font-size: 1em;
+            line-height: 1.5;
+            color: #bdc8f5; /* Lighter color for readability */
+        }
+        /* Styling for the reset button */
+        #resetButton {
+            margin-top: 10px;
+            padding: 10px 20px;
+            font-size: 1em;
+            font-weight: bold;
+            color: #fff;
+            background-color: #3b82f6;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background-color 0.2s ease;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        }
+        #resetButton:hover {
+            background-color: #2563eb;
+        }
+    </style>
+</head>
+<body>
+
+    <canvas id="speciationCanvas"></canvas>
+    
+    <div class="content-container">
+        <div id="stage-description">Stage 1: A single, interbreeding population of fish.</div>
+        <div id="explanation">
+            <b>Allopatric speciation</b> occurs when a population is separated by a geographic barrier. The word comes from Greek: <i>allos</i> ("other") + <i>patris</i> ("fatherland"). Unable to interbreed, the isolated groups evolve independently, adapting to their separate environments until they become distinct species.
+        </div>
+        <button id="resetButton">Reset Animation</button>
+    </div>
+
+<script>
+    const canvas = document.getElementById('speciationCanvas');
+    const ctx = canvas.getContext('2d');
+    const stageDescription = document.getElementById('stage-description');
+    const resetButton = document.getElementById('resetButton');
+
+    // --- Configuration Constants ---
+    const FISH_COUNT = 50;
+    const FISH_BODY_LENGTH = 15;
+    const FISH_BODY_WIDTH = 8;
+    const FISH_TAIL_LENGTH = 12;
+    const FISH_TAIL_WIDTH = 14; 
+    const FISH_HEAD_LENGTH = 8;
+    const INITIAL_COLOR = { r: 255, g: 100, b: 0 }; // Orange
+    const SPECIES_A_COLOR = { r: 50, g: 205, b: 50 }; // Lime Green
+    const SPECIES_B_COLOR = { r: 138, g: 43, b: 226 }; // Blue Violet
+
+    let fishPopulation = [];
+    let animationStage = 1;
+    let frameCount = 0;
+    let barrierWidth = 0;
+    let barrierOpacity = 0;
+    let animationFrameId;
+
+    // --- Utility Functions ---
+    function resizeCanvas() {
+        const parent = canvas.parentElement;
+        const availableWidth = parent.clientWidth * 0.95;
+        const availableHeight = parent.clientHeight * 0.75;
+        const parentRatio = availableWidth / availableHeight;
+        const canvasRatio = 16 / 9;
+
+        if (parentRatio > canvasRatio) {
+            canvas.height = availableHeight;
+            canvas.width = canvas.height * canvasRatio;
+        } else {
+            canvas.width = availableWidth;
+            canvas.height = canvas.width / canvasRatio;
+        }
+        resetAnimation();
+    }
+
+    function lerpColor(startColor, endColor, amount) {
+        const t = Math.max(0, Math.min(1, amount));
+        const r = startColor.r + (endColor.r - startColor.r) * t;
+        const g = startColor.g + (endColor.g - startColor.g) * t;
+        const b = startColor.b + (endColor.b - startColor.b) * t;
+        return { r: Math.round(r), g: Math.round(g), b: Math.round(b) };
+    }
+
+    // --- Fish Class Definition ---
+    class Fish {
+        constructor(x, y, color) {
+            this.x = x;
+            this.y = y;
+            this.vx = (Math.random() - 0.5) * 1.5;
+            this.vy = (Math.random() - 0.5) * 1.5;
+            this.color = { ...color };
+            this.totalLength = FISH_HEAD_LENGTH + FISH_BODY_LENGTH + FISH_TAIL_LENGTH;
+            this.tailPhase = Math.random() * Math.PI * 2;
+            this.tailOscillationSpeed = 0.2 + Math.random() * 0.1;
+            this.tailAmplitude = 4;
+        }
+
+        draw() {
+            const angle = Math.atan2(this.vy, this.vx);
+            const halfBodyW = FISH_BODY_WIDTH / 2;
+            const halfBodyL = FISH_BODY_LENGTH / 2;
+
+            ctx.save();
+            ctx.translate(this.x, this.y);
+            ctx.rotate(angle);
+            ctx.fillStyle = `rgb(${this.color.r},${this.color.g},${this.color.b})`;
+
+            ctx.fillRect(-halfBodyL, -halfBodyW, FISH_BODY_LENGTH, FISH_BODY_WIDTH);
+
+            const headBaseX = halfBodyL;
+            ctx.beginPath();
+            ctx.moveTo(headBaseX, -halfBodyW);
+            ctx.lineTo(headBaseX, halfBodyW);
+            ctx.lineTo(headBaseX + FISH_HEAD_LENGTH, 0);
+            ctx.closePath();
+            ctx.fill();
+
+            const tailAttachmentX = -halfBodyL;
+            const tailTipX = tailAttachmentX - FISH_TAIL_LENGTH;
+            const halfTailW = FISH_TAIL_WIDTH / 2;
+            const tailOscillationOffset = Math.sin(this.tailPhase) * this.tailAmplitude;
+
+            ctx.beginPath();
+            ctx.moveTo(tailAttachmentX, 0);
+            ctx.lineTo(tailTipX, -halfTailW + tailOscillationOffset);
+            ctx.lineTo(tailTipX, halfTailW + tailOscillationOffset);
+            ctx.closePath();
+            ctx.fill();
+            
+            ctx.restore();
+        }
+
+        move() {
+            this.tailPhase += this.tailOscillationSpeed;
+            this.x += this.vx;
+            this.y += this.vy;
+            const halfTotalLength = this.totalLength / 2;
+
+            if (this.x < halfTotalLength || this.x > canvas.width - halfTotalLength) {
+                this.vx *= -1;
+                this.x = Math.max(halfTotalLength, Math.min(canvas.width - halfTotalLength, this.x));
+            }
+            if (this.y < halfTotalLength || this.y > canvas.height - halfTotalLength) {
+                this.vy *= -1;
+                this.y = Math.max(halfTotalLength, Math.min(canvas.height - halfTotalLength, this.y));
+            }
+
+            if (animationStage === 2 || animationStage === 3) {
+                const barrierLeft = canvas.width / 2 - barrierWidth / 2;
+                const barrierRight = canvas.width / 2 + barrierWidth / 2;
+                const fishBoundingBoxLeft = this.x - halfTotalLength;
+                const fishBoundingBoxRight = this.x + halfTotalLength;
+
+                if (fishBoundingBoxRight > barrierLeft && fishBoundingBoxLeft < barrierRight) {
+                    if (this.x < canvas.width / 2) this.x = barrierLeft - halfTotalLength;
+                    else this.x = barrierRight + halfTotalLength;
+                    this.vx *= -1;
+                }
+            }
+        }
+    }
+
+    // --- Animation Logic ---
+
+    function setup() {
+        fishPopulation = [];
+        for (let i = 0; i < FISH_COUNT; i++) {
+            const x = Math.random() * canvas.width;
+            const y = Math.random() * canvas.height;
+            fishPopulation.push(new Fish(x, y, INITIAL_COLOR));
+        }
+    }
+
+    /**
+     * Resets all animation state variables to their defaults and restarts the loop.
+     */
+    function resetAnimation() {
+        // Stop any currently running animation loop
+        if (animationFrameId) {
+            cancelAnimationFrame(animationFrameId);
+        }
+        
+        // Reset state variables
+        frameCount = 0;
+        animationStage = 1;
+        stageDescription.textContent = 'Stage 1: A single, interbreeding population of fish.';
+        barrierWidth = 0;
+        barrierOpacity = 0;
+
+        // Recreate the fish population
+        setup();
+        // Start the animation loop again
+        animate();
+    }
+
+    function animate() {
+        animationFrameId = requestAnimationFrame(animate);
+        frameCount++;
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+        // Stage Progression
+        if (frameCount === 300 && animationStage === 1) {
+            animationStage = 2;
+            stageDescription.textContent = 'Stage 2: A land bridge divides the population.';
+        }
+        if (frameCount === 720 && animationStage === 2) {
+            animationStage = 3;
+            stageDescription.textContent = 'Stage 3: Over time, the isolated populations diverge genetically.';
+        }
+        if (frameCount === 1320 && animationStage === 3) {
+            animationStage = 4;
+            stageDescription.textContent = 'Stage 4: The barrier erodes, but the two populations are now distinct species.';
+        }
+
+        // Draw Land Barrier
+        if (animationStage >= 2) {
+            if (animationStage === 2 || animationStage === 3) {
+                if (barrierWidth < canvas.width * 0.1) barrierWidth += 0.5;
+                if (barrierOpacity < 1) barrierOpacity += 0.01;
+            }
+            if (animationStage === 4) {
+                if (barrierWidth > 0) barrierWidth -= 0.5;
+                if (barrierOpacity > 0) barrierOpacity -= 0.01;
+            }
+            if (barrierWidth > 0) {
+                ctx.fillStyle = `rgba(139, 115, 85, ${barrierOpacity})`;
+                ctx.fillRect(canvas.width / 2 - barrierWidth / 2, 0, barrierWidth, canvas.height);
+                ctx.fillStyle = `rgba(92, 64, 51, ${barrierOpacity * 0.3})`;
+                for (let i = 0; i < barrierWidth; i++) {
+                    const speckleX = canvas.width/2 - barrierWidth/2 + Math.random() * barrierWidth;
+                    const speckleY = Math.random() * canvas.height;
+                    const speckleR = Math.random() * 2;
+                    ctx.beginPath(); ctx.arc(speckleX, speckleY, speckleR, 0, 2 * Math.PI); ctx.fill();
+                }
+            }
+        }
+
+        // Update and draw each fish
+        fishPopulation.forEach(fish => {
+            if (animationStage === 3) {
+                const divergenceTime = (frameCount - 720) / 600;
+                if (fish.x < canvas.width / 2) fish.color = lerpColor(INITIAL_COLOR, SPECIES_A_COLOR, divergenceTime);
+                else fish.color = lerpColor(INITIAL_COLOR, SPECIES_B_COLOR, divergenceTime);
+            }
+            fish.move();
+            fish.draw();
+        });
+    }
+
+    // --- Event Listeners and Initialisation ---
+    window.addEventListener('resize', resizeCanvas);
+    resetButton.addEventListener('click', resetAnimation);
+
+    // Initial setup
+    resizeCanvas();
+</script>
+
+</body>
+</html>

@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Blog | Vincent Zvenigorosky</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f8fafc; /* slate-50 */
+            color: #334155; /* slate-700 */
+        }
+        .header-gradient {
+            background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%);
+        }
+        .prose-custom {
+            font-size: 1.125rem; /* text-lg */
+            line-height: 1.75;
+        }
+        .prose-custom h2 {
+            font-size: 1.5rem; /* text-2xl */
+            font-weight: 700;
+            margin-top: 2rem;
+            margin-bottom: 1rem;
+            color: #1e293b; /* slate-800 */
+            border-bottom: 1px solid #cbd5e1; /* slate-300 */
+            padding-bottom: 0.25rem;
+        }
+        .prose-custom p {
+            margin-bottom: 1.25rem;
+        }
+        .prose-custom a {
+            color: #2563eb; /* blue-600 */
+            text-decoration: underline;
+            transition: color 0.2s;
+        }
+        .prose-custom a:hover {
+            color: #1d4ed8; /* blue-700 */
+        }
+        .prose-custom blockquote {
+            border-left-width: 4px;
+            border-color: #93c5fd; /* blue-300 */
+            padding-left: 1rem;
+            font-style: italic;
+            color: #475569; /* slate-600 */
+        }
+        .references {
+            margin-top: 3rem;
+            padding-top: 1rem;
+            border-top: 1px solid #e2e8f0; /* slate-200 */
+        }
+        .references h3 {
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+        }
+        .references p {
+            font-size: 0.875rem; /* text-sm */
+            line-height: 1.5;
+            color: #475569; /* slate-600 */
+            margin-bottom: 0.5rem;
+        }
+    </style>
+</head>
+<body class="antialiased">
+
+    <!-- Header -->
+    <header class="header-gradient text-white p-6 md:p-12 shadow-lg">
+        <div class="max-w-4xl mx-auto text-center">
+            <h1 class="text-4xl md:text-5xl font-bold">Vincent Zvenigorosky</h1>
+            <p class="mt-2 text-xl md:text-2xl opacity-90">Molecular Biologist, Biostatistician & Bioinformatician, Project Leader</p>
+             <div class="mt-4 flex justify-center items-center space-x-6 text-sm">
+                <div>
+                    <i class="fas fa-envelope mr-2"></i>
+                    <a href="mailto:vincent.zvenigorosky@gmail.com" class="hover:underline">vincent.zvenigorosky@gmail.com</a>
+                </div>
+                <div>
+                    <i class="fas fa-phone mr-2"></i>
+                    +33(0)6.72.48.66.80
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Navigation -->
+    <nav class="bg-white sticky top-0 z-10 shadow-md">
+        <div class="max-w-7xl mx-auto">
+            <div class="flex justify-center space-x-4 md:space-x-8 py-3">
+                <a href="index.html#about" class="text-gray-600 hover:text-blue-600 font-medium">About</a>
+                <a href="index.html#research" class="text-gray-600 hover:text-blue-600 font-medium">Research</a>
+                <a href="index.html#teaching" class="text-gray-600 hover:text-blue-600 font-medium">Teaching</a>
+                <a href="simulations.html" class="text-gray-600 hover:text-blue-600 font-medium">Simulations</a>
+                <a href="#" class="text-blue-600 font-bold">Blog</a>
+                <a href="publications.html" class="text-gray-600 hover:text-blue-600 font-medium">Publications</a>
+            </div>
+        </div>
+    </nav>
+
+
+    <!-- Main Content -->
+    <main class="max-w-4xl mx-auto p-4 md:p-8">
+
+        <article id="post1" class="bg-white p-6 md:p-10 rounded-lg shadow-lg prose-custom scroll-mt-20">
+            <!-- Article Header -->
+            <div class="text-center mb-8">
+                <h1 class="text-3xl md:text-4xl font-bold text-slate-900">Is syphilis really still a thing?</h1>
+                <p class="text-slate-500 mt-2">
+                    <span class="font-semibold">Vincent Zvenigorosky</span> | 15 May 2025
+                </p>
+            </div>
+
+            <!-- Article Body -->
+            <p>At first glance, it might seem odd to be talking about syphilis in 2025. Surely this is a disease from the 19th century, right? Romantic poets caught it and died horrible melancholic deaths? You might be forgiven for thinking this, but syphilis is not only still around, it’s actually experiencing a resurgence that cannot be ignored. Let’s go through the epidemiology, the news and the data curated by international institutions, and show how this relic of the past is part of a serious, ongoing health crisis.</p>
+            
+            <h2>How many cases, really?</h2>
+            <p>In 2022, the WHO estimated the number of new cases of syphilis to around 8 million and, even more alarmingly, new cases of congenital syphilis to around 700,000. If you think HIV is a major public health concern, this will help give you some perspective: in 2022, there were 1.3 million new HIV infections. This means that syphilis numbers are actually more comparable to tuberculosis, which sits at around 10 million new cases a year. Syphilis might have dropped out of public consciousness, but it’s still around.</p>
+            
+            <h2>Is it everywhere?</h2>
+            <p>With such numbers, you can already guess that syphilis is not confined to poorer countries that lack functioning healthcare infrastructure. What might be harder to believe is that this was its trajectory in the 1990s and early 2000s: a steady decline, and most remaining cases found on the African continent. But, since the 2010s, the overall incidence has increased, with places like the US experiencing a doubling of maternal syphilis and a tenfold increase in congenital syphilis between 2012 and 2022. So syphilis is not just still around, it’s making a major comeback.</p>
+            
+            <h2>Is it everyone?</h2>
+            <p>It would be good to remember that STIs don’t care if a person is queer, a sex worker, an immigrant or whatever group it might be convenient to blame in a political moment. Syphilis has always been everyone’s problem and this hasn’t changed. The group that is most vulnerable to syphilis at the moment is men who have sex with men (MSM). Around 70% of cases fall within that group, but it should be noted that the increase is felt in heterosexual men and women too. There are too many causes to cite them all here, but among them you will find higher exposure to unsafe sex work, drug use, social stigma, lack of access to healthcare for financial reasons, lack of access because of immigration status, lack of awareness of the disease, the severity of the disease or the possibility of treatment, lack of testing and more.</p>
+            
+            <h2>But don’t we know how to cure it by now?</h2>
+            <p>That’s probably the question that should evoke the most outrage. Syphilis is caused by a bacterium called <em>Treponema pallidum pallidum</em>, so it can be cured with antibiotics. Penicillin is often not the drug of choice however, since it’s not produced on as large a scale as it used to, and its administration is sometimes difficult (it has to be injected). The two main alternatives are tetracyclines (like doxycycline) and macrolides (like azithromycin), although the WHO still recommends penicillin, especially if the infection is not recent. Some strains of <em>T. pallidum</em> are known to be resistant to macrolides, and its consistent use since the 1950s has significantly increased the proportion of these strains in the population. Surprisingly, there doesn’t seem to be any strain that has developed a resistance to benzathine penicillin G yet, although scientists have been looking for it.</p>
+            
+            <h2>Why is syphilis still here then?</h2>
+            <p>We could also talk about HIV-coinfection, the lack of testing or prevention, social stigma or marginalization, and all of these reasons matter, but by far the most insidious reasons that syphilis is still around are (1) penicillin G is not profitable anymore, (2) some people are allergic to it, (3) it has to be injected and (4) it’s too expensive to check if a strain is resistant to other antibiotics that are more readily available and easier to dispense.</p>
+            <p>So there you are, a new syphilis case comes in, and you know the WHO recommends against azithromycin, and makes it clear that you should use benzathine penicillin G. But maybe your patient is allergic, or maybe you don’t have any penicillin right now. Maybe you can’t be sure the patient will come back every day for the next week to get their injections. Maybe you’re not sure when the infection happened and if doxycycline would be appropriate. Now you have a decision to make: give them the antibiotics you have, that they can take at home and they’re not allergic to, or ask for the strain of <em>Treponema</em> to be sequenced so you can make an informed decision, in time. Every time a doctor has to take that bet, because they don’t have the resources, there is a chance that a patient gets sent home thinking they’ll be cured when they’re not, and the proportion of the resistant strain increases in the population.</p>
+            <p>There are many reasons why syphilis is still here, and why it’s on the increase again. The solutions to all these problems are not all straightforward, but a piece of the puzzle is evidently the production, distribution and administration of penicillin.</p>
+            
+            <!-- References -->
+            <div class="references">
+                <h3>References</h3>
+                <p>“Syphilis.” (21 May 2024). World Health Organization Fact Sheet. Available from: <a href="https://www.who.int/news-room/fact-sheets/detail/syphilis" target="_blank" rel="noopener noreferrer">https://www.who.int/news-room/fact-sheets/detail/syphilis</a></p>
+                <p>Wijesooriya, N. S., et al. (2018). Observed syphilis prevalence in the general adult population: global pooled analyses of 136 million syphilis tests, 1990–2016. <em>The Lancet Global Health</em>, 6(10), e1118-e1129.</p>
+                <p>Tobian, A.A.R. & Stuart, A.P. (2024, August 17). Congenital Syphilis. In: <em>StatPearls [Internet]</em>. StatPearls Publishing. Available from: <a href="https://www.ncbi.nlm.nih.gov/books/NBK537087/" target="_blank" rel="noopener noreferrer">https://www.ncbi.nlm.nih.gov/books/NBK537087/</a></p>
+                <p>“Why Is Syphilis On The Rise?” (12 February 2025). Henry Ford Health Staff. Available from: <a href="https://www.henryford.com/blog/2025/02/why-is-syphilis-on-the-rise" target="_blank" rel="noopener noreferrer">https://www.henryford.com/blog/2025/02/why-is-syphilis-on-the-rise</a></p>
+                <p>“STI cases continue to rise across Europe.” (10 February 2025). European Centre for Disease Prevention and Control (ECDC). Available from: <a href="https://www.ecdc.europa.eu/en/news-events/sti-cases-continue-rise-across-europe" target="_blank" rel="noopener noreferrer">https://www.ecdc.europa.eu/en/news-events/sti-cases-continue-rise-across-europe</a></p>
+                <p>Tuddenham, S., & Ghanem, K. G. (2025). Expanding Horizons in Syphilis Treatment: Challenges, Advances, and Opportunities for Alternative Antibiotics. <em>Current Opinion in Infectious Diseases</em>, 38(1), 22-29.</p>
+            </div>
+        </article>
+
+        <!-- Placeholder for more articles -->
+        <div class="mt-12">
+            <h3 class="text-2xl font-bold text-slate-800 text-center mb-6">More Posts</h3>
+            <div class="text-center">
+                <p class="text-slate-600">More articles coming soon.</p>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-slate-800 text-white mt-16 p-6 text-center">
+        <p>&copy; 2024 Vincent Zvenigorosky. All rights reserved.</p>
+        <p class="text-sm text-slate-400 mt-1">Website designed and built to showcase professional skills.</p>
+    </footer>
+
+</body>
+</html>

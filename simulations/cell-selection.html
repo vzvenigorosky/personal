@@ -1,0 +1,928 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Genetic Cell Simulation</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            overflow: hidden;
+        }
+        input[type="number"]::-webkit-inner-spin-button,
+        input[type="number"]::-webkit-outer-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+        input[type="number"] {
+            -moz-appearance: textfield;
+        }
+        .control-button.active, .obstacle-button.active {
+            background-color: #10b981; /* green-500 */
+            color: white;
+        }
+        #inspector-panel, #optimizer-panel, #preset-panel {
+            transition: opacity 0.3s ease-in-out;
+        }
+        .genome-string {
+            word-break: break-all;
+        }
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+    </style>
+</head>
+<body class="bg-gray-900 text-white flex flex-col items-center justify-center h-screen antialiased">
+
+    <div class="w-full max-w-7xl mx-auto p-4 flex flex-col lg:flex-row gap-4 h-full">
+
+        <!-- Simulation Canvas -->
+        <div class="flex-grow w-full lg:w-3/4 h-2/3 lg:h-full bg-black rounded-2xl shadow-2xl overflow-hidden relative">
+            <canvas id="simulationCanvas"></canvas>
+            <div id="loading" class="absolute inset-0 bg-gray-900 bg-opacity-80 flex items-center justify-center z-20">
+                <p class="text-2xl font-medium">Generating Genomes and Initializing...</p>
+            </div>
+        </div>
+
+        <!-- Controls and Info Panel -->
+        <div class="w-full lg:w-1/4 h-1/3 lg:h-full flex flex-col gap-4">
+            <div class="bg-gray-800 p-6 rounded-2xl shadow-lg flex-grow flex flex-col overflow-y-auto">
+                <h1 class="text-2xl font-bold mb-1 text-green-300">Genetic Controls</h1>
+                <p class="text-sm text-gray-400 mb-6">Set initial genetic and environmental conditions.</p>
+
+                <!-- Population Controls -->
+                <div class="mb-4">
+                    <h2 class="text-lg font-bold mb-3 text-green-300">Population</h2>
+                    <div class="flex justify-between items-center mb-2">
+                        <label for="cellCount" class="font-medium text-gray-300">Initial Count:</label>
+                        <input id="cellCount" type="number" value="100" min="1" max="500" class="bg-gray-700 w-24 text-center rounded-md py-1 border border-gray-600 focus:ring-2 focus:ring-green-500 focus:outline-none">
+                    </div>
+                    <div class="flex justify-between items-center mb-2">
+                        <label for="maxPopulation" class="font-medium text-gray-300">Max Population:</label>
+                        <input id="maxPopulation" type="number" value="400" min="10" max="1000" class="bg-gray-700 w-24 text-center rounded-md py-1 border border-gray-600 focus:ring-2 focus:ring-green-500 focus:outline-none">
+                    </div>
+                    <div class="flex justify-between items-center">
+                        <label for="baseCellSize" class="font-medium text-gray-300">Base Cell Size:</label>
+                        <input id="baseCellSize" type="number" value="10" min="2" max="20" class="bg-gray-700 w-24 text-center rounded-md py-1 border border-gray-600 focus:ring-2 focus:ring-green-500 focus:outline-none">
+                    </div>
+                    <div class="mt-2">
+                        <label for="geneInjection" class="font-medium text-gray-300">Starter Gene Injection:</label>
+                        <input id="geneInjection" type="text" placeholder="e.g., TTAGTGCCC" class="mt-1 w-full bg-gray-700 text-center rounded-md py-1 px-2 border border-gray-600 focus:ring-2 focus:ring-green-500 focus:outline-none">
+                    </div>
+                </div>
+
+                <!-- Obstacle Controls -->
+                <div class="mb-4 pt-4 border-t border-gray-700">
+                    <h2 class="text-lg font-bold mb-3 text-green-300">Obstacles</h2>
+                    <div class="flex justify-between items-center mb-2">
+                        <label for="obstacleSize" class="font-medium text-gray-300">Size:</label>
+                        <input id="obstacleSize" type="number" value="50" min="10" max="200" class="bg-gray-700 w-24 text-center rounded-md py-1 border border-gray-600 focus:ring-2 focus:ring-green-500 focus:outline-none">
+                    </div>
+                    <div class="flex gap-2">
+                        <button id="addSquareButton" class="obstacle-button flex-grow bg-gray-700 hover:bg-gray-600 font-bold py-2 px-4 rounded-lg transition">Add Square</button>
+                        <button id="addTriangleButton" class="obstacle-button flex-grow bg-gray-700 hover:bg-gray-600 font-bold py-2 px-4 rounded-lg transition">Add Triangle</button>
+                    </div>
+                     <button id="clearObstaclesButton" class="w-full mt-2 bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-3 rounded-xl transition">Clear Obstacles</button>
+                </div>
+
+
+                <!-- Rate Controls -->
+                <div class="mb-4 pt-4 border-t border-gray-700">
+                    <h2 class="text-lg font-bold mb-3 text-green-300">Biological Rates</h2>
+                     <div class="mb-3"><label for="consumptionRate" class="block mb-1 text-sm font-medium text-gray-300">Energy Consumption</label><input id="consumptionRate" type="range" min="0" max="10" value="5" class="w-full h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer"><div class="text-center text-xs text-gray-400">Rate: <span id="consumptionRateValue">5</span></div></div>
+                     <div class="mb-3"><label for="absorptionRate" class="block mb-1 text-sm font-medium text-gray-300">Glucose Absorption</label><input id="absorptionRate" type="range" min="0" max="10" value="3" class="w-full h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer"><div class="text-center text-xs text-gray-400">Rate: <span id="absorptionRateValue">3</span></div></div>
+                     <div class="mb-3"><label for="metabolismRate" class="block mb-1 text-sm font-medium text-gray-300">Metabolism</label><input id="metabolismRate" type="range" min="0" max="10" value="3" class="w-full h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer"><div class="text-center text-xs text-gray-400">Rate: <span id="metabolismRateValue">3</span></div></div>
+                     <div class="mb-3"><label for="mineralAbsorptionRate" class="block mb-1 text-sm font-medium text-gray-300">Mineral Absorption</label><input id="mineralAbsorptionRate" type="range" min="0" max="10" value="3" class="w-full h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer"><div class="text-center text-xs text-gray-400">Rate: <span id="mineralAbsorptionRateValue">3</span></div></div>
+                     <div class="mb-3"><label for="photosynthesisRate" class="block mb-1 text-sm font-medium text-gray-300">Photosynthesis</label><input id="photosynthesisRate" type="range" min="0" max="10" value="3" class="w-full h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer"><div class="text-center text-xs text-gray-400">Rate: <span id="photosynthesisRateValue">3</span></div></div>
+                     <div><label for="proteinMetabolismRate" class="block mb-1 text-sm font-medium text-gray-300">Protein Metabolism</label><input id="proteinMetabolismRate" type="range" min="0" max="10" value="7" class="w-full h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer"><div class="text-center text-xs text-gray-400">Rate: <span id="proteinMetabolismRateValue">7</span></div></div>
+                </div>
+               
+                <!-- Environment Controls -->
+                <div class="mb-4 pt-4 border-t border-gray-700">
+                    <h2 class="text-lg font-bold mb-3 text-green-300">Environment</h2>
+                    <div class="mb-3"><label for="temperature" class="block mb-1 text-sm font-medium text-gray-300">Temperature</label><input id="temperature" type="range" min="-20" max="120" value="37" class="w-full h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer"><div class="text-center text-xs text-gray-400">Value: <span id="tempValue">37</span> °C</div></div>
+                    <div class="mb-3"><label for="glucose" class="block mb-1 text-sm font-medium text-gray-300">Glucose Concentration</label><input id="glucose" type="range" min="0" max="100" value="20" class="w-full h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer"><div class="text-center text-xs text-gray-400"><span id="glucoseValue">20</span> mmol/L</div></div>
+                    <div class="mb-3"><label for="minerals" class="block mb-1 text-sm font-medium text-gray-300">Mineral Concentration</label><input id="minerals" type="range" min="0" max="100" value="50" class="w-full h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer"><div class="text-center text-xs text-gray-400"><span id="mineralsValue">50</span></div></div>
+                    <div><label for="illumination" class="block mb-1 text-sm font-medium text-gray-300">Illumination</label><input id="illumination" type="range" min="0" max="100" value="50" class="w-full h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer"><div class="text-center text-xs text-gray-400"><span id="illuminationValue">50</span> %</div></div>
+                </div>
+
+                <div class="mt-auto pt-4 border-t border-gray-700">
+                    <h2 class="text-lg font-bold mb-3 text-green-300">System State</h2>
+                    <div id="infoPanel" class="space-y-2 text-sm text-gray-300"></div>
+                </div>
+               
+                <div id="inspector-panel" class="mt-4 pt-4 border-t border-gray-700 opacity-0 pointer-events-none">
+                     <div class="flex justify-between items-center mb-3"><h2 class="text-lg font-bold text-green-300">Cell Inspector</h2><button id="closeInspector" class="text-gray-400 hover:text-white">&times;</button></div>
+                     <div id="inspectorContent" class="space-y-2 text-sm text-gray-300"></div>
+                </div>
+
+                 <!-- Preset Panel -->
+                <div id="preset-panel" class="mt-4 pt-4 border-t border-gray-700">
+                    <h2 class="text-lg font-bold mb-3 text-green-300">Presets</h2>
+                     <div class="flex gap-2 mb-2">
+                        <input id="presetName" type="text" placeholder="Preset Name" class="flex-grow bg-gray-700 text-center rounded-md py-1 px-2 border border-gray-600 focus:ring-2 focus:ring-green-500 focus:outline-none">
+                        <button id="savePresetButton" class="bg-sky-600 hover:bg-sky-700 text-white font-bold py-1 px-3 rounded-xl transition">Save</button>
+                    </div>
+                     <div class="flex gap-2">
+                        <select id="presetSelect" class="flex-grow bg-gray-700 rounded-md py-1 px-2 border border-gray-600 focus:ring-2 focus:ring-green-500 focus:outline-none">
+                            <!-- Options will be populated by JS -->
+                        </select>
+                         <button id="loadPresetButton" class="bg-sky-600 hover:bg-sky-700 text-white font-bold py-1 px-3 rounded-xl transition">Load</button>
+                         <button id="deletePresetButton" class="bg-red-600 hover:bg-red-700 text-white font-bold py-1 px-3 rounded-xl transition">Del</button>
+                    </div>
+                </div>
+
+                <!-- Optimizer Panel -->
+                <div id="optimizer-panel" class="mt-4 pt-4 border-t border-gray-700">
+                    <h2 class="text-lg font-bold mb-3 text-green-300">Optimizer</h2>
+                     <div class="flex justify-between items-center mb-2">
+                        <label for="optimizationRuns" class="font-medium text-gray-300">Test Runs:</label>
+                        <input id="optimizationRuns" type="number" value="10" min="1" max="1000" class="bg-gray-700 w-24 text-center rounded-md py-1 border border-gray-600 focus:ring-2 focus:ring-green-500 focus:outline-none">
+                    </div>
+                    <button id="optimizeButton" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2 px-3 rounded-xl transition duration-300 shadow-md">Find Optimal Parameters</button>
+                    <div id="optimizerStatus" class="text-center text-sm text-gray-400 mt-2"></div>
+                    <div id="optimizerResults" class="text-xs text-gray-400 mt-2"></div>
+                </div>
+
+            </div>
+             <button id="resetButton" class="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-4 rounded-xl transition duration-300 shadow-md flex-shrink-0">Reset Simulation</button>
+            <div class="flex justify-center items-center gap-2 mt-2 flex-wrap">
+                <button id="pausePlayButton" class="control-button flex-grow bg-gray-700 hover:bg-gray-600 font-bold py-2 px-4 rounded-lg transition">Pause</button>
+                <button data-speed="0.5" class="speed-button control-button flex-grow bg-gray-700 hover:bg-gray-600 font-bold py-2 px-4 rounded-lg transition">0.5x</button>
+                <button data-speed="1" class="speed-button control-button active flex-grow bg-gray-700 hover:bg-gray-600 font-bold py-2 px-4 rounded-lg transition">1x</button>
+                <button data-speed="2" class="speed-button control-button flex-grow bg-gray-700 hover:bg-gray-600 font-bold py-2 px-4 rounded-lg transition">2x</button>
+                <button data-speed="10" class="speed-button control-button flex-grow bg-gray-700 hover:bg-gray-600 font-bold py-2 px-4 rounded-lg transition">10x</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const canvas = document.getElementById('simulationCanvas');
+            const ctx = canvas.getContext('2d');
+            const loadingIndicator = document.getElementById('loading');
+           
+            let parentContainer = canvas.parentElement;
+            let animationFrameId;
+            let time = 0;
+
+            // --- CONFIGURATION ---
+            const NUCLEOTIDES = ['C', 'T', 'A', 'G'];
+            const CODONS = { 
+                ADHERIN: "CTA", GLUCOABSORBIN: "AGA", GLUCOMETABOLIN: "TCG", BUOYANCIN: "CCC", 
+                MINEROABSORBIN: "GAT", PHOTOSYNTHETIN: "GGC", REPRODUCTIN: "TTA", LIVIN: "GTG", 
+                PROTEOABSORBIN: "AAT", PROTEOMETABOLIN: "AAC", KILLIN: "GGG", SHIELDIN: "GGT", 
+                TOXIN: "TGA", DETOXIN: "TCT", LOCKITIN: "CCT", SHARIN: "AGT", 
+                MOVEIN: "CGA", DIRECTIN: "CGT", LUSIN: "GAA", OBSCURIN: "GTT", 
+                FRIENDIN: "TGC", ENEMIN: "TGG", STABILIZIN: "ACA", GLUEIN: "ACC"
+            };
+            const STARTING_ENERGY = 200;
+            const GRAVITY = 0.01;
+            const BUOYANCY_SEEK_STRENGTH = 0.001;
+            const REPRODUCTION_ENERGY_COST = 50;
+            const REPRODUCTION_RATE = 0.002;
+            const BASE_DEATH_PROBABILITY = 0.0005;
+            const LIVIN_EFFECT = 0.0001;
+            const BASE_MUTATION_CHANCE = 0.1;
+            const CROWDING_DISTANCE = 50;
+            const CROWDING_CONSTANT = 0.5;
+            const PROTEIN_ENERGY_VALUE = 100;
+            const COMBAT_RATE = 0.1;
+            const HGT_RATE = 0.001;
+            const RESOURCE_SHARE_RATE = 0.1;
+            const SOCIAL_FORCE_STRENGTH = 0.002;
+
+            // --- Simulation State ---
+            let cells = [], proteins = [], obstacles = [], temperature = 37, glucose = 20, minerals = 50, illumination = 50;
+            let maxPopulation = 400, baseCellSize = 10;
+            let consumptionRate = 0.02, absorptionRate = 0.05, metabolismRate = 0.05;
+            let mineralAbsorptionRate = 0.05, photosynthesisRate = 0.05, proteinMetabolismRate = 0.07;
+            let isPaused = false, simulationSpeed = 1, selectedCell = null;
+            let obstacleToAdd = null; 
+
+            // --- UI Elements ---
+            const allSliders = document.querySelectorAll('input[type="range"]');
+            const allButtons = document.querySelectorAll('button');
+            const cellCountInput = document.getElementById('cellCount');
+            const maxPopulationInput = document.getElementById('maxPopulation');
+            const baseCellSizeInput = document.getElementById('baseCellSize');
+            const tempSlider = document.getElementById('temperature');
+            const glucoseSlider = document.getElementById('glucose');
+            const mineralsSlider = document.getElementById('minerals');
+            const illuminationSlider = document.getElementById('illumination');
+            const consumptionRateSlider = document.getElementById('consumptionRate');
+            const absorptionRateSlider = document.getElementById('absorptionRate');
+            const metabolismRateSlider = document.getElementById('metabolismRate');
+            const mineralAbsorptionRateSlider = document.getElementById('mineralAbsorptionRate');
+            const photosynthesisRateSlider = document.getElementById('photosynthesisRate');
+            const proteinMetabolismRateSlider = document.getElementById('proteinMetabolismRate');
+            const tempValue = document.getElementById('tempValue');
+            const glucoseValue = document.getElementById('glucoseValue');
+            const mineralsValue = document.getElementById('mineralsValue');
+            const illuminationValue = document.getElementById('illuminationValue');
+            const consumptionRateValue = document.getElementById('consumptionRateValue');
+            const absorptionRateValue = document.getElementById('absorptionRateValue');
+            const metabolismRateValue = document.getElementById('metabolismRateValue');
+            const mineralAbsorptionRateValue = document.getElementById('mineralAbsorptionRateValue');
+            const photosynthesisRateValue = document.getElementById('photosynthesisRateValue');
+            const proteinMetabolismRateValue = document.getElementById('proteinMetabolismRateValue');
+            const infoPanel = document.getElementById('infoPanel');
+            const resetButton = document.getElementById('resetButton');
+            const pausePlayButton = document.getElementById('pausePlayButton');
+            const speedButtons = document.querySelectorAll('.speed-button');
+            const inspectorPanel = document.getElementById('inspector-panel');
+            const inspectorContent = document.getElementById('inspectorContent');
+            const closeInspector = document.getElementById('closeInspector');
+            const optimizationRunsInput = document.getElementById('optimizationRuns');
+            const optimizeButton = document.getElementById('optimizeButton');
+            const optimizerStatus = document.getElementById('optimizerStatus');
+            const optimizerResults = document.getElementById('optimizerResults');
+            const presetNameInput = document.getElementById('presetName');
+            const savePresetButton = document.getElementById('savePresetButton');
+            const presetSelect = document.getElementById('presetSelect');
+            const loadPresetButton = document.getElementById('loadPresetButton');
+            const deletePresetButton = document.getElementById('deletePresetButton');
+            const geneInjectionInput = document.getElementById('geneInjection');
+            const obstacleSizeInput = document.getElementById('obstacleSize');
+            const addSquareButton = document.getElementById('addSquareButton');
+            const addTriangleButton = document.getElementById('addTriangleButton');
+            const clearObstaclesButton = document.getElementById('clearObstaclesButton');
+            const obstacleButtons = document.querySelectorAll('.obstacle-button');
+
+            // --- GENETIC FUNCTIONS ---
+
+            function readGenome(genome) {
+                const proteins = { adherins: 0, glucoabsorbins: 0, glucometabolins: 0, buoyancins: 0, mineroabsorbins: 0, photosynthetins: 0, reproductins: 0, livins: 0, proteoabsorbins: 0, proteometabolins: 0, killins: 0, shieldins: 0, toxins: 0, detoxins: 0, lockitins: 0, sharins: 0, moveins: 0, directins: 0, lusins: 0, obscurins: 0, friendins: 0, enemins: 0, stabilizins: 0, glueins: 0 };
+                if (!genome) return proteins;
+                for (const gene of genome) for (let i = 0; i <= gene.length - 3; i += 3) {
+                    const codon = gene.substring(i, i + 3);
+                         if (codon === CODONS.ADHERIN) proteins.adherins++;
+                    else if (codon === CODONS.GLUCOABSORBIN) proteins.glucoabsorbins++;
+                    else if (codon === CODONS.GLUCOMETABOLIN) proteins.glucometabolins++;
+                    else if (codon === CODONS.BUOYANCIN) proteins.buoyancins++;
+                    else if (codon === CODONS.MINEROABSORBIN) proteins.mineroabsorbins++;
+                    else if (codon === CODONS.PHOTOSYNTHETIN) proteins.photosynthetins++;
+                    else if (codon === CODONS.REPRODUCTIN) proteins.reproductins++;
+                    else if (codon === CODONS.LIVIN) proteins.livins++;
+                    else if (codon === CODONS.PROTEOABSORBIN) proteins.proteoabsorbins++;
+                    else if (codon === CODONS.PROTEOMETABOLIN) proteins.proteometabolins++;
+                    else if (codon === CODONS.KILLIN) proteins.killins++;
+                    else if (codon === CODONS.SHIELDIN) proteins.shieldins++;
+                    else if (codon === CODONS.TOXIN) proteins.toxins++;
+                    else if (codon === CODONS.DETOXIN) proteins.detoxins++;
+                    else if (codon === CODONS.LOCKITIN) proteins.lockitins++;
+                    else if (codon === CODONS.SHARIN) proteins.sharins++;
+                    else if (codon === CODONS.MOVEIN) proteins.moveins++;
+                    else if (codon === CODONS.DIRECTIN) proteins.directins++;
+                    else if (codon === CODONS.LUSIN) proteins.lusins++;
+                    else if (codon === CODONS.OBSCURIN) proteins.obscurins++;
+                    else if (codon === CODONS.FRIENDIN) proteins.friendins++;
+                    else if (codon === CODONS.ENEMIN) proteins.enemins++;
+                    else if (codon === CODONS.STABILIZIN) proteins.stabilizins++;
+                    else if (codon === CODONS.GLUEIN) proteins.glueins++;
+                }
+                return proteins;
+            }
+           
+            function mutateGenome(originalGenome, stabilizins) {
+                const mutationChance = BASE_MUTATION_CHANCE / (1 + stabilizins * 0.5);
+                let newGenome = JSON.parse(JSON.stringify(originalGenome));
+                if (Math.random() > mutationChance) return newGenome;
+                const mutationType = Math.random();
+                if (mutationType < 0.4 && newGenome.length > 0) {
+                    const geneIndex = Math.floor(Math.random() * newGenome.length);
+                    if (newGenome[geneIndex].length > 0) {
+                        const nucleotideIndex = Math.floor(Math.random() * newGenome[geneIndex].length);
+                        newGenome[geneIndex] = newGenome[geneIndex].substring(0, nucleotideIndex) + NUCLEOTIDES[Math.floor(Math.random() * 4)] + newGenome[geneIndex].substring(nucleotideIndex + 1);
+                    }
+                } else if (mutationType < 0.6 && newGenome.length > 0) {
+                    const geneIndex = Math.floor(Math.random() * newGenome.length);
+                    const insertionIndex = Math.floor(Math.random() * (newGenome[geneIndex].length + 1));
+                    newGenome[geneIndex] = newGenome[geneIndex].slice(0, insertionIndex) + NUCLEOTIDES[Math.floor(Math.random() * 4)] + newGenome[geneIndex].slice(insertionIndex);
+                } else if (mutationType < 0.8 && newGenome.length > 0) {
+                     const geneIndex = Math.floor(Math.random() * newGenome.length);
+                     if (newGenome[geneIndex].length > 0) {
+                        const deletionIndex = Math.floor(Math.random() * newGenome[geneIndex].length);
+                        newGenome[geneIndex] = newGenome[geneIndex].slice(0, deletionIndex) + newGenome[geneIndex].slice(deletionIndex + 1);
+                     }
+                } else if (mutationType < 0.9 && newGenome.length > 0) {
+                    newGenome.push(newGenome[Math.floor(Math.random() * newGenome.length)]);
+                } else if (newGenome.length > 1) {
+                    newGenome.splice(Math.floor(Math.random() * newGenome.length), 1);
+                }
+                return newGenome;
+            }
+           
+            function getRandomCodon(forceCodon = null) {
+                if (forceCodon) return forceCodon;
+                let codon = '';
+                for (let i = 0; i < 3; i++) codon += NUCLEOTIDES[Math.floor(Math.random() * NUCLEOTIDES.length)];
+                return codon;
+            }
+
+            function generateRandomGenome() {
+                const numGenes = Math.random() < 0.5 ? 1 : (Math.random() < 0.8 ? 2 : 3);
+                const genome = [];
+                const codonTypes = Object.values(CODONS);
+                for (let i = 0; i < numGenes; i++) {
+                    let gene = '';
+                    const numCodons = Math.floor(Math.random() * 8) + 1; 
+                    for (let j = 0; j < numCodons; j++) {
+                        const shouldBeFunctional = Math.random() < 0.35;
+                        const functionalCodon = shouldBeFunctional ? codonTypes[Math.floor(Math.random() * codonTypes.length)] : null;
+                        gene += getRandomCodon(functionalCodon);
+                    }
+                    if (Math.random() < 0.5) gene += NUCLEOTIDES[Math.floor(Math.random() * 4)];
+                    if (Math.random() < 0.5) gene += NUCLEOTIDES[Math.floor(Math.random() * 4)];
+                    genome.push(gene);
+                }
+                return genome;
+            }
+
+            // --- CLASSES ---
+            class Obstacle {
+                constructor(x, y, size, type) {
+                    this.x = x; this.y = y; this.size = size; this.type = type; // 'square' or 'triangle'
+                }
+                draw(ctx) {
+                    ctx.fillStyle = 'rgba(156, 163, 175, 0.5)'; // gray-400
+                    ctx.strokeStyle = 'rgba(209, 213, 219, 0.8)'; // gray-300
+                    ctx.lineWidth = 2;
+                    if (this.type === 'square') {
+                        ctx.beginPath();
+                        ctx.rect(this.x - this.size / 2, this.y - this.size / 2, this.size, this.size);
+                        ctx.fill();
+                        ctx.stroke();
+                    } else if (this.type === 'triangle') {
+                        ctx.beginPath();
+                        ctx.moveTo(this.x, this.y - this.size / 2);
+                        ctx.lineTo(this.x + this.size / 2, this.y + this.size / 2);
+                        ctx.lineTo(this.x - this.size / 2, this.y + this.size / 2);
+                        ctx.closePath();
+                        ctx.fill();
+                        ctx.stroke();
+                    }
+                }
+            }
+            class Protein {
+                constructor(x, y) {
+                    this.x = x; this.y = y; this.radius = 2; this.vx = (Math.random() - 0.5) * 0.5; this.vy = (Math.random() - 0.5) * 0.5; this.id = Math.random(); this.alpha = 1.0;
+                }
+                updatePosition() {
+                    this.vy += GRAVITY * 0.1; 
+                    this.x += this.vx; this.y += this.vy;
+                    this.alpha -= 0.001; 
+                    if (this.x < this.radius || this.x > canvas.width - this.radius) this.vx *= -1;
+                    if (this.y < this.radius || this.y > canvas.height - this.radius) { this.vy *= -0.5; this.y = Math.max(this.radius, Math.min(canvas.height - this.radius, this.y)); }
+                }
+                draw(ctx) {
+                    if(this.alpha <= 0) return;
+                    ctx.beginPath();
+                    ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+                    ctx.fillStyle = `rgba(59, 130, 246, ${this.alpha * 0.8})`;
+                    ctx.fill();
+                }
+            }
+            class Cell {
+                constructor(x, y, genome, initialEnergy = STARTING_ENERGY, parentCell = null) {
+                    this.x = x; this.y = y; this.genome = genome; this.proteins = readGenome(this.genome);
+                    this.baseSize = parentCell ? parentCell.baseSize : baseCellSize;
+                    this.maxBonds = this.proteins.adherins;
+                    this.radius = this.baseSize + this.proteins.adherins;
+                    this.mass = 8 + this.proteins.adherins * 2; this.vx = 0; this.vy = 0; this.bonds = []; this.id = Math.random(); this.isAlive = true; this.energy = initialEnergy; this.storedGlucose = 0; this.storedMinerals = 0; this.storedProteins = 0;
+                    this.totalProteins = Object.values(this.proteins).reduce((a, b) => a + b, 0); this.basalConsumption = 0.1 + (this.totalProteins * consumptionRate * 5); this.energyProduction = 0; this.alpha = 1.0;
+                    this.isGlued = false;
+                    this.calculateColor();
+                }
+                calculateColor() {
+                    const base = [240, 253, 244];
+                    const green = [74, 222, 128];
+                    const red = [248, 113, 113];
+                    const blue = [96, 165, 250];
+
+                    const greenFactor = Math.min(1, this.proteins.photosynthetins / 5.0);
+                    const redFactor = Math.min(1, (this.proteins.killins + this.proteins.toxins) / 5.0);
+                    const blueFactor = Math.min(1, this.proteins.glucoabsorbins / 5.0);
+                   
+                    let r = base[0]; let g = base[1]; let b = base[2];
+                    r = r * (1 - greenFactor) + green[0] * greenFactor;
+                    g = g * (1 - greenFactor) + green[1] * greenFactor;
+                    b = b * (1 - greenFactor) + green[2] * greenFactor;
+                   
+                    r = r * (1 - redFactor) + red[0] * redFactor;
+                    g = g * (1 - redFactor) + red[1] * redFactor;
+                    b = b * (1 - redFactor) + red[2] * redFactor;
+
+                    r = r * (1 - blueFactor) + blue[0] * blueFactor;
+                    g = g * (1 - blueFactor) + blue[1] * blueFactor;
+                    b = b * (1 - blueFactor) + blue[2] * blueFactor;
+
+                    this.color = `rgba(${Math.round(r)},${Math.round(g)},${Math.round(b)},${this.alpha})`;
+                }
+                live(env, newCells, newProteins, crowdingFactor) {
+                    if (!this.isAlive) return;
+                    this.energyProduction = 0;
+                    const efficiency = 1 - crowdingFactor;
+                   
+                    if (this.proteins.mineroabsorbins > 0 && env.minerals > 0) this.storedMinerals += this.proteins.mineroabsorbins * mineralAbsorptionRate * (env.minerals / 100) * efficiency;
+                    const lightHeight = (env.illumination / 100) * canvas.height;
+                    if (this.y < lightHeight && this.proteins.photosynthetins > 0 && this.storedMinerals > 0) { const c = this.proteins.photosynthetins * photosynthesisRate * efficiency; const act = Math.min(c, this.storedMinerals); this.storedMinerals -= act; this.storedGlucose += act; }
+                    if (this.proteins.glucoabsorbins > 0 && env.glucose > 0) this.storedGlucose += this.proteins.glucoabsorbins * absorptionRate * (env.glucose / 100) * efficiency;
+                   
+                    if (this.proteins.glucometabolins > 0 && this.storedGlucose > 0) { const act = Math.min(this.proteins.glucometabolins * metabolismRate, this.storedGlucose); this.storedGlucose -= act; const p = act * 50; this.energyProduction += p; this.energy += p; }
+                    if (this.proteins.proteometabolins > 0 && this.storedProteins > 0) { const act = Math.min(this.proteins.proteometabolins * proteinMetabolismRate, this.storedProteins); this.storedProteins -= act; const p = act * PROTEIN_ENERGY_VALUE; this.energyProduction += p; this.energy += p; }
+
+                    const reproChance = this.proteins.reproductins * REPRODUCTION_RATE;
+                    if (reproChance > 0 && Math.random() < reproChance && this.energy > REPRODUCTION_ENERGY_COST * 2) {
+                        this.energy -= REPRODUCTION_ENERGY_COST;
+                        const daughterEnergy = this.energy / 2; this.energy = daughterEnergy;
+                        const daughterMinerals = this.storedMinerals / 2; this.storedMinerals = daughterMinerals;
+                        const daughterGlucose = this.storedGlucose / 2; this.storedGlucose = daughterGlucose;
+                        const daughterProteins = this.storedProteins / 2; this.storedProteins = daughterProteins;
+                        const daughterGenome = mutateGenome(this.genome, this.proteins.stabilizins);
+                        const angle = Math.random() * Math.PI * 2;
+                        const sX = this.x + Math.cos(angle) * (this.radius + 1);
+                        const sY = this.y + Math.sin(angle) * (this.radius + 1);
+                        const dCell = new Cell(sX, sY, daughterGenome, daughterEnergy, this);
+                        dCell.storedGlucose = daughterGlucose; dCell.storedMinerals = daughterMinerals; dCell.storedProteins = daughterProteins;
+                        newCells.push(dCell);
+                    }
+                   
+                    this.energy -= this.basalConsumption;
+                    const deathP = Math.max(0, BASE_DEATH_PROBABILITY - (this.proteins.livins * LIVIN_EFFECT));
+                    if (this.energy <= 0 || Math.random() < deathP) {
+                        this.isAlive = false; this.energy = 0;
+                        const proteinCount = this.genome.length;
+                        for(let i = 0; i < proteinCount; i++) {
+                            newProteins.push(new Protein(this.x, this.y));
+                        }
+                        [...this.bonds].forEach(bC => this.removeBond(bC));
+                    }
+                }
+                getBondsCount() { return this.bonds.length; }
+                canBond() { return this.isAlive && this.getBondsCount() < this.maxBonds; }
+                isBondedTo(oC) { return this.bonds.some(b => b.id === oC.id); }
+                addBond(oC) { if (this.canBond() && oC.canBond() && !this.isBondedTo(oC)) { this.bonds.push(oC); oC.bonds.push(this); return true; } return false; }
+                removeBond(oC) { let i = this.bonds.findIndex(b => b.id === oC.id); if (i > -1) this.bonds.splice(i, 1); i = oC.bonds.findIndex(b => b.id === this.id); if (i > -1) oC.bonds.splice(i, 1); }
+                
+                // FIXED: Dead cells now fade out even if they are glued.
+                updatePosition() {
+                    // This must run for all cells, alive or dead, to handle fade-out.
+                    if (!this.isAlive && this.alpha > 0) {
+                        this.alpha -= 0.005;
+                    }
+                    
+                    if (this.isGlued) {
+                        this.vx = 0; this.vy = 0;
+                        return; // Stop further movement calculations if glued.
+                    }
+
+                    if (this.isAlive && this.proteins.moveins > 0) {
+                        const moveStrength = 0.05 * this.proteins.moveins;
+                        this.vx += (Math.random() - 0.5) * moveStrength;
+                        this.vy += (Math.random() - 0.5) * moveStrength;
+                    }
+                    
+                    const lightAttraction = this.proteins.lusins - this.proteins.obscurins;
+                    if(lightAttraction !== 0){
+                        const lightHeight = (illumination / 100) * canvas.height;
+                        this.vy += (lightHeight - this.y) * 0.0001 * lightAttraction;
+                    }
+
+                    this.vy += GRAVITY;
+                    if (this.proteins.buoyancins > 0) {
+                        let tY;
+                        if (this.proteins.buoyancins === 1) tY = canvas.height * 0.75;
+                        else if (this.proteins.buoyancins === 2) tY = canvas.height * 0.50;
+                        else if (this.proteins.buoyancins === 3) tY = canvas.height * 0.25;
+                        else tY = this.radius;
+                        this.vy += (tY - this.y) * BUOYANCY_SEEK_STRENGTH;
+                    }
+                    this.x += this.vx; this.y += this.vy;
+
+                    // Wall collision and gluein
+                    if (this.x < this.radius) { 
+                        if (this.isAlive && this.proteins.glueins > 0) { this.isGlued = true; this.x = this.radius; } else { this.vx *= -0.9; this.x = this.radius; }
+                    } else if (this.x > canvas.width - this.radius) {
+                         if (this.isAlive && this.proteins.glueins > 0) { this.isGlued = true; this.x = canvas.width - this.radius; } else { this.vx *= -0.9; this.x = canvas.width - this.radius;}
+                    }
+                    if (this.y < this.radius) {
+                        if (this.isAlive && this.proteins.glueins > 0) { this.isGlued = true; this.y = this.radius; } else { this.vy *= -0.5; this.y = this.radius; }
+                    } else if (this.y > canvas.height - this.radius) {
+                        if (this.isAlive && this.proteins.glueins > 0) { this.isGlued = true; this.y = canvas.height - this.radius; } else { this.vy *= -0.5; this.y = canvas.height - this.radius; }
+                    }
+                    
+                    const decayFactor = Math.max(0.9, 0.99 - (this.proteins.directins * 0.01));
+                    this.vx *= decayFactor; 
+                    this.vy *= decayFactor;
+                }
+                draw(ctx, time) {
+                    if (this.alpha <= 0) return;
+                    this.calculateColor();
+                    ctx.beginPath();
+                    const wallThickness = 1 + this.proteins.shieldins * 0.5 + this.proteins.detoxins * 0.5;
+                    if (wallThickness > 1) {
+                         ctx.strokeStyle = `rgba(200, 200, 200, ${this.alpha})`;
+                         ctx.lineWidth = wallThickness;
+                         ctx.arc(this.x, this.y, this.radius - wallThickness / 2, 0, Math.PI * 2);
+                         ctx.stroke();
+                    }
+                    ctx.beginPath(); ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2); ctx.fillStyle = this.color; ctx.shadowColor = this.isAlive ? this.color : 'transparent'; ctx.shadowBlur = 6; ctx.fill(); ctx.shadowBlur = 0;
+                    if (selectedCell && selectedCell.id === this.id) { ctx.strokeStyle = `rgba(52, 211, 153, ${this.alpha})`; ctx.lineWidth = 3; ctx.stroke(); }
+                    if (this.isGlued) {
+                         ctx.fillStyle = `rgba(255, 255, 0, 0.5 * ${this.alpha})`;
+                         ctx.beginPath(); ctx.arc(this.x, this.y, this.radius + 2, 0, 2 * Math.PI); ctx.fill();
+                    }
+                    if (this.isAlive) {
+                        const aB = this.maxBonds - this.getBondsCount();
+                        if (aB > 0) {
+                            const sR = this.radius + 5; const bA = time * 0.0015;
+                            ctx.fillStyle = `rgba(134, 239, 172, ${this.alpha})`;
+                            for (let i = 0; i < aB; i++) {
+                                const ang = bA + (i * (2 * Math.PI) / aB);
+                                const ox = this.x + sR * Math.cos(ang); const oy = this.y + sR * Math.sin(ang);
+                                ctx.beginPath(); ctx.arc(ox, oy, 3, 0, 2 * Math.PI); ctx.fill();
+                            }
+                        }
+                    }
+                }
+            }
+
+            // --- SIMULATION LOGIC ---
+            function init() {
+                resizeCanvas(); 
+                cells = []; 
+                proteins = []; 
+                obstacles = [];
+                const count = parseInt(cellCountInput.value) || 75;
+                const geneInjection = geneInjectionInput.value.trim().toUpperCase().replace(/[^ACGT]/g, '');
+
+                glucose = parseFloat(glucoseSlider.value);
+                minerals = parseFloat(mineralsSlider.value);
+               
+                for (let i = 0; i < count; i++) {
+                    const genome = generateRandomGenome();
+                    if(geneInjection.length > 0) {
+                        genome.push(geneInjection);
+                    }
+                    cells.push(new Cell(Math.random() * (canvas.width - 40) + 20, Math.random() * (canvas.height - 40) + 20, genome));
+                }
+                updateAllSlidersUI();
+                loadingIndicator.style.display = 'none';
+                if (animationFrameId) cancelAnimationFrame(animationFrameId);
+                isPaused = false; pausePlayButton.textContent = "Pause"; gameLoop();
+            }
+
+            function updateAllSlidersUI() {
+                tempSlider.value = temperature; tempValue.textContent = temperature;
+                glucoseSlider.value = glucose; glucoseValue.textContent = Math.round(glucose);
+                mineralsSlider.value = minerals; mineralsValue.textContent = Math.round(minerals);
+                illuminationSlider.value = illumination; illuminationValue.textContent = illumination;
+                consumptionRateSlider.value = consumptionRate * 500; consumptionRateValue.textContent = Math.round(consumptionRate * 500);
+                absorptionRateSlider.value = absorptionRate * 100; absorptionRateValue.textContent = Math.round(absorptionRate * 100);
+                metabolismRateSlider.value = metabolismRate * 100; metabolismRateValue.textContent = Math.round(metabolismRate * 100);
+                mineralAbsorptionRateSlider.value = mineralAbsorptionRate * 100; mineralAbsorptionRateValue.textContent = Math.round(mineralAbsorptionRate * 100);
+                photosynthesisRateSlider.value = photosynthesisRate * 100; photosynthesisRateValue.textContent = Math.round(photosynthesisRate * 100);
+                proteinMetabolismRateSlider.value = proteinMetabolismRate * 100; proteinMetabolismRateValue.textContent = Math.round(proteinMetabolismRate * 100);
+            }
+           
+            function update() {
+                const env = { glucose: glucose, minerals: minerals, illumination };
+                const newC = []; const newP = [];
+                const allC = [...cells];
+                const cF = allC.map(c => { if (!c.isAlive) return 0; let nC = 0; for (const o of allC) { if (c.id === o.id || !o.isAlive) continue; if (Math.sqrt(Math.pow(c.x - o.x, 2) + Math.pow(c.y - o.y, 2)) < CROWDING_DISTANCE) nC++; } return 1 - (1 / (1 + Math.exp(-CROWDING_CONSTANT * (nC - 5)))); });
+                allC.forEach((c, i) => { c.live(env, newC, newP, cF[i]); });
+                if (cells.length < maxPopulation) cells.push(...newC);
+                proteins.push(...newP);
+                handleResourceSharing(); handleInteractions(); handleHGT();
+                proteins.forEach(p => p.updatePosition());
+                handleProteinAbsorption();
+                handleObstacleCollisions();
+                cells.forEach(c => c.updatePosition());
+                cells = cells.filter(c => c.alpha > 0);
+                proteins = proteins.filter(p => p.alpha > 0);
+               
+                if(cells.length > maxPopulation) {
+                    const toRemove = cells.length - maxPopulation;
+                    for(let i=0; i < toRemove; i++) {
+                        const randomIndex = Math.floor(Math.random() * cells.length);
+                        cells.splice(randomIndex, 1);
+                    }
+                }
+
+                // FIXED: Auto-reset now triggers correctly when all cells die.
+                if (cells.length > 0 && cells.filter(c => c.isAlive).length === 0) {
+                    // Start a new simulation if all cells have died off
+                    setTimeout(init, 2000); // Wait 2 seconds before resetting
+                } else if (cells.length === 0) {
+                    init();
+                }
+            }
+           
+            function draw() {
+                time = performance.now(); ctx.clearRect(0, 0, canvas.width, canvas.height); drawEnvironment(ctx);
+                obstacles.forEach(o => o.draw(ctx));
+                proteins.forEach(p => p.draw(ctx));
+                ctx.strokeStyle = 'rgba(107, 114, 128, 0.7)'; ctx.lineWidth = 2; const dB = new Set();
+                cells.forEach(c => { if (!c.isAlive) return; c.bonds.forEach(bC => { const b1 = `${c.id}-${bC.id}`, b2 = `${bC.id}-${c.id}`; const lockitin = c.proteins.lockitins + bC.proteins.lockitins; ctx.lineWidth = 2 + lockitin; if (!dB.has(b1) && !dB.has(b2)) { ctx.beginPath(); ctx.moveTo(c.x, c.y); ctx.lineTo(bC.x, bC.y); ctx.stroke(); dB.add(b1); } }); });
+                cells.forEach(c => c.draw(ctx, time));
+                updateInfoPanel(); if (selectedCell) updateInspectorPanel();
+            }
+
+            function gameLoop() {
+                if (!isPaused) for (let i = 0; i < simulationSpeed; i++) update();
+                draw(); animationFrameId = requestAnimationFrame(gameLoop);
+            }
+
+            function handleResourceSharing() {
+                const pP = new Set(); for (const cA of cells) { if (!cA.isAlive) continue; for (const cB of cA.bonds) { if (!cB.isAlive) continue; const pI = [cA.id, cB.id].sort().join('-'); if (pP.has(pI)) continue; const shareFactor = RESOURCE_SHARE_RATE * (1 + cA.proteins.sharins + cB.proteins.sharins); const tG = cA.storedGlucose + cB.storedGlucose; const aG = tG / 2; cA.storedGlucose += (aG - cA.storedGlucose) * shareFactor; cB.storedGlucose += (aG - cB.storedGlucose) * shareFactor; const tM = cA.storedMinerals + cB.storedMinerals; const aM = tM / 2; cA.storedMinerals += (aM - cA.storedMinerals) * shareFactor; cB.storedMinerals += (aM - cB.storedMinerals) * shareFactor; const tP = cA.storedProteins + cB.storedProteins; const aP = tP / 2; cA.storedProteins += (aP - cA.storedProteins) * shareFactor; cB.storedProteins += (aP - cB.storedProteins) * shareFactor; pP.add(pI); } }
+            }
+           
+            function handleHGT() {
+                for(const cellA of cells) {
+                    if(!cellA.isAlive || cellA.genome.length === 0) continue;
+                    for (const cellB of cellA.bonds) {
+                        if(!cellB.isAlive) continue;
+                        const hgtChance = HGT_RATE * (1 + cellA.proteins.sharins + cellB.proteins.sharins);
+                        if (Math.random() < hgtChance) {
+                            const geneToTransfer = cellA.genome[Math.floor(Math.random() * cellA.genome.length)];
+                            if(cellB.genome.length < 10) { 
+                                cellB.genome.push(geneToTransfer);
+                            }
+                        }
+                    }
+                }
+            }
+
+            function handleProteinAbsorption() {
+                for (let i = proteins.length - 1; i >= 0; i--) {
+                    const p = proteins[i];
+                    for (const c of cells) {
+                        if (!c.isAlive || c.proteins.proteoabsorbins === 0) continue;
+                        const dist = Math.sqrt(Math.pow(p.x - c.x, 2) + Math.pow(p.y - c.y, 2));
+                        if (dist < c.radius + p.radius) {
+                            c.storedProteins++;
+                            proteins.splice(i, 1);
+                            break;
+                        }
+                    }
+                }
+            }
+
+            function handleInteractions() {
+                const newProteins = [];
+                for (let i = 0; i < cells.length; i++) {
+                    const cA = cells[i]; if (!cA.isAlive) continue;
+                    for (let j = i + 1; j < cells.length; j++) {
+                        const cB = cells[j]; if (!cB.isAlive) continue;
+                        const dx = cB.x - cA.x, dy = cB.y - cA.y, dist = Math.sqrt(dx * dx + dy * dy), tR = cA.radius + cB.radius;
+                        
+                        const socialForce = (cA.proteins.friendins - cA.proteins.enemins) + (cB.proteins.friendins - cB.proteins.enemins);
+                        if (socialForce !== 0 && dist < CROWDING_DISTANCE * 2) {
+                            const force = (dist - CROWDING_DISTANCE) * SOCIAL_FORCE_STRENGTH * socialForce;
+                            const angle = Math.atan2(dy, dx);
+                            cA.vx += Math.cos(angle) * force / cA.mass;
+                            cA.vy += Math.sin(angle) * force / cA.mass;
+                            cB.vx -= Math.cos(angle) * force / cB.mass;
+                            cB.vy -= Math.sin(angle) * force / cB.mass;
+                        }
+
+                        if (dist < tR) {
+                            const a = Math.atan2(dy, dx), f = (tR - dist) * 0.6; cA.vx -= Math.cos(a) * f / cA.mass; cA.vy -= Math.sin(a) * f / cA.mass; cB.vx += Math.cos(a) * f / cB.mass; cB.vy += Math.sin(a) * f / cB.mass;
+                           
+                            if (Math.random() < COMBAT_RATE) {
+                                if (cA.proteins.killins > 0 && Math.random() < (cA.proteins.killins - cB.proteins.shieldins) * 0.1) cB.isAlive = false;
+                                if (cA.proteins.toxins > 0 && Math.random() < (cA.proteins.toxins - cB.proteins.detoxins) * 0.1) cB.isAlive = false;
+                                if (cB.proteins.killins > 0 && Math.random() < (cB.proteins.killins - cA.proteins.shieldins) * 0.1) cA.isAlive = false;
+                                if (cB.proteins.toxins > 0 && Math.random() < (cB.proteins.toxins - cA.proteins.detoxins) * 0.1) cA.isAlive = false;
+                            }
+                        }
+                        if (cA.isBondedTo(cB)) {
+                            const lockFactor = 1 / (1 + cA.proteins.lockitins + cB.proteins.lockitins);
+                            if(Math.random() < 0.001 * lockFactor) { cA.removeBond(cB); continue; }
+                            const id = tR * 0.9, s = dist - id, sF = s * 0.02, a = Math.atan2(dy, dx); cA.vx += Math.cos(a) * sF / cA.mass; cA.vy += Math.sin(a) * sF / cA.mass; cB.vx -= Math.cos(a) * sF / cB.mass; cB.vy -= Math.sin(a) * sF / cB.mass;
+                        } else if (dist < tR * 1.3) {
+                            if (cA.canBond() && cB.canBond() && Math.random() < 0.1) cA.addBond(cB);
+                        }
+                    }
+                }
+            }
+
+            function handleObstacleCollisions() {
+                for (const cell of cells) {
+                    if (!cell.isAlive) continue;
+                    for (const obs of obstacles) {
+                        if (obs.type === 'square') {
+                            const closestX = Math.max(obs.x - obs.size / 2, Math.min(cell.x, obs.x + obs.size / 2));
+                            const closestY = Math.max(obs.y - obs.size / 2, Math.min(cell.y, obs.y + obs.size / 2));
+                            const dx = cell.x - closestX;
+                            const dy = cell.y - closestY;
+                            const distance = Math.sqrt(dx * dx + dy * dy);
+
+                            if (distance < cell.radius) {
+                                if (cell.proteins.glueins > 0) { cell.isGlued = true; } 
+                                else {
+                                    const overlap = cell.radius - distance;
+                                    const angle = Math.atan2(dy, dx);
+                                    cell.x += Math.cos(angle) * overlap;
+                                    cell.y += Math.sin(angle) * overlap;
+                                    const dot = cell.vx * dx + cell.vy * dy;
+                                    if(dot<0){ 
+                                        const normal = {x: dx / distance, y: dy / distance};
+                                        const impulse = -(1 + 0.5) * (cell.vx * normal.x + cell.vy * normal.y);
+                                        cell.vx += impulse * normal.x;
+                                        cell.vy += impulse * normal.y;
+                                    }
+                                }
+                            }
+                        } else if (obs.type === 'triangle') {
+                            const closestX = Math.max(obs.x - obs.size / 2, Math.min(cell.x, obs.x + obs.size / 2));
+                            const closestY = Math.max(obs.y - obs.size / 2, Math.min(cell.y, obs.y + obs.size / 2));
+                            const dx = cell.x - closestX;
+                            const dy = cell.y - closestY;
+                            const distance = Math.sqrt(dx * dx + dy * dy);
+                             if (distance < cell.radius) {
+                                if (cell.proteins.glueins > 0) { cell.isGlued = true; } 
+                                else {
+                                    const overlap = cell.radius - distance;
+                                    const angle = Math.atan2(dy, dx);
+                                    cell.x += Math.cos(angle) * overlap;
+                                    cell.y += Math.sin(angle) * overlap;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+           
+            function drawEnvironment(ctx) {
+                if (illumination > 0) { const lH = (illumination / 100) * canvas.height; const grad = ctx.createLinearGradient(0, 0, 0, lH); grad.addColorStop(0, 'rgba(253, 224, 71, 0.15)'); grad.addColorStop(1, 'rgba(253, 224, 71, 0)'); ctx.fillStyle = grad; ctx.fillRect(0, 0, canvas.width, canvas.height); }
+            }
+           
+            function updateInfoPanel() {
+                const aC = cells.filter(c => c.isAlive).length;
+                infoPanel.innerHTML = `<div class="flex justify-between"><span>Alive Cells:</span><span class="font-mono">${aC}</span></div><div class="flex justify-between"><span>Free Proteins:</span><span class="font-mono">${proteins.length}</span></div>`;
+            }
+
+            function updateInspectorPanel() {
+                if (!selectedCell) { inspectorPanel.classList.add('opacity-0', 'pointer-events-none'); return; }
+                inspectorPanel.classList.remove('opacity-0', 'pointer-events-none');
+                const p = selectedCell.proteins;
+                const gH = selectedCell.genome.map((g, i) => `<div class="text-gray-400"><span class="font-semibold text-gray-300">Gene ${i + 1}:</span><span class="genome-string">${g || '(Empty)'}</span></div>`).join('');
+                inspectorContent.innerHTML = `<div class="flex justify-between"><span>Status:</span><span class="font-mono">${selectedCell.isAlive ? 'Alive' : 'Dead'}</span></div><div class="flex justify-between"><span>Energy:</span><span class="font-mono">${Math.round(selectedCell.energy)}</span></div><div class="flex justify-between"><span>Consumption:</span><span class="font-mono text-red-400">-${selectedCell.basalConsumption.toFixed(2)}</span></div><div class="flex justify-between"><span>Production:</span><span class="font-mono text-green-400">+${selectedCell.energyProduction.toFixed(2)}</span></div>
+                <div class="grid grid-cols-2 gap-x-4 mt-2">
+                <div><span>Adherins:</span><span class="font-mono float-right">${p.adherins}</span></div><div><span>GlucoAbsorb:</span><span class="font-mono float-right">${p.glucoabsorbins}</span></div>
+                <div><span>GlucoMetabol:</span><span class="font-mono float-right">${p.glucometabolins}</span></div><div><span>Buoyancins:</span><span class="font-mono float-right">${p.buoyancins}</span></div>
+                <div><span>MineroAbsorb:</span><span class="font-mono float-right">${p.mineroabsorbins}</span></div><div><span>Photosynth:</span><span class="font-mono float-right">${p.photosynthetins}</span></div>
+                <div><span>Reproductin:</span><span class="font-mono float-right">${p.reproductins}</span></div><div><span>Livin:</span><span class="font-mono float-right">${p.livins}</span></div>
+                <div><span>ProteoAbsorb:</span><span class="font-mono float-right">${p.proteoabsorbins}</span></div><div><span>ProteoMetabol:</span><span class="font-mono float-right">${p.proteometabolins}</span></div>
+                <div><span>Killin:</span><span class="font-mono float-right">${p.killins}</span></div><div><span>Shieldin:</span><span class="font-mono float-right">${p.shieldins}</span></div>
+                <div><span>Toxin:</span><span class="font-mono float-right">${p.toxins}</span></div><div><span>Detoxin:</span><span class="font-mono float-right">${p.detoxins}</span></div>
+                <div><span>Lockitin:</span><span class="font-mono float-right">${p.lockitins}</span></div><div><span>Sharin:</span><span class="font-mono float-right">${p.sharins}</span></div>
+                <div><span>Movein:</span><span class="font-mono float-right">${p.moveins}</span></div><div><span>Directin:</span><span class="font-mono float-right">${p.directins}</span></div>
+                <div><span>Lusin:</span><span class="font-mono float-right">${p.lusins}</span></div><div><span>Obscurin:</span><span class="font-mono float-right">${p.obscurins}</span></div>
+                <div><span>Friendin:</span><span class="font-mono float-right">${p.friendins}</span></div><div><span>Enemin:</span><span class="font-mono float-right">${p.enemins}</span></div>
+                <div><span>Stabilizin:</span><span class="font-mono float-right">${p.stabilizins}</span></div><div><span>Gluein:</span><span class="font-mono float-right">${p.glueins}</span></div>
+                </div>
+                <div class="flex justify-between mt-1"><span>Stored Minerals:</span><span class="font-mono">${selectedCell.storedMinerals.toFixed(1)}</span></div><div class="flex justify-between mt-1"><span>Stored Glucose:</span><span class="font-mono">${selectedCell.storedGlucose.toFixed(1)}</span></div><div class="flex justify-between mt-1"><span>Stored Proteins:</span><span class="font-mono">${selectedCell.storedProteins}</span></div><div class="font-semibold mt-2">Genome:</div>${gH}`;
+            }
+           
+            // FIXED: Can now inspect dead cells.
+            function handleCanvasClick(event) {
+                const rect = canvas.getBoundingClientRect(); const x = event.clientX - rect.left, y = event.clientY - rect.top;
+                if (obstacleToAdd) {
+                    const size = parseInt(obstacleSizeInput.value);
+                    obstacles.push(new Obstacle(x, y, size, obstacleToAdd));
+                    obstacleToAdd = null; 
+                    obstacleButtons.forEach(btn => btn.classList.remove('active'));
+                    return;
+                }
+                
+                let fC = null;
+                for (let i = cells.length - 1; i >= 0; i--) { 
+                    const c = cells[i]; 
+                    if (Math.sqrt(Math.pow(x - c.x, 2) + Math.pow(y - c.y, 2)) < c.radius) { 
+                        fC = c; 
+                        break; 
+                    } 
+                }
+                selectedCell = fC; updateInspectorPanel();
+            }
+
+            // --- OPTIMIZER ---
+            async function startOptimization() {
+                // Not yet implemented for new features
+            }
+
+            function runHeadlessSimulation(params) {
+                 // Not yet implemented for new features
+            }
+
+            // --- PRESET & PARAMETER FUNCTIONS ---
+            function applyBestParams(params) {
+                glucoseSlider.value = params.glucose; mineralsSlider.value = params.minerals; illuminationSlider.value = params.illumination; consumptionRateSlider.value = params.consumptionRate; absorptionRateSlider.value = params.absorptionRate; metabolismRateSlider.value = params.metabolismRate; mineralAbsorptionRateSlider.value = params.mineralAbsorptionRate; photosynthesisRateSlider.value = params.photosynthesisRate; proteinMetabolismRateSlider.value = params.proteinMetabolismRate;
+                allSliders.forEach(slider => slider.dispatchEvent(new Event('input', { bubbles: true })));
+                setTimeout(init, 100);
+            }
+
+            function savePreset() {
+                const name = presetNameInput.value.trim();
+                if (!name) { alert("Please enter a preset name."); return; }
+                const presets = JSON.parse(localStorage.getItem('simulationPresets')) || {};
+                presets[name] = {
+                    glucose: glucoseSlider.value, minerals: mineralsSlider.value, illumination: illuminationSlider.value, temperature: tempSlider.value,
+                    consumptionRate: consumptionRateSlider.value, absorptionRate: absorptionRateSlider.value, metabolismRate: metabolismRateSlider.value,
+                    mineralAbsorptionRate: mineralAbsorptionRateSlider.value, photosynthesisRate: photosynthesisRateSlider.value,
+                    proteinMetabolismRate: proteinMetabolismRateSlider.value,
+                    obstacles: obstacles 
+                };
+                localStorage.setItem('simulationPresets', JSON.stringify(presets));
+                populatePresets();
+                presetNameInput.value = '';
+            }
+
+            function populatePresets() {
+                const presets = JSON.parse(localStorage.getItem('simulationPresets')) || {};
+                presetSelect.innerHTML = '';
+                for (const name in presets) {
+                    const option = document.createElement('option');
+                    option.value = name;
+                    option.textContent = name;
+                    presetSelect.appendChild(option);
+                }
+            }
+
+            function loadPreset() {
+                const name = presetSelect.value;
+                if (!name) return;
+                const presets = JSON.parse(localStorage.getItem('simulationPresets')) || {};
+                const params = presets[name];
+                if (params) {
+                    glucoseSlider.value = params.glucose; mineralsSlider.value = params.minerals; illuminationSlider.value = params.illumination; tempSlider.value = params.temperature;
+                    consumptionRateSlider.value = params.consumptionRate; absorptionRateSlider.value = params.absorptionRate; metabolismRateSlider.value = params.metabolismRate;
+                    mineralAbsorptionRateSlider.value = params.mineralAbsorptionRate; photosynthesisRateSlider.value = params.photosynthesisRate;
+                    proteinMetabolismRateSlider.value = params.proteinMetabolismRate || 7;
+                    
+                    // Re-create obstacle objects from saved data
+                    if (params.obstacles) {
+                        obstacles = params.obstacles.map(o => new Obstacle(o.x, o.y, o.size, o.type));
+                    } else {
+                        obstacles = [];
+                    }
+
+                    allSliders.forEach(slider => slider.dispatchEvent(new Event('input', { bubbles: true })));
+                    
+                    // We need to reset the simulation with the new parameters, but not re-randomize cells
+                    // This is a simplified approach for now. A full reset is triggered.
+                    setTimeout(init, 100);
+                }
+            }
+           
+            function deletePreset() {
+                 const name = presetSelect.value;
+                if (!name) return;
+                const presets = JSON.parse(localStorage.getItem('simulationPresets')) || {};
+                delete presets[name];
+                localStorage.setItem('simulationPresets', JSON.stringify(presets));
+                populatePresets();
+            }
+
+            // --- EVENT LISTENERS ---
+            function resizeCanvas() { canvas.width = parentContainer.clientWidth; canvas.height = parentContainer.clientHeight; }
+            window.addEventListener('resize', resizeCanvas);
+            canvas.addEventListener('click', handleCanvasClick);
+            closeInspector.addEventListener('click', () => { selectedCell = null; updateInspectorPanel(); });
+            tempSlider.addEventListener('input', (e) => { temperature = parseInt(e.target.value); tempValue.textContent = temperature; });
+            glucoseSlider.addEventListener('input', (e) => { glucose = parseInt(e.target.value);});
+            mineralsSlider.addEventListener('input', (e) => { minerals = parseInt(e.target.value);});
+            illuminationSlider.addEventListener('input', (e) => { illumination = parseInt(e.target.value); illuminationValue.textContent = illumination; });
+            consumptionRateSlider.addEventListener('input', (e) => { consumptionRate = parseInt(e.target.value) / 500; consumptionRateValue.textContent = e.target.value;});
+            absorptionRateSlider.addEventListener('input', (e) => { absorptionRate = parseInt(e.target.value) / 100; absorptionRateValue.textContent = e.target.value;});
+            metabolismRateSlider.addEventListener('input', (e) => { metabolismRate = parseInt(e.target.value) / 100; metabolismRateValue.textContent = e.target.value;});
+            mineralAbsorptionRateSlider.addEventListener('input', (e) => { mineralAbsorptionRate = parseInt(e.target.value) / 100; mineralAbsorptionRateValue.textContent = e.target.value;});
+            photosynthesisRateSlider.addEventListener('input', (e) => { photosynthesisRate = parseInt(e.target.value) / 100; photosynthesisRateValue.textContent = e.target.value;});
+            proteinMetabolismRateSlider.addEventListener('input', (e) => { proteinMetabolismRate = parseInt(e.target.value) / 100; proteinMetabolismRateValue.textContent = e.target.value; });
+            pausePlayButton.addEventListener('click', () => { isPaused = !isPaused; pausePlayButton.textContent = isPaused ? "Play" : "Pause"; });
+            speedButtons.forEach(button => button.addEventListener('click', () => { speedButtons.forEach(btn => btn.classList.remove('active')); button.classList.add('active'); simulationSpeed = parseFloat(button.dataset.speed); }));
+            resetButton.addEventListener('click', () => { loadingIndicator.style.display = 'flex'; setTimeout(init, 10); });
+            optimizeButton.addEventListener('click', startOptimization);
+            savePresetButton.addEventListener('click', savePreset);
+            loadPresetButton.addEventListener('click', loadPreset);
+            deletePresetButton.addEventListener('click', deletePreset);
+            baseCellSizeInput.addEventListener('input', (e) => { baseCellSize = parseInt(e.target.value); });
+            maxPopulationInput.addEventListener('input', (e) => { maxPopulation = parseInt(e.target.value); });
+            addSquareButton.addEventListener('click', () => { obstacleToAdd = 'square'; obstacleButtons.forEach(btn => btn.classList.remove('active')); addSquareButton.classList.add('active');});
+            addTriangleButton.addEventListener('click', () => { obstacleToAdd = 'triangle'; obstacleButtons.forEach(btn => btn.classList.remove('active')); addTriangleButton.classList.add('active');});
+            clearObstaclesButton.addEventListener('click', () => { obstacles = []; });
+           
+            populatePresets();
+            init();
+        });
+    </script>
+</body>
+</html>

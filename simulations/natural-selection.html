@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Natural Selection: A Simple Example</title>
+    <style>
+        /* Basic styling for the page */
+        body {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #1a1a2e; /* Very dark navy blue */
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            color: #f0f8ff;
+            text-align: center;
+        }
+        /* Styling for the canvas element */
+        canvas {
+            background-color: #d2b48c; /* Tan / Sandy color */
+            border-radius: 12px;
+            box-shadow: 0 8px 16px rgba(0,0,0,0.2);
+            max-width: 95%;
+            max-height: 75%;
+            aspect-ratio: 16 / 9;
+        }
+        /* Container for all text content */
+        .content-container {
+            margin-top: 20px;
+            max-width: 800px;
+            width: 90%;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+        /* Styling for the stage description text */
+        #stage-description {
+            font-size: 1.2em;
+            font-weight: bold;
+        }
+        /* Styling for the explanation text */
+        #explanation {
+            font-size: 1em;
+            line-height: 1.5;
+            color: #bdc8f5;
+        }
+        /* Styling for the reset button */
+        #resetButton {
+            margin-top: 10px;
+            padding: 10px 20px;
+            font-size: 1em;
+            font-weight: bold;
+            color: #fff;
+            background-color: #c026d3;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background-color 0.2s ease;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        }
+        #resetButton:hover {
+            background-color: #a21caf;
+        }
+    </style>
+</head>
+<body>
+
+    <canvas id="speciationCanvas"></canvas>
+    
+    <div class="content-container">
+        <div id="stage-description">Stage 1: A population with genetic variation.</div>
+        <div id="explanation">
+            <b>Natural selection</b> favors traits that help an organism survive. In this environment, some fish are camouflaged, while others stand out. A predator will more easily spot and eat the fish that don't blend in.
+        </div>
+        <button id="resetButton">Reset Animation</button>
+    </div>
+
+<script>
+    const canvas = document.getElementById('speciationCanvas');
+    const ctx = canvas.getContext('2d');
+    const stageDescription = document.getElementById('stage-description');
+    const resetButton = document.getElementById('resetButton');
+
+    // --- Configuration Constants ---
+    const FISH_COUNT = 80; 
+    const PREDATOR_COLOR = { r: 107, g: 114, b: 128 };
+    // Updated color to be slightly darker than the background for visibility
+    const CAMOUFLAGED_COLOR = { r: 188, g: 158, b: 114 }; 
+    const VISIBLE_COLOR = { r: 220, g: 20, b: 60 }; // Crimson Red
+
+    let fishPopulation = [];
+    let predator;
+    let animationStage = 1;
+    let frameCount = 0;
+    let animationFrameId;
+
+    // --- General Purpose Fish Class ---
+    class Fish {
+        constructor(x, y, color, morph) {
+            this.x = x; this.y = y; this.color = { ...color }; this.morph = morph;
+            this.vx = (Math.random() - 0.5) * 1.5; this.vy = (Math.random() - 0.5) * 1.5;
+            this.tailPhase = Math.random() * Math.PI * 2; this.tailOscillationSpeed = 0.2 + Math.random() * 0.1;
+            this.tailAmplitude = 4; this.bodyLength = 15; this.headLength = 8; this.tailLength = 12;
+            this.totalLength = this.headLength + this.bodyLength + this.tailLength; this.tailWidth = 14; this.bodyWidth = 8;
+        }
+        draw() {
+            const colorString = `rgb(${this.color.r}, ${this.color.g}, ${this.color.b})`;
+            const angle = Math.atan2(this.vy, this.vx);
+            ctx.save();
+            ctx.translate(this.x, this.y);
+            ctx.rotate(angle);
+            ctx.fillStyle = colorString;
+            ctx.fillRect(-this.bodyLength/2, -this.bodyWidth/2, this.bodyLength, this.bodyWidth);
+            ctx.beginPath();
+            ctx.moveTo(this.bodyLength/2, -this.bodyWidth/2); ctx.lineTo(this.bodyLength/2, this.bodyWidth/2); ctx.lineTo(this.bodyLength/2 + this.headLength, 0);
+            ctx.closePath(); ctx.fill();
+            const tailOscillationOffset = Math.sin(this.tailPhase) * this.tailAmplitude;
+            ctx.beginPath();
+            ctx.moveTo(-this.bodyLength/2, 0); ctx.lineTo(-this.bodyLength/2 - this.tailLength, -this.tailWidth/2 + tailOscillationOffset); ctx.lineTo(-this.bodyLength/2 - this.tailLength, this.tailWidth/2 + tailOscillationOffset);
+            ctx.closePath(); ctx.fill();
+            ctx.restore();
+        }
+        move() {
+            this.tailPhase += this.tailOscillationSpeed; this.x += this.vx; this.y += this.vy;
+            const halfLen = this.totalLength / 2;
+            if (this.x < halfLen || this.x > canvas.width - halfLen) { this.vx *= -1; this.x = Math.max(halfLen, Math.min(canvas.width - halfLen, this.x)); }
+            if (this.y < halfLen || this.y > canvas.height - halfLen) { this.vy *= -1; this.y = Math.max(halfLen, Math.min(canvas.height - halfLen, this.y)); }
+        }
+    }
+
+    class Predator extends Fish {
+        constructor(x, y) {
+            super(x, y, PREDATOR_COLOR, 'predator');
+            this.bodyLength = 60; this.headLength = 30; this.tailLength = 45;
+            this.bodyWidth = 24; this.tailWidth = 30;
+            this.totalLength = this.headLength + this.bodyLength + this.tailLength;
+            this.vx = 2.5; this.vy = 0; this.tailAmplitude = 10;
+        }
+        // Simplified move for a single pass
+        move() {
+            this.tailPhase += this.tailOscillationSpeed;
+            this.x += this.vx; // Just moves right
+        }
+    }
+
+    function resizeCanvas() {
+        const parent = canvas.parentElement;
+        const availableWidth = parent.clientWidth * 0.95;
+        const availableHeight = parent.clientHeight * 0.75;
+        const parentRatio = availableWidth / availableHeight;
+        const canvasRatio = 16 / 9;
+        if (parentRatio > canvasRatio) {
+            canvas.height = availableHeight; canvas.width = canvas.height * canvasRatio;
+        } else {
+            canvas.width = availableWidth; canvas.height = canvas.width / canvasRatio;
+        }
+        resetAnimation();
+    }
+
+    function resetAnimation() {
+        if (animationFrameId) cancelAnimationFrame(animationFrameId);
+        frameCount = 0; animationStage = 1;
+        stageDescription.textContent = 'Stage 1: A population with genetic variation.';
+        fishPopulation = [];
+        for (let i = 0; i < FISH_COUNT; i++) {
+            const x = Math.random() * canvas.width; const y = Math.random() * canvas.height;
+            const isCamouflaged = i < FISH_COUNT / 2;
+            const color = isCamouflaged ? CAMOUFLAGED_COLOR : VISIBLE_COLOR;
+            const morph = isCamouflaged ? 'camouflaged' : 'visible';
+            fishPopulation.push(new Fish(x, y, color, morph));
+        }
+        // Start predator well off-screen to the left
+        predator = new Predator(-200, canvas.height / 2);
+        animate();
+    }
+    
+    function animate() {
+        animationFrameId = requestAnimationFrame(animate);
+        frameCount++;
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+        // Simplified stage progression for a single event
+        if (frameCount > 200 && animationStage === 1) {
+            animationStage = 2; 
+            stageDescription.textContent = 'Stage 2: A predator passes through, hunting for food.';
+        }
+        // Once the predator has fully passed, the animation ends
+        if (predator.x > canvas.width + predator.totalLength && animationStage === 2) {
+            animationStage = 3; 
+            stageDescription.textContent = 'Stage 3: Only the camouflaged fish remain.';
+        }
+
+        for (let i = fishPopulation.length - 1; i >= 0; i--) {
+            const fish = fishPopulation[i];
+            fish.move();
+            fish.draw();
+
+            // Predation happens only in stage 2
+            if (animationStage === 2) {
+                // Predator eats fish that are behind its head
+                if (fish.x < predator.x && fish.morph === 'visible') {
+                    fishPopulation.splice(i, 1);
+                }
+            }
+        }
+
+        // Predator moves and is drawn only in stage 2
+        if (animationStage === 2) {
+            predator.move();
+            predator.draw();
+        }
+    }
+
+    window.addEventListener('resize', resizeCanvas);
+    resetButton.addEventListener('click', resetAnimation);
+    resizeCanvas();
+</script>
+
+</body>
+</html>

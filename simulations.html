@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simulations | Vincent Zvenigorosky</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f8fafc; /* slate-50 */
+            color: #334155; /* slate-700 */
+        }
+        .header-gradient {
+            background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%);
+        }
+        .card {
+            background-color: white;
+            border-radius: 0.75rem;
+            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+            transition: transform 0.3s, box-shadow 0.3s;
+            display: flex;
+            flex-direction: column;
+        }
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -2px rgb(0 0 0 / 0.1);
+        }
+        .card-content {
+            flex-grow: 1;
+        }
+    </style>
+</head>
+<body class="antialiased">
+
+    <!-- Header -->
+    <header class="header-gradient text-white p-6 md:p-12 shadow-lg">
+        <div class="max-w-4xl mx-auto text-center">
+            <h1 class="text-4xl md:text-5xl font-bold">Vincent Zvenigorosky</h1>
+            <p class="mt-2 text-xl md:text-2xl opacity-90">Molecular Biologist & Bioinformatician</p>
+             <div class="mt-4 flex justify-center items-center space-x-6 text-sm">
+                <div>
+                    <i class="fas fa-envelope mr-2"></i>
+                    <a href="mailto:vincent.zvenigorosky@gmail.com" class="hover:underline">vincent.zvenigorosky@gmail.com</a>
+                </div>
+                <div>
+                    <i class="fas fa-phone mr-2"></i>
+                    +33(0)6.72.48.66.80
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Navigation -->
+    <nav class="bg-white sticky top-0 z-10 shadow-md">
+        <div class="max-w-7xl mx-auto">
+             <!-- Note: These links would ideally point to the main index.html page -->
+            <div class="flex justify-center space-x-4 md:space-x-8 py-3">
+                <a href="index.html#about" class="text-gray-600 hover:text-blue-600 font-medium">About</a>
+                <a href="index.html#research" class="text-gray-600 hover:text-blue-600 font-medium">Research</a>
+                <a href="index.html#teaching" class="text-gray-600 hover:text-blue-600 font-medium">Teaching</a>
+                <a href="index.html#simulations" class="text-blue-600 font-bold">Simulations</a>
+                <a href="publications.html" class="text-gray-600 hover:text-blue-600 font-medium">Publications</a>
+            </div>
+        </div>
+    </nav>
+
+
+    <!-- Main Content -->
+    <main class="max-w-7xl mx-auto p-4 md:p-8">
+
+        <section id="simulations-gallery">
+            <h2 class="text-3xl font-bold text-slate-800 border-b-2 border-blue-600 pb-2 mb-8">Interactive Simulations</h2>
+            <p class="mb-8 text-lg text-slate-600">This collection features a range of interactive models and simulations I have programmed. They cover various topics in biology, from molecular processes to population dynamics and evolutionary concepts. Click on any simulation to explore the standalone model.</p>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                
+                <!-- Card: Protein Folding -->
+                <div class="card p-6">
+                    <div class="card-content">
+                        <div class="flex items-center mb-4">
+                            <div class="bg-blue-100 text-blue-600 rounded-full p-3 mr-4">
+                                <i class="fas fa-dna fa-lg"></i>
+                            </div>
+                            <h3 class="text-xl font-bold text-slate-800">Protein Folding</h3>
+                        </div>
+                        <p class="text-slate-600 mb-4">Observe how a protein chain folds into a stable, low-energy conformation based on the properties of its amino acids.</p>
+                    </div>
+                    <a href="simulations/protein-folding.html" class="mt-4 inline-block text-center w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-md shadow-sm transition">Launch Simulation</a>
+                </div>
+
+                <!-- Card: Natural Selection -->
+                <div class="card p-6">
+                     <div class="card-content">
+                        <div class="flex items-center mb-4">
+                            <div class="bg-green-100 text-green-600 rounded-full p-3 mr-4">
+                                <i class="fas fa-leaf fa-lg"></i>
+                            </div>
+                            <h3 class="text-xl font-bold text-slate-800">Natural Selection</h3>
+                        </div>
+                        <p class="text-slate-600 mb-4">An interactive model showing how organisms with traits better suited to their environment tend to survive and reproduce.</p>
+                    </div>
+                    <a href="simulations/natural-selection.html" class="mt-4 inline-block text-center w-full bg-green-600 hover:bg-green-700 text-white font-semibold py-2 px-4 rounded-md shadow-sm transition">Launch Simulation</a>
+                </div>
+
+                <!-- Card: Predation -->
+                <div class="card p-6">
+                    <div class="card-content">
+                        <div class="flex items-center mb-4">
+                            <div class="bg-red-100 text-red-600 rounded-full p-3 mr-4">
+                                <i class="fas fa-paw fa-lg"></i>
+                            </div>
+                            <h3 class="text-xl font-bold text-slate-800">Predator-Prey Dynamics</h3>
+                        </div>
+                        <p class="text-slate-600 mb-4">A simulation of the Lotka-Volterra equations, showing the population cycles of predator and prey species in an ecosystem.</p>
+                    </div>
+                    <a href="simulations/predation.html" class="mt-4 inline-block text-center w-full bg-red-600 hover:bg-red-700 text-white font-semibold py-2 px-4 rounded-md shadow-sm transition">Launch Simulation</a>
+                </div>
+
+                 <!-- Card: Allopatric Speciation -->
+                <div class="card p-6">
+                    <div class="card-content">
+                        <div class="flex items-center mb-4">
+                            <div class="bg-yellow-100 text-yellow-600 rounded-full p-3 mr-4">
+                                <i class="fas fa-mountain-sun fa-lg"></i>
+                            </div>
+                            <h3 class="text-xl font-bold text-slate-800">Allopatric Speciation</h3>
+                        </div>
+                        <p class="text-slate-600 mb-4">Model how a species can evolve into two distinct species when separated by a geographic barrier.</p>
+                    </div>
+                    <a href="simulations/allopatric-speciation.html" class="mt-4 inline-block text-center w-full bg-yellow-500 hover:bg-yellow-600 text-white font-semibold py-2 px-4 rounded-md shadow-sm transition">Launch Simulation</a>
+                </div>
+                
+                <!-- Card: Sympatric Speciation -->
+                <div class="card p-6">
+                    <div class="card-content">
+                        <div class="flex items-center mb-4">
+                            <div class="bg-purple-100 text-purple-600 rounded-full p-3 mr-4">
+                                <i class="fas fa-users-viewfinder fa-lg"></i>
+                            </div>
+                            <h3 class="text-xl font-bold text-slate-800">Sympatric Speciation</h3>
+                        </div>
+                        <p class="text-slate-600 mb-4">Explore how new species can arise from a single ancestral species within the same geographic area.</p>
+                    </div>
+                    <a href="simulations/sympatric-speciation.html" class="mt-4 inline-block text-center w-full bg-purple-600 hover:bg-purple-700 text-white font-semibold py-2 px-4 rounded-md shadow-sm transition">Launch Simulation</a>
+                </div>
+
+                <!-- Card: Parapatric Speciation -->
+                <div class="card p-6">
+                    <div class="card-content">
+                        <div class="flex items-center mb-4">
+                             <div class="bg-indigo-100 text-indigo-600 rounded-full p-3 mr-4">
+                                <i class="fas fa-draw-polygon fa-lg"></i>
+                            </div>
+                            <h3 class="text-xl font-bold text-slate-800">Parapatric Speciation</h3>
+                        </div>
+                        <p class="text-slate-600 mb-4">A simulation of speciation where populations are not completely isolated but evolve reproductive isolation along a continuous range.</p>
+                    </div>
+                    <a href="simulations/parapatric-speciation.html" class="mt-4 inline-block text-center w-full bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-2 px-4 rounded-md shadow-sm transition">Launch Simulation</a>
+                </div>
+                
+                 <!-- Card: Peripatric Speciation -->
+                <div class="card p-6">
+                     <div class="card-content">
+                        <div class="flex items-center mb-4">
+                             <div class="bg-pink-100 text-pink-600 rounded-full p-3 mr-4">
+                                <i class="fas fa-location-dot fa-lg"></i>
+                            </div>
+                            <h3 class="text-xl font-bold text-slate-800">Peripatric Speciation</h3>
+                        </div>
+                        <p class="text-slate-600 mb-4">Watch how a new species is formed when a small, isolated peripheral population diverges from the main group.</p>
+                    </div>
+                    <a href="simulations/peripatric-speciation.html" class="mt-4 inline-block text-center w-full bg-pink-600 hover:bg-pink-700 text-white font-semibold py-2 px-4 rounded-md shadow-sm transition">Launch Simulation</a>
+                </div>
+
+                <!-- Card: Ant Colony -->
+                <div class="card p-6">
+                     <div class="card-content">
+                        <div class="flex items-center mb-4">
+                             <div class="bg-amber-100 text-amber-600 rounded-full p-3 mr-4">
+                                <i class="fas fa-bug fa-lg"></i>
+                            </div>
+                            <h3 class="text-xl font-bold text-slate-800">Ant Colony Optimization</h3>
+                        </div>
+                        <p class="text-slate-600 mb-4">An algorithm visualization where digital ants find the shortest path, demonstrating emergent behavior and swarm intelligence.</p>
+                    </div>
+                    <a href="simulations/ant-colony.html" class="mt-4 inline-block text-center w-full bg-amber-600 hover:bg-amber-700 text-white font-semibold py-2 px-4 rounded-md shadow-sm transition">Launch Simulation</a>
+                </div>
+
+                <!-- Card: Cell Selection -->
+                 <div class="card p-6">
+                     <div class="card-content">
+                        <div class="flex items-center mb-4">
+                             <div class="bg-sky-100 text-sky-600 rounded-full p-3 mr-4">
+                                <i class="fas fa-cells fa-lg"></i>
+                            </div>
+                            <h3 class="text-xl font-bold text-slate-800">Cell Selection</h3>
+                        </div>
+                        <p class="text-slate-600 mb-4">A model demonstrating how selective pressures can favor certain cell types in a mixed population over generations.</p>
+                    </div>
+                    <a href="simulations/cell-selection.html" class="mt-4 inline-block text-center w-full bg-sky-600 hover:bg-sky-700 text-white font-semibold py-2 px-4 rounded-md shadow-sm transition">Launch Simulation</a>
+                </div>
+                
+                 <!-- Card: Atomic Reactions -->
+                <div class="card p-6">
+                     <div class="card-content">
+                        <div class="flex items-center mb-4">
+                             <div class="bg-slate-200 text-slate-600 rounded-full p-3 mr-4">
+                                <i class="fas fa-atom fa-lg"></i>
+                            </div>
+                            <h3 class="text-xl font-bold text-slate-800">Atomic Reactions</h3>
+                        </div>
+                        <p class="text-slate-600 mb-4">A simulation of basic atomic bonding. Adjust temperature and pressure to see how simple molecules like water and CO2 form.</p>
+                    </div>
+                    <a href="simulations/atomic-reactions.html" class="mt-4 inline-block text-center w-full bg-slate-600 hover:bg-slate-700 text-white font-semibold py-2 px-4 rounded-md shadow-sm transition">Launch Simulation</a>
+                </div>
+
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-slate-800 text-white mt-16 p-6 text-center">
+        <p>&copy; 2024 Vincent Zvenigorosky. All rights reserved.</p>
+        <p class="text-sm text-slate-400 mt-1">Website designed and built to showcase professional skills.</p>
+    </footer>
+
+</body>
+</html>

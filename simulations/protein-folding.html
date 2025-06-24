@@ -1,0 +1,2061 @@
+<!DOCTYPE html>
+
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Multi-Protein Enzyme Simulator</title>
+
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script> 
+
+    <style>
+
+        body {
+
+            font-family: 'Inter', sans-serif;
+
+            display: flex;
+
+            flex-direction: column;
+
+            align-items: center;
+
+            min-height: 100vh;
+
+            background-color: #f3f4f6; 
+
+            margin: 0;
+
+            padding: 1rem;
+
+        }
+
+        .container {
+
+            background-color: white;
+
+            padding: 1.5rem; 
+
+            border-radius: 0.5rem; 
+
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06); 
+
+            width: 100%;
+
+            max-width: 950px; 
+
+            margin-bottom: 2rem; 
+
+        }
+
+        .main-content-area {
+
+            display: flex;
+
+            flex-direction: column; 
+
+            gap: 1.5rem; 
+
+            align-items: center; 
+
+            width: 100%;
+
+        }
+
+        .simulation-area {
+
+            flex-shrink: 0;
+
+            width: 100%;
+
+            max-width: 660px; 
+
+            margin: auto; 
+
+        }
+
+        .graph-area {
+
+            flex-grow: 1;
+
+            width: 100%;
+
+            max-width: 900px; 
+
+            height: 400px; 
+
+            margin: auto; 
+
+        }
+
+        #simulationCanvas {
+
+            border: 1px solid #d1d5db; 
+
+            border-radius: 0.375rem; 
+
+            background-color: #f9fafb; 
+
+            display: block; 
+
+            margin: 0 auto; 
+
+        }
+
+        .info-text {
+
+            font-size: 0.875rem; 
+
+            color: #4b5563; 
+
+            margin-top: 0.25rem; 
+
+            margin-bottom: 0.75rem;
+
+        }
+
+        .status-box {
+
+            margin-top: 1rem;
+
+            padding: 0.75rem;
+
+            background-color: #e5e7eb; 
+
+            border-radius: 0.375rem; 
+
+            font-size: 0.875rem; 
+
+            display: grid; 
+
+            grid-template-columns: repeat(auto-fit, minmax(100px, 1fr)); 
+
+            gap: 0.5rem;
+
+        }
+
+        .status-item {
+
+             white-space: nowrap; 
+
+        }
+
+        .message-overlay { 
+
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+
+            background-color: rgba(0,0,0,0.5); display: flex;
+
+            justify-content: center; align-items: center; z-index: 1000;
+
+        }
+
+        .message-box {
+
+            background-color: white; padding: 20px; border-radius: 8px;
+
+            box-shadow: 0 0 15px rgba(0,0,0,0.2); text-align: center; max-width: 300px;
+
+        }
+
+        .message-box button { margin-top: 15px; padding: 8px 15px; }
+
+        .button-grid {
+
+            display: grid;
+
+            grid-template-columns: 1fr 1fr; 
+
+            gap: 0.5rem;
+
+            margin-bottom: 1rem;
+
+        }
+
+        .input-grid {
+
+            display: grid;
+
+            grid-template-columns: 1fr 1fr; 
+
+            gap: 1rem;
+
+            margin-bottom: 1rem;
+
+        }
+
+        .sequence-input-group {
+
+            display: grid;
+
+            grid-template-columns: 3fr 1fr; 
+
+            gap: 0.5rem;
+
+            align-items: end;
+
+        }
+
+        .scoreboard-container {
+
+            width: 100%;
+
+            max-width: 950px; 
+
+            margin-top: 1rem;
+
+        }
+
+    </style>
+
+</head>
+
+<body class="bg-gray-100">
+
+
+
+    <div class="container">
+
+        <h1 class="text-2xl font-bold text-center text-gray-700 mb-6">Multi-Protein Enzyme Simulator</h1>
+
+
+
+        <div class="input-grid">
+
+            <div class="sequence-input-group">
+
+                <div>
+
+                    <label for="sequence1Input" class="block text-sm font-medium text-gray-700 mb-1">Protein Sequence 1 (G,O,F,R,L):</label>
+
+                    <input type="text" id="sequence1Input" value="GROG" 
+
+                           class="block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+
+                </div>
+
+                <div>
+
+                    <label for="count1Input" class="block text-sm font-medium text-gray-700 mb-1">Count 1:</label>
+
+                    <input type="number" id="count1Input" value="1" min="0"
+
+                           class="block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+
+                </div>
+
+            </div>
+
+            <div class="sequence-input-group">
+
+                 <div>
+
+                    <label for="sequence2Input" class="block text-sm font-medium text-gray-700 mb-1">Protein Sequence 2 (Optional):</label>
+
+                    <input type="text" id="sequence2Input" value="GLOG" 
+
+                           class="block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+
+                </div>
+
+                <div>
+
+                    <label for="count2Input" class="block text-sm font-medium text-gray-700 mb-1">Count 2:</label>
+
+                    <input type="number" id="count2Input" value="1" min="0"
+
+                           class="block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+
+                </div>
+
+            </div>
+
+        </div>
+
+         <div class="input-grid">
+
+            <div>
+
+                <label for="initialCInput" class="block text-sm font-medium text-gray-700 mb-1">Initial Substrate (C) Count:</label>
+
+                <input type="number" id="initialCInput" value="10" min="0"
+
+                       class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+
+            </div>
+
+            <div>
+
+                <label for="targetSInput" class="block text-sm font-medium text-gray-700 mb-1">Target Product (S) Count:</label>
+
+                <input type="number" id="targetSInput" value="5" min="0"
+
+                       class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+
+            </div>
+
+        </div>
+
+         <p class="info-text mb-4">G:Glue (sticks if cardinally adjacent & >2 AAs apart in sequence). R/L:Reactive (active if in a G-G loop). F:Fixed. Chain bonds can be diagonal. Reaction linearizes protein to random spot. Inactive proteins respawn.</p>
+
+
+
+
+
+        <div class="button-grid">
+
+            <button id="foldButton"
+
+                    class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-2 px-4 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition duration-150 ease-in-out">
+
+                Start Folding
+
+            </button>
+
+            <button id="resetButton"
+
+                    class="w-full bg-gray-500 hover:bg-gray-600 text-white font-semibold py-2 px-4 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-400 transition duration-150 ease-in-out">
+
+                Reset
+
+            </button>
+
+        </div>
+
+        
+
+        <div class="status-box">
+
+            <div class="status-item">Score: <span id="scoreDisplay" class="font-semibold">0</span></div>
+
+            <div class="status-item">Best: <span id="bestScoreDisplay" class="font-semibold">0</span></div>
+
+            <div class="status-item">Stuck: <span id="stuckPairsDisplay" class="font-semibold">0</span></div>
+
+            <div class="status-item">Substrate (C): <span id="substrateCountDisplay" class="font-semibold">0</span></div>
+
+            <div class="status-item">Product (S): <span id="productCountDisplay" class="font-semibold">0</span></div>
+
+            <div class="status-item">Steps: <span id="stepsDisplay" class="font-semibold">0</span></div>
+
+            <div class="status-item">Frames: <span id="framesDisplay" class="font-semibold">0</span></div>
+
+        </div>
+
+        
+
+        <div class="main-content-area mt-4">
+
+            <div class="simulation-area">
+
+                <canvas id="simulationCanvas" width="660" height="450"></canvas>
+
+                <p class="info-text text-center mt-2">G(Glue):SkyBlue, O:Grey, F(Fixed):Black, R:Purple(Active:Orange), L:Cyan(Active:Lime). C:Yellow, S:Green.</p>
+
+            </div>
+
+        </div>
+
+    </div>
+
+     <div class="graph-area"> <h3 class="text-lg font-semibold text-center text-gray-700 mb-2">Concentration Over Time</h3>
+
+        <div style="position: relative; height:400px;"> 
+
+             <canvas id="concentrationChartCanvas"></canvas>
+
+        </div>
+
+    </div>
+
+
+
+
+
+    <div class="scoreboard-container">
+
+        <h2 class="text-xl font-semibold text-gray-700 mb-2 text-center">Scoreboard</h2>
+
+        <div class="overflow-x-auto bg-white rounded-md shadow">
+
+            <table id="scoreboardTable" class="min-w-full divide-y divide-gray-200">
+
+                <thead class="bg-gray-50">
+
+                    <tr>
+
+                        <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Protein Setup</th>
+
+                        <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Initial C</th>
+
+                        <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Target S</th>
+
+                        <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">S Created</th>
+
+                        <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Frames</th>
+
+                        <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Goal Met</th>
+
+                    </tr>
+
+                </thead>
+
+                <tbody class="bg-white divide-y divide-gray-200" id="scoreboardBody">
+
+                    </tbody>
+
+            </table>
+
+        </div>
+
+    </div>
+
+
+
+    <script>
+
+        // --- DOM Elements ---
+
+        const canvas = document.getElementById('simulationCanvas');
+
+        const ctx = canvas.getContext('2d');
+
+        const sequence1Input = document.getElementById('sequence1Input');
+
+        const count1Input = document.getElementById('count1Input');
+
+        const sequence2Input = document.getElementById('sequence2Input');
+
+        const count2Input = document.getElementById('count2Input');
+
+        const initialCInput = document.getElementById('initialCInput');
+
+        const targetSInput = document.getElementById('targetSInput');
+
+        const foldButton = document.getElementById('foldButton');
+
+        const resetButton = document.getElementById('resetButton');
+
+        const scoreDisplay = document.getElementById('scoreDisplay');
+
+        const bestScoreDisplay = document.getElementById('bestScoreDisplay');
+
+        const stuckPairsDisplay = document.getElementById('stuckPairsDisplay');
+
+        const substrateCountDisplay = document.getElementById('substrateCountDisplay');
+
+        const productCountDisplay = document.getElementById('productCountDisplay');
+
+        const stepsDisplay = document.getElementById('stepsDisplay');
+
+        const framesDisplay = document.getElementById('framesDisplay'); 
+
+        const scoreboardBody = document.getElementById('scoreboardBody');
+
+        const concentrationChartCanvas = document.getElementById('concentrationChartCanvas');
+
+
+
+        // --- Simulation Parameters ---
+
+        const GRID_SIZE = 20; 
+
+        const AA_RADIUS = GRID_SIZE / 2 - 2;
+
+        const COMPOUND_RADIUS = GRID_SIZE / 3;
+
+        const STICKY_BOND_SCORE = 10; 
+
+        const MAX_ATTEMPTS_PER_FRAME = 50; 
+
+        const EXPLORATION_CHANCE = 0.05; 
+
+        const DEFAULT_INITIAL_C_COUNT = 10; 
+
+        const DEFAULT_TARGET_S_COUNT = 5;  
+
+        const REACTION_DISTANCE = GRID_SIZE * 0.8; 
+
+        const COMPOUND_MAX_SPEED = 2;
+
+        const R_L_LOOP_MIN_SEPARATION = 1; 
+
+        const G_STICK_MIN_SEPARATION = 2; // Gs must be separated by >2 AAs (i.e., G-X-X-G can stick)
+
+        const INACTIVITY_THRESHOLD_FRAMES = 300; 
+
+
+
+
+
+        // --- Simulation State ---
+
+        let proteinInstances = []; 
+
+        let bestProteinConfigurations = []; 
+
+        
+
+        let compoundsC = []; 
+
+        let compoundsS = []; 
+
+        let nextCompoundId = 0;
+
+        let nextProteinInstanceId = 0;
+
+
+
+        let totalCurrentScore = 0; 
+
+        let totalHighestScoreAchieved = 0; 
+
+        let simulationRunning = false;
+
+        let animationFrameId = null;
+
+        let totalStepsTaken = 0; 
+
+        let totalFramesProcessed = 0; 
+
+        let lastInitializedProteinSetup = ""; 
+
+        let scoreboardData = [];
+
+        let activeRunParams = { initialC: DEFAULT_INITIAL_C_COUNT, targetS: DEFAULT_TARGET_S_COUNT, proteinSetupString: "" };
+
+
+
+        // Chart specific state
+
+        let concentrationChart;
+
+        let frameHistory = [];
+
+        let substrateHistory = [];
+
+        let productHistory = [];
+
+
+
+
+
+        // --- Custom Message Box ---
+
+        function showMessage(message) {
+
+            const existingOverlay = document.querySelector('.message-overlay');
+
+            if (existingOverlay) existingOverlay.remove();
+
+            const overlay = document.createElement('div');
+
+            overlay.className = 'message-overlay';
+
+            const box = document.createElement('div');
+
+            box.className = 'message-box';
+
+            const text = document.createElement('p');
+
+            text.textContent = message;
+
+            const closeButton = document.createElement('button');
+
+            closeButton.textContent = 'OK';
+
+            closeButton.className = 'bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-2 px-4 rounded-md';
+
+            closeButton.onclick = () => overlay.remove();
+
+            box.appendChild(text);
+
+            box.appendChild(closeButton);
+
+            overlay.appendChild(box);
+
+            document.body.appendChild(overlay);
+
+        }
+
+
+
+        // --- Helper: Deep Copy ---
+
+        function deepCopy(original) { 
+
+            return JSON.parse(JSON.stringify(original));
+
+        }
+
+        
+
+        // --- Helper: Linearize Protein Chain ---
+
+        function linearizeProteinChain(proteinChain, forceNewX, forceNewY) {
+
+            if (!proteinChain || proteinChain.aas.length === 0) return;
+
+            
+
+            const startY = (forceNewY !== undefined) ? forceNewY : proteinChain.yBaseline;
+
+            proteinChain.yBaseline = startY; 
+
+
+
+            const chainTotalWidth = proteinChain.aas.length * GRID_SIZE;
+
+            let startX;
+
+            if (forceNewX !== undefined) {
+
+                startX = forceNewX;
+
+            } else {
+
+                startX = (canvas.width - chainTotalWidth) / 2 + GRID_SIZE / 2;
+
+            }
+
+            startX = Math.max(AA_RADIUS, Math.min(canvas.width - chainTotalWidth + AA_RADIUS - GRID_SIZE, startX));
+
+
+
+
+
+            proteinChain.aas.forEach((aa, i) => {
+
+                if (aa) { 
+
+                    aa.x = startX + i * GRID_SIZE;
+
+                    aa.y = startY; 
+
+                    if (aa.type === 'R' || aa.type === 'L') aa.isActive = false; 
+
+                }
+
+            });
+
+        }
+
+
+
+
+
+        // --- Initialization ---
+
+        function initializeChain() {
+
+            const seq1 = sequence1Input.value.toUpperCase();
+
+            const count1 = parseInt(count1Input.value) || 0;
+
+            const seq2 = sequence2Input.value.toUpperCase();
+
+            const count2 = parseInt(count2Input.value) || 0;
+
+
+
+            let proteinSetupString = "";
+
+            if (count1 > 0 && seq1) proteinSetupString += `S1(${seq1}):${count1};`;
+
+            if (count2 > 0 && seq2) proteinSetupString += `S2(${seq2}):${count2};`;
+
+            if (!proteinSetupString && (count1 > 0 || count2 > 0) ) { 
+
+                 proteinSetupString = "InvalidSeqSpecified";
+
+            } else if (!proteinSetupString) {
+
+                 proteinSetupString = "NoProteins";
+
+            }
+
+
+
+
+
+            if ((count1 > 0 && (seq1.length < 3 || !/^[GOFRL]+$/.test(seq1))) || 
+
+                (count2 > 0 && (seq2.length < 3 || !/^[GOFRL]+$/.test(seq2))) ||
+
+                (count1 === 0 && count2 === 0)) {
+
+                showMessage("Invalid sequence or count. Ensure sequences use G,O,F,R,L (min length 3) and at least one protein has count > 0.");
+
+                lastInitializedProteinSetup = ""; 
+
+                proteinInstances = []; compoundsC = []; compoundsS = [];
+
+                return false;
+
+            }
+
+
+
+            proteinInstances = [];
+
+            compoundsC = [];
+
+            compoundsS = [];
+
+            nextCompoundId = 0;
+
+            nextProteinInstanceId = 0;
+
+            
+
+            activeRunParams.initialC = parseInt(initialCInput.value) || DEFAULT_INITIAL_C_COUNT;
+
+            activeRunParams.targetS = parseInt(targetSInput.value) || DEFAULT_TARGET_S_COUNT;
+
+            activeRunParams.proteinSetupString = proteinSetupString;
+
+            initialCInput.value = activeRunParams.initialC; 
+
+            targetSInput.value = activeRunParams.targetS;
+
+
+
+            const createInstances = (sequenceStr, numInstances, typeId) => {
+
+                for (let i = 0; i < numInstances; i++) {
+
+                    const chainLength = sequenceStr.length;
+
+                    const randomStartX = Math.random() * Math.max(0, (canvas.width - (chainLength * GRID_SIZE) - AA_RADIUS*2)) + AA_RADIUS;
+
+                    const randomStartY = Math.random() * Math.max(0, (canvas.height - GRID_SIZE*2)) + GRID_SIZE; 
+
+
+
+                    const newProtein = {
+
+                        instanceId: nextProteinInstanceId++,
+
+                        typeId: typeId, 
+
+                        sequenceString: sequenceStr,
+
+                        aas: [],
+
+                        stuckPairs: [],
+
+                        yBaseline: randomStartY, 
+
+                        currentScore: 0,
+
+                        framesSinceLastActivity: 0 
+
+                    };
+
+                    for (let j = 0; j < sequenceStr.length; j++) {
+
+                        newProtein.aas.push({ type: sequenceStr[j], id: j, isActive: false }); 
+
+                    }
+
+                    linearizeProteinChain(newProtein, randomStartX, randomStartY); 
+
+                    proteinInstances.push(newProtein);
+
+                }
+
+            };
+
+
+
+            if (count1 > 0 && seq1) createInstances(seq1, count1, 0);
+
+            if (count2 > 0 && seq2) createInstances(seq2, count2, 1);
+
+            
+
+            for (let i = 0; i < activeRunParams.initialC; i++) {
+
+                compoundsC.push({
+
+                    id: nextCompoundId++,
+
+                    x: Math.random() * (canvas.width - COMPOUND_RADIUS * 2) + COMPOUND_RADIUS,
+
+                    y: Math.random() * (canvas.height - COMPOUND_RADIUS * 2) + COMPOUND_RADIUS,
+
+                    vx: (Math.random() - 0.5) * COMPOUND_MAX_SPEED * 2,
+
+                    vy: (Math.random() - 0.5) * COMPOUND_MAX_SPEED * 2
+
+                });
+
+            }
+
+
+
+            totalCurrentScore = calculateTotalScore();
+
+            totalHighestScoreAchieved = totalCurrentScore;
+
+            bestProteinConfigurations = deepCopy(proteinInstances);
+
+            
+
+            totalStepsTaken = 0;
+
+            totalFramesProcessed = 0;
+
+            lastInitializedProteinSetup = proteinSetupString; 
+
+            
+
+            initializeChart(); 
+
+            updateButtonStates();
+
+            updateDisplays();
+
+            return true;
+
+        }
+
+
+
+        // --- Drawing ---
+
+        function draw() {
+
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            if (proteinInstances.length === 0 && compoundsC.length === 0 && compoundsS.length === 0) return;
+
+            
+
+            proteinInstances.forEach(proteinChain => {
+
+                if (proteinChain.aas.length > 0) {
+
+                    ctx.beginPath();
+
+                    if (proteinChain.aas[0]) ctx.moveTo(proteinChain.aas[0].x, proteinChain.aas[0].y);
+
+                    for (let i = 1; i < proteinChain.aas.length; i++) {
+
+                        if (proteinChain.aas[i]) ctx.lineTo(proteinChain.aas[i].x, proteinChain.aas[i].y);
+
+                    }
+
+                    ctx.strokeStyle = "#9ca3af"; ctx.lineWidth = 2; ctx.stroke();
+
+
+
+                    proteinChain.aas.forEach(aa => {
+
+                        if (!aa) return; 
+
+                        let aaColor = '';
+
+                        let symbol = '';
+
+                        switch (aa.type) {
+
+                            case 'G': aaColor = '#7dd3fc'; symbol = 'G'; break; 
+
+                            case 'O': aaColor = '#6b7280'; symbol = 'O'; break; 
+
+                            case 'F': aaColor = '#1f2937'; symbol = 'F'; break; 
+
+                            case 'R': 
+
+                                aaColor = aa.isActive ? '#f97316' : '#8b5cf6'; symbol = 'R';
+
+                                break; 
+
+                            case 'L': 
+
+                                aaColor = aa.isActive ? '#a3e635' : '#67e8f9'; symbol = 'L'; 
+
+                                break;
+
+                            default: aaColor = 'black';
+
+                        }
+
+                        ctx.fillStyle = aaColor;
+
+                        ctx.beginPath();
+
+                        ctx.arc(aa.x, aa.y, AA_RADIUS, 0, Math.PI * 2); 
+
+                        ctx.fill();
+
+                        ctx.strokeStyle = '#4b5563'; ctx.lineWidth = 1; ctx.stroke();
+
+                        
+
+                        if (symbol) {
+
+                            ctx.fillStyle = (aa.type === 'F' || aa.type === 'G') ? 'black' : 'white'; 
+
+                            ctx.font = `${AA_RADIUS*0.9}px Arial`; 
+
+                            ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+
+                            ctx.fillText(symbol, aa.x, aa.y + 1);
+
+                        }
+
+                    });
+
+                }
+
+            });
+
+
+
+
+
+            ctx.fillStyle = '#facc15'; 
+
+            compoundsC.forEach(c => {
+
+                ctx.beginPath();
+
+                ctx.arc(c.x, c.y, COMPOUND_RADIUS, 0, Math.PI * 2);
+
+                ctx.fill();
+
+            });
+
+
+
+            ctx.fillStyle = '#22c55e'; 
+
+            compoundsS.forEach(s => {
+
+                ctx.beginPath();
+
+                ctx.arc(s.x, s.y, COMPOUND_RADIUS, 0, Math.PI * 2);
+
+                ctx.fill();
+
+            });
+
+        }
+
+        
+
+        // --- Helper Functions for Adjacency ---
+
+        function areItemsAdjacent(item1, item2, type, distanceValue) {
+
+            if (!item1 || !item2) return false;
+
+            const dx = Math.abs(item1.x - item2.x);
+
+            const dy = Math.abs(item1.y - item2.y);
+
+
+
+            if (type === 'radial') { 
+
+                const distSq = dx * dx + dy * dy;
+
+                return distSq <= distanceValue * distanceValue;
+
+            } else if (type === 'gridCardinal') { 
+
+                return (dx === distanceValue && dy === 0) || (dx === 0 && dy === distanceValue);
+
+            } else if (type === 'gridDiagonalOrCardinal') { 
+
+                return (dx === distanceValue && dy === 0) || (dx === 0 && dy === distanceValue) || (dx === distanceValue && dy === distanceValue);
+
+            }
+
+            return false;
+
+        }
+
+
+
+
+
+        // --- Scoring Logic (Protein Folding Score for a single chain) ---
+
+        function calculateChainScore(chainAAs) {
+
+            let score = 0;
+
+            if (!chainAAs || chainAAs.length < 2) return 0;
+
+            for (let i = 0; i < chainAAs.length; i++) {
+
+                const aa1 = chainAAs[i];
+
+                if (!aa1 || aa1.type !== 'G') continue;
+
+                for (let j = i + 1; j < chainAAs.length; j++) {
+
+                    const aa2 = chainAAs[j];
+
+                    if (!aa2 || aa2.type !== 'G') continue;
+
+                    
+
+                    if (Math.abs(aa1.id - aa2.id) > G_STICK_MIN_SEPARATION) { 
+
+                        if (areItemsAdjacent(aa1, aa2, 'gridCardinal', GRID_SIZE)) {
+
+                            score += STICKY_BOND_SCORE;
+
+                        }
+
+                    }
+
+                }
+
+            }
+
+            return score;
+
+        }
+
+
+
+        function calculateTotalScore() {
+
+            return proteinInstances.reduce((sum, pChain) => sum + pChain.currentScore, 0);
+
+        }
+
+        
+
+        function updateDisplays() {
+
+            totalCurrentScore = calculateTotalScore(); 
+
+            scoreDisplay.textContent = totalCurrentScore;
+
+            bestScoreDisplay.textContent = totalHighestScoreAchieved; 
+
+            stuckPairsDisplay.textContent = proteinInstances.reduce((sum, p) => sum + p.stuckPairs.length, 0);
+
+            substrateCountDisplay.textContent = compoundsC.length;
+
+            productCountDisplay.textContent = compoundsS.length;
+
+            stepsDisplay.textContent = totalStepsTaken;
+
+            framesDisplay.textContent = totalFramesProcessed;
+
+        }
+
+
+
+
+
+        function isOccupied(x, y, excludeProteinInstanceId, excludeAAId) { 
+
+            for (const pChain of proteinInstances) {
+
+                for (const aa of pChain.aas) {
+
+                    if (pChain.instanceId === excludeProteinInstanceId && aa.id === excludeAAId) continue;
+
+                    if (aa.x === x && aa.y === y) return true;
+
+                }
+
+            }
+
+            return false;
+
+        }
+
+
+
+        // --- Update Stuck Pairs for a specific protein chain ---
+
+        function updateProteinStuckPairs(proteinChain) {
+
+            let newBondFormedThisUpdate = false;
+
+            const initialStuckPairCount = proteinChain.stuckPairs.length;
+
+
+
+            for (let i = 0; i < proteinChain.aas.length; i++) {
+
+                const aa1 = proteinChain.aas[i];
+
+                if (!aa1 || aa1.type !== 'G') continue;
+
+                for (let j = i + 1; j < proteinChain.aas.length; j++) { 
+
+                    const aa2 = proteinChain.aas[j];
+
+                    if (!aa2 || aa2.type !== 'G') continue;
+
+
+
+                    if (Math.abs(aa1.id - aa2.id) > G_STICK_MIN_SEPARATION) { 
+
+                        if (areItemsAdjacent(aa1, aa2, 'gridCardinal', GRID_SIZE)) { 
+
+                            const id1 = aa1.id; 
+
+                            const id2 = aa2.id;
+
+                            const isAlreadyStuck = proteinChain.stuckPairs.some(pair => (pair.id1 === id1 && pair.id2 === id2) || (pair.id1 === id2 && pair.id2 === id1) );
+
+                            if (!isAlreadyStuck) {
+
+                                proteinChain.stuckPairs.push({ id1: id1, id2: id2 });
+
+                            }
+
+                        }
+
+                    }
+
+                }
+
+            }
+
+            if (proteinChain.stuckPairs.length > initialStuckPairCount) {
+
+                newBondFormedThisUpdate = true;
+
+            }
+
+            return newBondFormedThisUpdate;
+
+        }
+
+        
+
+        // --- Find Stuck Cluster for a specific protein chain ---
+
+        function findProteinStuckCluster(startAAId, proteinChain) { 
+
+            const cluster = new Set();
+
+            const queue = [startAAId];
+
+            const visited = new Set(); 
+
+            while (queue.length > 0) {
+
+                const currentId = queue.shift();
+
+                if (visited.has(currentId)) continue;
+
+                visited.add(currentId);
+
+                cluster.add(currentId);
+
+                proteinChain.stuckPairs.forEach(pair => {
+
+                    let partnerId = -1;
+
+                    if (pair.id1 === currentId) partnerId = pair.id2;
+
+                    else if (pair.id2 === currentId) partnerId = pair.id1;
+
+                    if (partnerId !== -1 && !visited.has(partnerId)) queue.push(partnerId);
+
+                });
+
+            }
+
+            return cluster;
+
+        }
+
+
+
+        // --- R/L in Loop Detection for a specific protein chain ---
+
+        function updateProteinReactiveStatus(proteinChain) { 
+
+            let wasAnyReactiveSiteActive = false;
+
+            proteinChain.aas.forEach(aa => {
+
+                if (aa && (aa.type === 'R' || aa.type === 'L')) {
+
+                    if (aa.isActive) wasAnyReactiveSiteActive = true; 
+
+                    aa.isActive = false; 
+
+                }
+
+            });
+
+
+
+            if (proteinChain.aas.length < 3) return wasAnyReactiveSiteActive; 
+
+
+
+            let isAnyReactiveSiteActiveNow = false;
+
+            for (const reactiveAA of proteinChain.aas) {
+
+                if (!reactiveAA || (reactiveAA.type !== 'R' && reactiveAA.type !== 'L')) continue;
+
+
+
+                const rIndex = proteinChain.aas.findIndex(aa => aa.id === reactiveAA.id);
+
+
+
+                for (const pair of proteinChain.stuckPairs) {
+
+                    const aa1_from_pair = proteinChain.aas.find(aa => aa.id === pair.id1);
+
+                    const aa2_from_pair = proteinChain.aas.find(aa => aa.id === pair.id2);
+
+
+
+                    if (!aa1_from_pair || !aa2_from_pair || aa1_from_pair.type !== 'G' || aa2_from_pair.type !== 'G') continue;
+
+
+
+                    const index1 = proteinChain.aas.findIndex(aa => aa.id === aa1_from_pair.id);
+
+                    const index2 = proteinChain.aas.findIndex(aa => aa.id === aa2_from_pair.id);
+
+
+
+                    if (Math.abs(index1 - index2) > R_L_LOOP_MIN_SEPARATION) { 
+
+                        const minIndex = Math.min(index1, index2);
+
+                        const maxIndex = Math.max(index1, index2);
+
+                        if (rIndex > minIndex && rIndex < maxIndex) {
+
+                            reactiveAA.isActive = true; 
+
+                            isAnyReactiveSiteActiveNow = true;
+
+                            break; 
+
+                        }
+
+                    }
+
+                }
+
+            }
+
+            return isAnyReactiveSiteActiveNow || wasAnyReactiveSiteActive; 
+
+        }
+
+
+
+
+
+        // --- Move Compounds ---
+
+        function moveCompounds() {
+
+            [compoundsC, compoundsS].forEach(compoundArray => {
+
+                compoundArray.forEach(c => {
+
+                    c.x += c.vx; c.y += c.vy;
+
+                    if (c.x - COMPOUND_RADIUS < 0 || c.x + COMPOUND_RADIUS > canvas.width) {c.vx *= -1; c.x = Math.max(COMPOUND_RADIUS, Math.min(canvas.width - COMPOUND_RADIUS, c.x));}
+
+                    if (c.y - COMPOUND_RADIUS < 0 || c.y + COMPOUND_RADIUS > canvas.height) {c.vy *= -1; c.y = Math.max(COMPOUND_RADIUS, Math.min(canvas.height - COMPOUND_RADIUS, c.y));}
+
+                });
+
+            });
+
+        }
+
+        
+
+        // --- Handle Reaction ---
+
+        function handleReactions() {
+
+            let reactionOccurredThisFrame = false;
+
+            for (const proteinChain of proteinInstances) {
+
+                let proteinReacted = false;
+
+                for (const reactiveAA of proteinChain.aas) {
+
+                    if (reactiveAA.isActive) { 
+
+                        if (reactiveAA.type === 'R') { 
+
+                            for (let i = compoundsC.length - 1; i >= 0; i--) {
+
+                                const c = compoundsC[i];
+
+                                if (areItemsAdjacent(reactiveAA, c, 'radial', REACTION_DISTANCE)) { 
+
+                                    compoundsS.push({ 
+
+                                        id: nextCompoundId++, x: c.x, y: c.y,
+
+                                        vx: (Math.random() - 0.5) * COMPOUND_MAX_SPEED * 2,
+
+                                        vy: (Math.random() - 0.5) * COMPOUND_MAX_SPEED * 2
+
+                                    });
+
+                                    compoundsC.splice(i, 1); 
+
+                                    proteinChain.stuckPairs = []; 
+
+                                    const randomRespawnX = Math.random() * (canvas.width - (proteinChain.aas.length * GRID_SIZE) - AA_RADIUS*2) + AA_RADIUS;
+
+                                    const randomRespawnY = Math.random() * (canvas.height - GRID_SIZE*3) + GRID_SIZE * 1.5;
+
+                                    linearizeProteinChain(proteinChain, randomRespawnX, randomRespawnY); 
+
+                                    proteinChain.currentScore = calculateChainScore(proteinChain.aas); 
+
+                                    proteinChain.framesSinceLastActivity = 0; 
+
+                                    reactionOccurredThisFrame = true;
+
+                                    proteinReacted = true;
+
+                                    break; 
+
+                                }
+
+                            }
+
+                        } else if (reactiveAA.type === 'L') { 
+
+                             for (let i = compoundsS.length - 1; i >= 0; i--) {
+
+                                const s = compoundsS[i];
+
+                                if (areItemsAdjacent(reactiveAA, s, 'radial', REACTION_DISTANCE)) { 
+
+                                    compoundsC.push({ 
+
+                                        id: nextCompoundId++, x: s.x, y: s.y,
+
+                                        vx: (Math.random() - 0.5) * COMPOUND_MAX_SPEED * 2,
+
+                                        vy: (Math.random() - 0.5) * COMPOUND_MAX_SPEED * 2
+
+                                    });
+
+                                    compoundsS.splice(i, 1); 
+
+                                    proteinChain.stuckPairs = []; 
+
+                                    const randomRespawnX = Math.random() * (canvas.width - (proteinChain.aas.length * GRID_SIZE) - AA_RADIUS*2) + AA_RADIUS;
+
+                                    const randomRespawnY = Math.random() * (canvas.height - GRID_SIZE*3) + GRID_SIZE * 1.5;
+
+                                    linearizeProteinChain(proteinChain, randomRespawnX, randomRespawnY); 
+
+                                    proteinChain.currentScore = calculateChainScore(proteinChain.aas);
+
+                                    proteinChain.framesSinceLastActivity = 0; 
+
+                                    reactionOccurredThisFrame = true;
+
+                                    proteinReacted = true;
+
+                                    break; 
+
+                                }
+
+                            }
+
+                        }
+
+                    }
+
+                    if (proteinReacted) break; 
+
+                }
+
+                if (reactionOccurredThisFrame) break; 
+
+            }
+
+            return reactionOccurredThisFrame;
+
+        }
+
+
+
+        // --- Folding Algorithm Step (Protein Movement for a single protein chain) ---
+
+        function attemptProteinMoveStep(proteinChain) {
+
+            if (proteinChain.aas.length < 2) return { moved: false, newScore: proteinChain.currentScore };
+
+            const nonFixedAminoAcids = proteinChain.aas.filter(aa => aa.type !== 'F');
+
+            if (nonFixedAminoAcids.length === 0) return { moved: false, newScore: proteinChain.currentScore };
+
+            const aaIndexInNonFixed = Math.floor(Math.random() * nonFixedAminoAcids.length);
+
+            const selectedAA = nonFixedAminoAcids[aaIndexInNonFixed]; 
+
+            const clusterIds = findProteinStuckCluster(selectedAA.id, proteinChain);
+
+            let clusterIsFixedByF_Type = false;
+
+            for (const id of clusterIds) {
+
+                const aaInCluster = proteinChain.aas.find(a => a.id === id);
+
+                if (aaInCluster && aaInCluster.type === 'F') { clusterIsFixedByF_Type = true; break; }
+
+            }
+
+            if (clusterIsFixedByF_Type) return { moved: false, newScore: proteinChain.currentScore };
+
+            
+
+            const potentialMoves = [ 
+
+                { dx: 0, dy: -GRID_SIZE }, { dx: 0, dy: GRID_SIZE }, { dx: -GRID_SIZE, dy: 0 }, { dx: GRID_SIZE, dy: 0 },
+
+                { dx: -GRID_SIZE, dy: -GRID_SIZE }, { dx: -GRID_SIZE, dy: GRID_SIZE }, { dx: GRID_SIZE, dy: -GRID_SIZE }, { dx: GRID_SIZE, dy: GRID_SIZE }
+
+            ];
+
+            potentialMoves.sort(() => Math.random() - 0.5);
+
+
+
+            for (const move of potentialMoves) {
+
+                const dx = move.dx; const dy = move.dy;
+
+                let canMoveCluster = true; const proposedClusterPositions = {};
+
+                for (const id of clusterIds) {
+
+                    const aa = proteinChain.aas.find(a => a.id === id);
+
+                    if (!aa) { canMoveCluster = false; break; } 
+
+                    const newX = aa.x + dx; const newY = aa.y + dy;
+
+                    if (newX < AA_RADIUS || newX >= canvas.width - AA_RADIUS || newY < AA_RADIUS || newY >= canvas.height - AA_RADIUS) { canMoveCluster = false; break; }
+
+                    proposedClusterPositions[id] = { x: newX, y: newY };
+
+                }
+
+                if (!canMoveCluster) continue;
+
+                for (const id of clusterIds) {
+
+                    const newPos = proposedClusterPositions[id];
+
+                    for (const otherPChain of proteinInstances) {
+
+                        for (const otherAA of otherPChain.aas) {
+
+                            if (otherPChain.instanceId === proteinChain.instanceId && clusterIds.has(otherAA.id)) {
+
+                                continue; 
+
+                            }
+
+                            if (otherAA.x === newPos.x && otherAA.y === newPos.y) {
+
+                                canMoveCluster = false; break;
+
+                            }
+
+                        }
+
+                        if (!canMoveCluster) break;
+
+                    }
+
+                    if (!canMoveCluster) break;
+
+                }
+
+                if (!canMoveCluster) continue;
+
+
+
+                for (const id of clusterIds) {
+
+                    const aaInCluster = proteinChain.aas.find(a => a.id === id); 
+
+                    const newPosOfAAInCluster = proposedClusterPositions[id];
+
+                    if (aaInCluster.id > 0) { 
+
+                        const prevAA = proteinChain.aas.find(a => a.id === aaInCluster.id - 1);
+
+                        if (prevAA && !clusterIds.has(prevAA.id)) { if (!areItemsAdjacent(newPosOfAAInCluster, prevAA, 'gridDiagonalOrCardinal', GRID_SIZE)) { canMoveCluster = false; break; } } 
+
+                    }
+
+                    if (aaInCluster.id < proteinChain.aas.length - 1) { 
+
+                        const nextAA = proteinChain.aas.find(a => a.id === aaInCluster.id + 1);
+
+                        if (nextAA && !clusterIds.has(nextAA.id)) { if (!areItemsAdjacent(newPosOfAAInCluster, nextAA, 'gridDiagonalOrCardinal', GRID_SIZE)) { canMoveCluster = false; break; } } 
+
+                    }
+
+                    if (!canMoveCluster) break;
+
+                }
+
+                if (!canMoveCluster) continue;
+
+                const originalClusterPositions = {};
+
+                clusterIds.forEach(id => {
+
+                    const aaToMove = proteinChain.aas.find(a => a.id === id);
+
+                    originalClusterPositions[id] = { x: aaToMove.x, y: aaToMove.y };
+
+                    aaToMove.x = proposedClusterPositions[id].x; aaToMove.y = proposedClusterPositions[id].y;
+
+                });
+
+                const newCalculatedScore = calculateChainScore(proteinChain.aas);
+
+                if (newCalculatedScore > proteinChain.currentScore || Math.random() < EXPLORATION_CHANCE) { 
+
+                    proteinChain.currentScore = newCalculatedScore; 
+
+                    return { moved: true, newScore: newCalculatedScore }; 
+
+                } 
+
+                else { clusterIds.forEach(id => { const aaToRevert = proteinChain.aas.find(a => a.id === id); aaToRevert.x = originalClusterPositions[id].x; aaToRevert.y = originalClusterPositions[id].y; }); }
+
+            }
+
+            return { moved: false, newScore: proteinChain.currentScore }; 
+
+        }
+
+
+
+        // --- Record Run and Display Scoreboard ---
+
+        function recordRun(manualStop = false) {
+
+            const runData = {
+
+                sequence: activeRunParams.proteinSetupString, 
+
+                initialC: activeRunParams.initialC,
+
+                targetS: activeRunParams.targetS,
+
+                productsCreated: compoundsS.length,
+
+                framesTaken: totalFramesProcessed,
+
+                goalMet: compoundsS.length >= activeRunParams.targetS && activeRunParams.targetS > 0
+
+            };
+
+            
+
+            const existingRunIndex = scoreboardData.findIndex(r => 
+
+                r.sequence === runData.sequence && 
+
+                r.initialC === runData.initialC && 
+
+                r.targetS === runData.targetS &&
+
+                r.framesTaken === runData.framesTaken 
+
+            );
+
+
+
+            if (existingRunIndex === -1 || runData.goalMet) {
+
+                scoreboardData.push(runData);
+
+            } else if (manualStop && !scoreboardData[existingRunIndex].goalMet && runData.productsCreated > scoreboardData[existingRunIndex].productsCreated) {
+
+                scoreboardData[existingRunIndex] = runData;
+
+            }
+
+            displayScoreboard();
+
+        }
+
+
+
+        function displayScoreboard() {
+
+            scoreboardData.sort((a, b) => {
+
+                if (a.goalMet && !b.goalMet) return -1;
+
+                if (!a.goalMet && b.goalMet) return 1;
+
+                if (a.goalMet && b.goalMet) return a.framesTaken - b.framesTaken; 
+
+                if (b.productsCreated !== a.productsCreated) return b.productsCreated - a.productsCreated;
+
+                return a.framesTaken - b.framesTaken; 
+
+            });
+
+            scoreboardBody.innerHTML = ""; 
+
+            scoreboardData.forEach(run => {
+
+                const row = scoreboardBody.insertRow();
+
+                let displaySeq = run.sequence;
+
+                if (displaySeq.length > 20) displaySeq = displaySeq.substring(0, 17) + "...";
+
+                row.insertCell().textContent = displaySeq;
+
+                row.insertCell().textContent = run.initialC;
+
+                row.insertCell().textContent = run.targetS;
+
+                row.insertCell().textContent = run.productsCreated;
+
+                row.insertCell().textContent = run.framesTaken;
+
+                row.insertCell().textContent = run.goalMet ? "Yes" : "No";
+
+            });
+
+        }
+
+        
+
+        // --- Chart.js Functions ---
+
+        function initializeChart() {
+
+            if (concentrationChart) {
+
+                concentrationChart.destroy();
+
+            }
+
+            frameHistory = [];
+
+            substrateHistory = [];
+
+            productHistory = [];
+
+
+
+            const chartCtx = concentrationChartCanvas.getContext('2d');
+
+            concentrationChart = new Chart(chartCtx, {
+
+                type: 'line',
+
+                data: {
+
+                    labels: frameHistory,
+
+                    datasets: [
+
+                        {
+
+                            label: 'Substrate (C)',
+
+                            data: substrateHistory,
+
+                            borderColor: '#facc15', 
+
+                            backgroundColor: 'rgba(250, 204, 21, 0.1)',
+
+                            tension: 0.1,
+
+                            fill: false,
+
+                            pointRadius: 0, 
+
+                        },
+
+                        {
+
+                            label: 'Product (S)',
+
+                            data: productHistory,
+
+                            borderColor: '#22c55e', 
+
+                            backgroundColor: 'rgba(34, 197, 94, 0.1)',
+
+                            tension: 0.1,
+
+                            fill: false,
+
+                            pointRadius: 0,
+
+                        }
+
+                    ]
+
+                },
+
+                options: {
+
+                    responsive: true,
+
+                    maintainAspectRatio: false,
+
+                    scales: {
+
+                        x: {
+
+                            title: { display: true, text: 'Frames' }
+
+                        },
+
+                        y: {
+
+                            title: { display: true, text: 'Count' },
+
+                            beginAtZero: true
+
+                        }
+
+                    },
+
+                    animation: {
+
+                        duration: 0 
+
+                    }
+
+                }
+
+            });
+
+        }
+
+
+
+        function updateChartData() {
+
+            if (!concentrationChart) return;
+
+
+
+            frameHistory.push(totalFramesProcessed);
+
+            substrateHistory.push(compoundsC.length);
+
+            productHistory.push(compoundsS.length);
+
+            concentrationChart.update('none');
+
+        }
+
+
+
+
+
+        // --- Simulation Loop ---
+
+        function simulationStep() {
+
+            if (!simulationRunning) return;
+
+
+
+            proteinInstances.forEach(pChain => updateProteinReactiveStatus(pChain)); 
+
+            moveCompounds();
+
+            const reactionOccurredThisFrame = handleReactions(); 
+
+            
+
+            if (compoundsS.length >= activeRunParams.targetS && activeRunParams.targetS > 0) { 
+
+                simulationRunning = false; 
+
+                recordRun(); 
+
+                updateButtonStates();
+
+                updateDisplays(); 
+
+                updateChartData(); 
+
+                draw();
+
+                showMessage(`Target of ${activeRunParams.targetS} products reached in ${totalFramesProcessed} frames!`);
+
+                return; 
+
+            }
+
+
+
+            proteinInstances.forEach(pChain => {
+
+                let proteinMovedThisChainIteration = false;
+
+                let newBondFormedThisChainIteration = false;
+
+
+
+                for (let i = 0; i < MAX_ATTEMPTS_PER_FRAME / (proteinInstances.length || 1) ; i++) { 
+
+                    const result = attemptProteinMoveStep(pChain); 
+
+                    if (result.moved) {
+
+                        proteinMovedThisChainIteration = true;
+
+                        if (updateProteinStuckPairs(pChain)) { 
+
+                            newBondFormedThisChainIteration = true;
+
+                        }
+
+                        updateProteinReactiveStatus(pChain); 
+
+                    }
+
+                    totalStepsTaken++;
+
+                }
+
+                
+
+                const currentReactiveSitesActive = pChain.aas.some(aa => aa.isActive);
+
+
+
+                if (proteinMovedThisChainIteration || newBondFormedThisChainIteration || currentReactiveSitesActive || reactionOccurredThisFrame) { 
+
+                    pChain.framesSinceLastActivity = 0;
+
+                } else {
+
+                    pChain.framesSinceLastActivity++;
+
+                }
+
+
+
+                if (pChain.framesSinceLastActivity > INACTIVITY_THRESHOLD_FRAMES) {
+
+                    pChain.stuckPairs = [];
+
+                    const randomRespawnX = Math.random() * (canvas.width - (pChain.aas.length * GRID_SIZE) - AA_RADIUS*2) + AA_RADIUS;
+
+                    const randomRespawnY = Math.random() * (canvas.height - GRID_SIZE*3) + GRID_SIZE * 1.5;
+
+                    linearizeProteinChain(pChain, randomRespawnX, randomRespawnY);
+
+                    pChain.currentScore = calculateChainScore(pChain.aas);
+
+                    pChain.framesSinceLastActivity = 0;
+
+                    updateProteinReactiveStatus(pChain); 
+
+                }
+
+            });
+
+            
+
+            totalCurrentScore = calculateTotalScore();
+
+            if (totalCurrentScore > totalHighestScoreAchieved) {
+
+                totalHighestScoreAchieved = totalCurrentScore;
+
+                bestProteinConfigurations = deepCopy(proteinInstances); 
+
+            }
+
+            
+
+            totalFramesProcessed++;
+
+            updateDisplays(); 
+
+            updateChartData(); 
+
+            draw(); 
+
+            
+
+            if (simulationRunning) { 
+
+                animationFrameId = requestAnimationFrame(simulationStep);
+
+            }
+
+        }
+
+        
+
+        // --- Button States Management ---
+
+        function updateButtonStates() {
+
+            if (simulationRunning) {
+
+                foldButton.textContent = "Stop Folding";
+
+                foldButton.disabled = false;
+
+                resetButton.disabled = true; 
+
+                sequence1Input.disabled = true; count1Input.disabled = true;
+
+                sequence2Input.disabled = true; count2Input.disabled = true;
+
+                initialCInput.disabled = true;
+
+                targetSInput.disabled = true;
+
+            } else { 
+
+                foldButton.textContent = "Start Folding";
+
+                foldButton.disabled = false;
+
+                resetButton.disabled = false;
+
+                sequence1Input.disabled = false; count1Input.disabled = false;
+
+                sequence2Input.disabled = false; count2Input.disabled = false;
+
+                initialCInput.disabled = false;
+
+                targetSInput.disabled = false;
+
+            }
+
+        }
+
+
+
+        // --- Event Listeners ---
+
+        foldButton.addEventListener('click', () => {
+
+            if (simulationRunning) { 
+
+                simulationRunning = false;
+
+                if (animationFrameId) cancelAnimationFrame(animationFrameId);
+
+                recordRun(true); 
+
+            } else { 
+
+                // Always re-initialize when "Start Folding" is clicked and sim is not running
+
+                if (!initializeChain()) { 
+
+                    draw(); updateDisplays(); updateButtonStates(); return; 
+
+                }
+
+                simulationRunning = true;
+
+                simulationStep();
+
+            }
+
+            updateButtonStates();
+
+        });
+
+
+
+        resetButton.addEventListener('click', () => {
+
+            simulationRunning = false;
+
+            if (animationFrameId) cancelAnimationFrame(animationFrameId);
+
+            if (!initializeChain()) { 
+
+                 proteinInstances = []; 
+
+                 compoundsC = []; compoundsS = [];
+
+                 lastInitializedProteinSetup = ""; 
+
+            }
+
+            initializeChart(); 
+
+            draw(); 
+
+            updateButtonStates();
+
+            updateDisplays(); 
+
+        });
+
+
+
+        window.onload = () => {
+
+            if (!initializeChain()) { 
+
+                 proteinInstances = []; 
+
+                 compoundsC = []; compoundsS = [];
+
+                 lastInitializedProteinSetup = "";
+
+            }
+
+            initializeChart(); 
+
+            draw(); 
+
+            updateButtonStates();
+
+            updateDisplays();
+
+            displayScoreboard(); 
+
+        };
+
+    </script>
+
+</body>
+
+</html>

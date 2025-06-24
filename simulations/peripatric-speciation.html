@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Peripatric Speciation Animation</title>
+    <style>
+        /* Basic styling for the page */
+        body {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #1a1a2e; /* Very dark navy blue */
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            color: #f0f8ff;
+            text-align: center;
+        }
+        /* Styling for the canvas element */
+        canvas {
+            background-color: #1e3a8a; /* A medium blue for the water */
+            border-radius: 12px;
+            box-shadow: 0 8px 16px rgba(0,0,0,0.2);
+            max-width: 95%;
+            max-height: 75%;
+            aspect-ratio: 16 / 9;
+        }
+        /* Container for all text content */
+        .content-container {
+            margin-top: 20px;
+            max-width: 800px;
+            width: 90%;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+        /* Styling for the stage description text */
+        #stage-description {
+            font-size: 1.2em;
+            font-weight: bold;
+        }
+        /* Styling for the explanation text */
+        #explanation {
+            font-size: 1em;
+            line-height: 1.5;
+            color: #bdc8f5;
+        }
+        /* Styling for the reset button */
+        #resetButton {
+            margin-top: 10px;
+            padding: 10px 20px;
+            font-size: 1em;
+            font-weight: bold;
+            color: #fff;
+            background-color: #d97706; /* Amber color */
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background-color 0.2s ease;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        }
+        #resetButton:hover {
+            background-color: #b45309;
+        }
+    </style>
+</head>
+<body>
+
+    <canvas id="speciationCanvas"></canvas>
+    
+    <div class="content-container">
+        <div id="stage-description">Stage 1: A single, large population.</div>
+        <div id="explanation">
+            <b>Peripatric speciation</b> is a special case of allopatric speciation. It happens when a small group of individuals breaks off from the main population to form a new one. The word comes from Greek: <i>peri</i> ("around") + <i>patris</i> ("fatherland"). This small "founder" group can change rapidly due to strong new selection pressures and genetic drift.
+        </div>
+        <button id="resetButton">Reset Animation</button>
+    </div>
+
+<script>
+    const canvas = document.getElementById('speciationCanvas');
+    const ctx = canvas.getContext('2d');
+    const stageDescription = document.getElementById('stage-description');
+    const resetButton = document.getElementById('resetButton');
+
+    // --- Configuration Constants ---
+    const FISH_COUNT = 80; 
+    const INITIAL_COLOR = { r: 255, g: 100, b: 0 }; // Orange
+    const ISOLATE_COLOR = { r: 34, g: 197, b: 94 }; // Vibrant Green
+
+    let fishPopulation = [];
+    let animationStage = 1;
+    let frameCount = 0;
+    let barrierXPosition = 0;
+    let animationFrameId;
+
+    // --- General Purpose Fish Class ---
+    class Fish {
+        constructor(x, y, color, morph) {
+            this.x = x; this.y = y; this.color = { ...color }; this.morph = morph;
+            this.vx = (Math.random() - 0.5) * 1.5; this.vy = (Math.random() - 0.5) * 1.5;
+            this.tailPhase = Math.random() * Math.PI * 2; this.tailOscillationSpeed = 0.2 + Math.random() * 0.1;
+            this.tailAmplitude = 4; this.bodyLength = 15; this.headLength = 8; this.tailLength = 12;
+            this.totalLength = this.headLength + this.bodyLength + this.tailLength; this.tailWidth = 14; this.bodyWidth = 8;
+        }
+        draw() {
+            const colorString = `rgb(${this.color.r}, ${this.color.g}, ${this.color.b})`;
+            const angle = Math.atan2(this.vy, this.vx);
+            ctx.save();
+            ctx.translate(this.x, this.y);
+            ctx.rotate(angle);
+            ctx.fillStyle = colorString;
+            ctx.fillRect(-this.bodyLength/2, -this.bodyWidth/2, this.bodyLength, this.bodyWidth);
+            ctx.beginPath();
+            ctx.moveTo(this.bodyLength/2, -this.bodyWidth/2); ctx.lineTo(this.bodyLength/2, this.bodyWidth/2); ctx.lineTo(this.bodyLength/2 + this.headLength, 0);
+            ctx.closePath(); ctx.fill();
+            const tailOscillationOffset = Math.sin(this.tailPhase) * this.tailAmplitude;
+            ctx.beginPath();
+            ctx.moveTo(-this.bodyLength/2, 0); ctx.lineTo(-this.bodyLength/2 - this.tailLength, -this.tailWidth/2 + tailOscillationOffset); ctx.lineTo(-this.bodyLength/2 - this.tailLength, this.tailWidth/2 + tailOscillationOffset);
+            ctx.closePath(); ctx.fill();
+            ctx.restore();
+        }
+        move() {
+            this.tailPhase += this.tailOscillationSpeed;
+            this.x += this.vx; this.y += this.vy;
+            const halfLen = this.totalLength / 2;
+
+            // Boundary checks for canvas edges
+            if ((this.x < halfLen && this.vx < 0) || (this.x > canvas.width - halfLen && this.vx > 0)) { this.vx *= -1; }
+            if ((this.y < halfLen && this.vy < 0) || (this.y > canvas.height - halfLen && this.vy > 0)) { this.vy *= -1; }
+            
+            // Boundary check for the barrier in stage 2+
+            if (animationStage >= 2) {
+                if (this.morph === 'main' && this.x > barrierXPosition - halfLen && this.vx > 0) {
+                    this.vx *= -1;
+                } else if (this.morph === 'isolated' && this.x < barrierXPosition + halfLen && this.vx < 0) {
+                    this.vx *= -1;
+                }
+            }
+        }
+    }
+
+    function lerpColor(start, end, amount) {
+        const t = Math.max(0, Math.min(1, amount));
+        return { r: start.r+(end.r-start.r)*t, g: start.g+(end.g-start.g)*t, b: start.b+(end.b-start.b)*t };
+    }
+
+    function resizeCanvas() {
+        const parent = canvas.parentElement;
+        const availableWidth = parent.clientWidth * 0.95;
+        const availableHeight = parent.clientHeight * 0.75;
+        const parentRatio = availableWidth / availableHeight;
+        const canvasRatio = 16 / 9;
+        if (parentRatio > canvasRatio) {
+            canvas.height = availableHeight; canvas.width = canvas.height * canvasRatio;
+        } else {
+            canvas.width = availableWidth; canvas.height = canvas.width / canvasRatio;
+        }
+        resetAnimation();
+    }
+
+    function resetAnimation() {
+        if (animationFrameId) cancelAnimationFrame(animationFrameId);
+        frameCount = 0; animationStage = 1;
+        stageDescription.textContent = 'Stage 1: A single, large population.';
+        fishPopulation = [];
+        for (let i = 0; i < FISH_COUNT; i++) {
+            const x = Math.random() * canvas.width; const y = Math.random() * canvas.height;
+            fishPopulation.push(new Fish(x, y, INITIAL_COLOR, 'main'));
+        }
+        animate();
+    }
+
+    function drawBarrier() {
+        ctx.beginPath();
+        ctx.moveTo(barrierXPosition, 0);
+        ctx.bezierCurveTo(
+            barrierXPosition - canvas.width * 0.1, canvas.height / 3,
+            barrierXPosition - canvas.width * 0.1, canvas.height * 2 / 3,
+            barrierXPosition, canvas.height
+        );
+        ctx.strokeStyle = '#27272a'; // Dark rock color
+        ctx.lineWidth = 15;
+        ctx.stroke();
+    }
+    
+    function animate() {
+        animationFrameId = requestAnimationFrame(animate);
+        frameCount++;
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+        // Stage Progression
+        if (frameCount === 300 && animationStage === 1) {
+            animationStage = 2; 
+            stageDescription.textContent = 'Stage 2: A barrier isolates a small peripheral group.';
+            barrierXPosition = canvas.width * 0.8;
+            // Identify the trapped fish
+            fishPopulation.forEach(fish => {
+                if (fish.x > barrierXPosition) {
+                    fish.morph = 'isolated';
+                }
+            });
+        }
+        if (frameCount > 600 && animationStage === 2) {
+            animationStage = 3; 
+            stageDescription.textContent = 'Stage 3: The small group rapidly evolves in isolation.';
+        }
+        if (frameCount > 1200 && animationStage === 3) {
+            animationStage = 4;
+            stageDescription.textContent = 'Stage 4: A new species has formed from the peripheral isolate.';
+        }
+
+        // --- Fish Logic ---
+        for (let i = fishPopulation.length - 1; i >= 0; i--) {
+            const fish = fishPopulation[i];
+            
+            // Only the isolated group changes color
+            if (animationStage >= 3 && fish.morph === 'isolated') {
+                fish.color = lerpColor(INITIAL_COLOR, ISOLATE_COLOR, (frameCount - 600) / 600);
+            }
+            
+            fish.move();
+            fish.draw();
+        }
+        
+        // Draw barrier from stage 2 onwards
+        if (animationStage >= 2) {
+            drawBarrier();
+        }
+    }
+
+    window.addEventListener('resize', resizeCanvas);
+    resetButton.addEventListener('click', resetAnimation);
+    resizeCanvas();
+</script>
+
+</body>
+</html>

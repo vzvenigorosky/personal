@@ -1,0 +1,768 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ant Colony Optimization Pathfinding (Guided Search)</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            margin: 0; display: flex; flex-direction: column; align-items: center;
+            justify-content: flex-start; min-height: 100vh; background-color: #f0f0f0;
+            font-family: 'Inter', sans-serif; padding: 10px; box-sizing: border-box;
+        }
+        .controls {
+            padding: 15px; background-color: white; border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1); margin-bottom: 15px;
+            width: 100%; max-width: 500px;
+        }
+        .control-group { margin-bottom: 10px; display: flex; flex-direction: column; }
+        .control-group label { margin-bottom: 5px; font-weight: 500; }
+        label { margin-right: 10px; font-weight: 500; }
+        input[type="number"], input[type="range"], button {
+            padding: 8px 12px; border-radius: 6px; border: 1px solid #ccc;
+            width: 100%; box-sizing: border-box;
+        }
+        input[type="range"] { padding: 0; }
+        button {
+            background-color: #3498db; color: white; cursor: pointer;
+            transition: background-color 0.3s; margin-top: 10px;
+        }
+        button:hover { background-color: #2980b9; }
+        #errorMessage { color: red; margin-top: 10px; min-height: 20px; font-size: 0.875rem; }
+        canvas {
+            border: 1px solid #ccc; display: block; max-width: 95vw;
+        }
+        #simulationCanvas {
+            max-height: calc(100vh - 480px); /* Adjust height to make space for graph and controls */
+        }
+        #graphCanvas {
+            margin-top: 15px;
+            height: 200px; /* Fixed height for the graph */
+            background-color: white;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            border-radius: 8px;
+        }
+        #speedValue { margin-left: 8px; font-weight: bold; }
+        #deviationValue { margin-left: 8px; font-weight: bold; }
+        #bestPathInfo {
+            margin-top: 10px; padding: 10px; background-color: #e0f2f7;
+            border-radius: 6px; text-align: center; width: 100%; max-width: 500px;
+            font-size: 0.9rem;
+        }
+        .checkbox-group {
+            display: flex; align-items: center; justify-content: center;
+            margin-top: 10px;
+        }
+        .checkbox-group input {
+            width: auto; margin-right: 5px;
+        }
+        .checkbox-group label {
+            margin-bottom: 0;
+            font-weight: normal;
+        }
+        @media (min-width: 640px) {
+            .control-group { flex-direction: row; align-items: center; }
+            .control-group label { margin-bottom: 0; }
+            input[type="number"], input[type="range"] { width: auto; flex-grow: 1; }
+        }
+    </style>
+</head>
+<body>
+    <div class="controls text-gray-700">
+        <h1 class="text-2xl font-bold mb-4 text-center">Ant Colony Optimization (Guided Search)</h1>
+        <div class="control-group">
+            <label for="numAntsInput">Ants (1-500):</label>
+            <input type="number" id="numAntsInput" value="50" min="1" max="500" class="rounded-md">
+        </div>
+        <div class="control-group">
+            <label for="simSpeedInput">Sim Speed (ms/step):</label>
+            <input type="range" id="simSpeedInput" value="50" min="1" max="200" step="1" class="rounded-md">
+            <span id="speedValue">50ms</span>
+        </div>
+        <div class="control-group">
+            <label for="deviationProbabilityInput">Deviation Prob.:</label>
+            <input type="range" id="deviationProbabilityInput" value="0.2" min="0" max="1" step="0.01" class="rounded-md">
+            <span id="deviationValue">0.20</span>
+        </div>
+        <button id="startButton" class="w-full rounded-md">Start / Reset Simulation</button>
+        <div id="errorMessage" class="text-red-500 mt-2 text-sm"></div>
+    </div>
+
+    <canvas id="simulationCanvas"></canvas>
+    <div id="bestPathInfo" class="text-gray-800">
+        Finding shortest path...
+    </div>
+    <canvas id="graphCanvas" width="800" height="200"></canvas>
+
+    <script>
+        // --- Canvas and Context Setup ---
+        const simulationCanvas = document.getElementById('simulationCanvas');
+        const simulationCtx = simulationCanvas.getContext('2d');
+        simulationCanvas.width = 800;
+        simulationCanvas.height = 600;
+
+        const graphCanvas = document.getElementById('graphCanvas');
+        const graphCtx = graphCanvas.getContext('2d');
+        const GRAPH_WIDTH = graphCanvas.width;
+        const GRAPH_HEIGHT = graphCanvas.height;
+
+
+        // --- Simulation Parameters ---
+        let numAnts = 50;
+        let updateInterval = 50;
+        let deviationProbability = 0.2;
+        let simulationRunning = false;
+        let animationFrameId = null;
+        let simulationStepCount = 0; // Tracks overall simulation steps
+
+        // ACO Algorithm Parameters
+        const GRID_ROWS = 25; // Larger grid
+        const GRID_COLS = 35; // Larger grid
+        const NODE_RADIUS = 5;
+        const PHEROMONE_INITIAL = 0.01; // Base pheromone level for trails
+        const PHEROMONE_DEPOSIT_PER_STEP = 0.1; // Amount of pheromone deposited by an ant per segment
+        const EVAPORATION_RATE = 0.02;  // Pheromone evaporation rate per step (adjusted for continuous trails)
+        
+        // Colors
+        const NODE_COLOR = '#34495e';
+        const START_NODE_COLOR = '#2ecc71';
+        const END_NODE_COLOR = '#e74c3c';
+        const EDGE_COLOR_BASE = '#bdc3c7';
+        const ANT_COLOR = '#f39c12';
+        const BEST_PATH_COLOR = '#9b59b6';
+        const BEST_PATH_WIDTH = 3;
+        const GRAPH_POINT_COLOR = '#3498db';
+        const GRAPH_AXIS_COLOR = '#7f8c8d';
+        const REGRESSION_LINE_COLOR = '#e67e22'; // Orange for regression line
+
+        // --- Data Structures ---
+        let nodes = [];
+        let edges = new Map(); // Key: 'nodeIdx1_nodeIdx2', Value: {node1, node2, pheromone, distance}
+        let ants = [];
+        let bestPath = { path: [], length: Infinity }; // The "guide path"
+        let startNodeIdx = 0;
+        let endNodeIdx = 0; // Will be set after grid initialization
+        let OPTIMAL_PATH_LENGTH = Infinity; // Will be calculated after grid initialization (Manhattan distance)
+
+        // Graph Data: stores { length: guidePathLength, step: simulationStepCount } for each BEST path discovery
+        let guidePathProgress = [];
+        const MAX_GRAPH_POINTS = 500;
+
+
+        // --- DOM Elements ---
+        const domElements = {
+            numAntsInput: document.getElementById('numAntsInput'),
+            simSpeedInput: document.getElementById('simSpeedInput'),
+            deviationProbabilityInput: document.getElementById('deviationProbabilityInput'),
+            // Removed findDiagonalPathCheckbox
+            speedValueSpan: document.getElementById('speedValue'),
+            deviationValueSpan: document.getElementById('deviationValue'),
+            startButton: document.getElementById('startButton'),
+            errorMessageDiv: document.getElementById('errorMessage'),
+            bestPathInfo: document.getElementById('bestPathInfo')
+        };
+
+        // --- Image Loading for Ants (Fallback if image not found) ---
+        const antImage = new Image();
+        let antImageLoaded = false;
+        antImage.src = 'https://placehold.co/16x16/000000/FFFFFF?text=🐜'; 
+
+        antImage.onload = () => {
+            antImageLoaded = true;
+            console.log('Ant image loaded successfully.');
+        };
+
+        antImage.onerror = () => {
+            antImageLoaded = false;
+            console.error('Failed to load ant image. Falling back to circle ants.');
+            domElements.errorMessageDiv.textContent = 'Ant image not found or failed to load. Using circles instead.';
+        };
+
+        // --- Helper Functions ---
+
+        // Calculates Euclidean distance between two nodes
+        function calculateDistance(nodeA, nodeB) {
+            const dx = nodeA.x - nodeB.x;
+            const dy = nodeA.y - nodeB.y;
+            return Math.sqrt(dx * dx + dy * dy);
+        }
+
+        // Generates a unique key for an edge regardless of node order
+        function getEdgeKey(nodeIdx1, nodeIdx2) {
+            return nodeIdx1 < nodeIdx2 ? `${nodeIdx1}_${nodeIdx2}` : `${nodeIdx2}_${nodeIdx1}`;
+        }
+
+        // Creates a new ant
+        function createAnt(id) {
+            return {
+                id: id,
+                currentNodeIdx: startNodeIdx,
+                visitedNodes: new Set([startNodeIdx]), // Keep track of visited nodes in current path
+                path: [startNodeIdx], // Ordered list of nodes in the current path
+                pathLength: 0,
+                x: nodes[startNodeIdx].x,
+                y: nodes[startNodeIdx].y,
+                targetX: nodes[startNodeIdx].x,
+                targetY: nodes[startNodeIdx].y,
+                isMoving: false,
+                moveProgress: 0, // 0 to 1, how far along the current edge
+                speed: 1.0 // Individual ant animation speed
+            };
+        }
+
+        // Resets a single ant to the start node
+        function resetSingleAnt(ant, reason = "unknown") {
+            ant.currentNodeIdx = startNodeIdx;
+            ant.visitedNodes = new Set([startNodeIdx]);
+            ant.path = [startNodeIdx];
+            ant.pathLength = 0;
+            ant.x = nodes[startNodeIdx].x;
+            ant.y = nodes[startNodeIdx].y;
+            ant.isMoving = false;
+            ant.moveProgress = 0;
+            ant.targetX = nodes[startNodeIdx].x;
+            ant.targetY = nodes[startNodeIdx].y;
+            // console.warn(`Ant ${ant.id} reset due to: ${reason}`); // Uncomment for debugging ant resets
+        }
+
+        // --- Core Logic ---
+
+        // Pheromone evaporation
+        function evaporatePheromone() {
+            edges.forEach(edge => {
+                edge.pheromone *= (1 - EVAPORATION_RATE);
+                edge.pheromone = Math.max(edge.pheromone, PHEROMONE_INITIAL);
+            });
+        }
+
+        // Selects the next node for an ant based on guide path or deviation probability
+        function selectNextNode(ant) {
+            const neighbors = [];
+            const currentRow = Math.floor(ant.currentNodeIdx / GRID_COLS);
+            const currentCol = ant.currentNodeIdx % GRID_COLS;
+
+            const possibleNext = [
+                { r: currentRow, c: currentCol + 1, dir: 'R' }, // Right
+                { r: currentRow, c: currentCol - 1, dir: 'L' }, // Left
+                { r: currentRow + 1, c: currentCol, dir: 'D' }, // Down
+                { r: currentRow - 1, c: currentCol, dir: 'U' }  // Up
+            ];
+
+            for (const pos of possibleNext) {
+                if (pos.r >= 0 && pos.r < GRID_ROWS && pos.c >= 0 && pos.c < GRID_COLS) {
+                    const neighborIdx = pos.r * GRID_COLS + pos.c;
+                    // Only consider neighbors not already visited in THIS ant's current path
+                    if (!ant.visitedNodes.has(neighborIdx)) {
+                        neighbors.push({ idx: neighborIdx, ...pos }); // Store index and pos info
+                    }
+                }
+            }
+
+            if (neighbors.length === 0) {
+                return null; // Ant is stuck (no valid unvisited neighbors)
+            }
+
+            const shouldDeviate = Math.random() < deviationProbability;
+
+            // Decision: deviate or try to follow the guide path
+            if (!shouldDeviate && bestPath.path.length > 1) { // If not deviating and guide path exists
+                const currentBestPathIndex = bestPath.path.indexOf(ant.currentNodeIdx);
+
+                // If the ant is currently on the guide path AND it's not the end of the guide path
+                if (currentBestPathIndex !== -1 && currentBestPathIndex < bestPath.path.length - 1) {
+                    const nextNodeInGuidePathIdx = bestPath.path[currentBestPathIndex + 1];
+
+                    // Check if this 'next node in guide path' is a valid unvisited neighbor for the ant
+                    const potentialGuideNeighbor = neighbors.find(n => n.idx === nextNodeInGuidePathIdx);
+                    if (potentialGuideNeighbor) {
+                        return potentialGuideNeighbor.idx; // Successfully follow guide path
+                    }
+                }
+            }
+
+            // If deviating, OR if ant is not on the guide path, OR if the guide path is not followable (e.g. next node visited),
+            // then select a random unvisited neighbor (no diagonal bias).
+            return neighbors[Math.floor(Math.random() * neighbors.length)].idx;
+        }
+
+
+        // --- Initialization ---
+
+        function initGridAndEdges() {
+            nodes = [];
+            edges.clear();
+            // Recalculate endNodeIdx based on potentially changed GRID_ROWS/COLS
+            endNodeIdx = (GRID_ROWS - 1) * GRID_COLS + (GRID_COLS - 1);
+
+            const cellWidth = simulationCanvas.width / (GRID_COLS - 1);
+            const cellHeight = simulationCanvas.height / (GRID_ROWS - 1);
+
+            for (let r = 0; r < GRID_ROWS; r++) {
+                for (let c = 0; c < GRID_COLS; c++) {
+                    const x = c * cellWidth;
+                    const y = r * cellHeight;
+                    nodes.push({ id: r * GRID_COLS + c, x: x, y: y, row: r, col: c }); // Store row/col for convenience
+                }
+            }
+
+            for (let r = 0; r < GRID_ROWS; r++) {
+                for (let c = 0; c < GRID_COLS; c++) {
+                    const currentIdx = r * GRID_COLS + c;
+
+                    if (c < GRID_COLS - 1) { // Connect to right neighbor
+                        const rightIdx = r * GRID_COLS + (c + 1);
+                        const key = getEdgeKey(currentIdx, rightIdx);
+                        if (!edges.has(key)) {
+                            edges.set(key, { node1: currentIdx, node2: rightIdx, pheromone: PHEROMONE_INITIAL, distance: calculateDistance(nodes[currentIdx], nodes[rightIdx]) });
+                        }
+                    }
+                    if (r < GRID_ROWS - 1) { // Connect to bottom neighbor
+                        const bottomIdx = (r + 1) * GRID_COLS + c;
+                        const key = getEdgeKey(currentIdx, bottomIdx);
+                        if (!edges.has(key)) {
+                            edges.set(key, { node1: currentIdx, node2: bottomIdx, pheromone: PHEROMONE_INITIAL, distance: calculateDistance(nodes[currentIdx], nodes[bottomIdx]) });
+                        }
+                    }
+                }
+            }
+
+            // Calculate the exact optimal path length (Manhattan distance)
+            const startNode = nodes[startNodeIdx];
+            const endNode = nodes[endNodeIdx];
+            OPTIMAL_PATH_LENGTH = (Math.abs(endNode.row - startNode.row) * cellHeight) + (Math.abs(endNode.col - startNode.col) * cellWidth);
+        }
+
+        function resetSimulation() {
+            simulationRunning = false; // Stop current simulation loop before resetting
+            if (animationFrameId) {
+                cancelAnimationFrame(animationFrameId);
+            }
+
+            initGridAndEdges();
+
+            ants = [];
+            for (let i = 0; i < numAnts; i++) {
+                ants.push(createAnt(i));
+            }
+
+            bestPath = { path: [], length: Infinity };
+            guidePathProgress = []; // Clear graph data
+            domElements.bestPathInfo.textContent = 'Finding shortest path...';
+            simulationStepCount = 0;
+
+            simulationCtx.clearRect(0, 0, simulationCanvas.width, simulationCanvas.height);
+            graphCtx.clearRect(0, 0, GRAPH_WIDTH, GRAPH_HEIGHT);
+            drawGrid();
+            drawAnts();
+            drawGraph();
+
+            simulationRunning = true;
+            lastUpdateTime = performance.now();
+            gameLoop();
+        }
+
+        // --- Drawing Functions ---
+
+        function drawGrid() {
+            simulationCtx.clearRect(0, 0, simulationCanvas.width, simulationCanvas.height);
+
+            edges.forEach(edge => {
+                const node1 = nodes[edge.node1];
+                const node2 = nodes[edge.node2];
+                // Pheromone visualization: cap at a reasonable max for visual intensity
+                const pheromoneIntensity = Math.min(1, edge.pheromone / (PHEROMONE_INITIAL * 200)); 
+
+                simulationCtx.beginPath();
+                simulationCtx.moveTo(node1.x, node1.y);
+                simulationCtx.lineTo(node2.x, node2.y);
+                simulationCtx.strokeStyle = `rgba(189, 195, 199, ${0.1 + pheromoneIntensity * 0.9})`;
+                simulationCtx.lineWidth = 1 + pheromoneIntensity * 3;
+                simulationCtx.stroke();
+            });
+
+            nodes.forEach((node, index) => {
+                simulationCtx.beginPath();
+                simulationCtx.arc(node.x, node.y, NODE_RADIUS, 0, Math.PI * 2);
+                if (index === startNodeIdx) {
+                    simulationCtx.fillStyle = START_NODE_COLOR;
+                } else if (index === endNodeIdx) {
+                    simulationCtx.fillStyle = END_NODE_COLOR;
+                } else {
+                    simulationCtx.fillStyle = NODE_COLOR;
+                }
+                simulationCtx.fill();
+                simulationCtx.strokeStyle = '#2c3e50';
+                simulationCtx.lineWidth = 1;
+                simulationCtx.stroke();
+            });
+
+            if (bestPath.path.length > 1) {
+                simulationCtx.beginPath();
+                simulationCtx.strokeStyle = BEST_PATH_COLOR;
+                simulationCtx.lineWidth = BEST_PATH_WIDTH;
+                simulationCtx.lineCap = 'round';
+                simulationCtx.lineJoin = 'round';
+                simulationCtx.moveTo(nodes[bestPath.path[0]].x, nodes[bestPath.path[0]].y);
+                for (let i = 1; i < bestPath.path.length; i++) {
+                    simulationCtx.lineTo(nodes[bestPath.path[i]].x, nodes[bestPath.path[i]].y);
+                }
+                simulationCtx.stroke();
+            }
+        }
+
+        function drawAnts() {
+            ants.forEach(ant => {
+                simulationCtx.save();
+                simulationCtx.translate(ant.x, ant.y);
+                simulationCtx.rotate(0);
+
+                if (antImageLoaded) {
+                    simulationCtx.drawImage(antImage, -antImage.width / 2, -antImage.height / 2);
+                } else {
+                    simulationCtx.beginPath();
+                    simulationCtx.arc(0, 0, NODE_RADIUS * 0.6, 0, Math.PI * 2);
+                    simulationCtx.fillStyle = ANT_COLOR;
+                    simulationCtx.fill();
+                    simulationCtx.strokeStyle = 'black';
+                    simulationCtx.lineWidth = 0.5;
+                    simulationCtx.stroke();
+                }
+                simulationCtx.restore();
+            });
+        }
+
+        // --- Regression Functions ---
+
+        // Function to calculate R-squared
+        function calculateRSquared(data, predictionFunction, isExponential = false) {
+            if (data.length < 2) return 0;
+
+            let sumY = 0;
+            data.forEach(p => sumY += (isExponential ? Math.log(p.length) : p.length));
+            const meanY = sumY / data.length;
+
+            let ssTotal = 0;
+            let ssResidual = 0;
+
+            data.forEach(p => {
+                const actualY = (isExponential ? Math.log(p.length) : p.length);
+                const predictedY = predictionFunction(p.step);
+                ssTotal += (actualY - meanY) * (actualY - meanY);
+                ssResidual += (actualY - predictedY) * (actualY - predictedY);
+            });
+
+            if (ssTotal === 0) {
+                return ssResidual === 0 ? 1 : 0;
+            }
+            return 1 - (ssResidual / ssTotal);
+        }
+
+        // Linear Regression (y = m*x + c)
+        function calculateLinearRegression(data) {
+            let sumX = 0, sumY = 0, sumXY = 0, sumXX = 0, N = data.length;
+            if (N < 2) return { m: 0, c: 0, r2: 0, valid: false };
+
+            data.forEach(point => {
+                sumX += point.step;
+                sumY += point.length;
+                sumXY += point.step * point.length;
+                sumXX += point.step * point.step;
+            });
+
+            const denominator = (N * sumXX - sumX * sumX);
+            if (denominator === 0) { // All X values are identical
+                return { m: 0, c: sumY / N, r2: 0, valid: false };
+            }
+
+            const m = (N * sumXY - sumX * sumY) / denominator;
+            const c = (sumY - m * sumX) / N;
+
+            const r2 = calculateRSquared(data, x => m * x + c);
+            return { m, c, r2, valid: true };
+        }
+
+        // Exponential Regression (y = A * e^(B*x)) -> linearized as ln(y) = ln(A) + B*x
+        function calculateExponentialRegression(data) {
+            const positiveData = data.filter(p => p.length > 0); // Ensure log is valid
+            if (positiveData.length < 2) return { A: 1, B: 0, r2: 0, valid: false };
+
+            let sumX = 0, sumLnY = 0, sumXLnY = 0, sumXX = 0, N = positiveData.length;
+
+            positiveData.forEach(point => {
+                const lnY = Math.log(point.length);
+                sumX += point.step;
+                sumLnY += lnY;
+                sumXLnY += point.step * lnY;
+                sumXX += point.step * point.step;
+            });
+
+            const denominator = (N * sumXX - sumX * sumX);
+            if (denominator === 0) { // All X values are identical
+                 return { A: Math.exp(sumLnY / N), B: 0, r2: 0, valid: false };
+            }
+
+            const B = (N * sumXLnY - sumX * sumLnY) / denominator;
+            const lnA = (sumLnY - B * sumX) / N;
+            const A = Math.exp(lnA);
+
+            // Need a prediction function for the ORIGINAL y values to calculate R-squared correctly
+            const predictionFunction = x => A * Math.exp(B * x);
+            const r2 = calculateRSquared(data, predictionFunction, true); // Pass true for isExponential
+
+            return { A, B, r2, valid: true };
+        }
+
+
+        function drawGraph() {
+            graphCtx.clearRect(0, 0, GRAPH_WIDTH, GRAPH_HEIGHT);
+
+            if (guidePathProgress.length === 0) {
+                graphCtx.fillStyle = GRAPH_AXIS_COLOR;
+                graphCtx.font = '12px Inter, sans-serif';
+                graphCtx.textAlign = 'center';
+                graphCtx.fillText('No shortest path found yet to plot.', GRAPH_WIDTH / 2, GRAPH_HEIGHT / 2);
+                return;
+            }
+
+            const margin = 30;
+            const plotWidth = GRAPH_WIDTH - 2 * margin;
+            const plotHeight = GRAPH_HEIGHT - 2 * margin;
+
+            const minPathLength = Math.min(...guidePathProgress.map(p => p.length));
+            const maxPathLength = Math.max(...guidePathProgress.map(p => p.length));
+            const maxStep = guidePathProgress[guidePathProgress.length - 1].step;
+
+            const yRange = (maxPathLength - minPathLength) * 1.1 || 1;
+            const xRange = maxStep || 1;
+
+            // Draw Axes
+            graphCtx.strokeStyle = GRAPH_AXIS_COLOR;
+            graphCtx.lineWidth = 1;
+            graphCtx.beginPath();
+            graphCtx.moveTo(margin, margin);
+            graphCtx.lineTo(margin, GRAPH_HEIGHT - margin);
+            graphCtx.lineTo(GRAPH_WIDTH - margin, GRAPH_HEIGHT - margin);
+            graphCtx.stroke();
+
+            // Y-axis labels
+            graphCtx.fillStyle = GRAPH_AXIS_COLOR;
+            graphCtx.font = '10px Inter, sans-serif';
+            graphCtx.textAlign = 'right';
+            graphCtx.textBaseline = 'middle';
+            graphCtx.fillText(maxPathLength.toFixed(1), margin - 5, margin);
+            graphCtx.fillText(minPathLength.toFixed(1), margin - 5, GRAPH_HEIGHT - margin);
+            graphCtx.save();
+            graphCtx.translate(margin / 2, GRAPH_HEIGHT / 2);
+            graphCtx.rotate(-Math.PI / 2);
+            graphCtx.textAlign = 'center';
+            graphCtx.fillText('Guide Path Length', 0, 0);
+            graphCtx.restore();
+
+            // X-axis label
+            graphCtx.textAlign = 'center';
+            graphCtx.textBaseline = 'top';
+            graphCtx.fillText('Simulation Steps', GRAPH_WIDTH / 2, GRAPH_HEIGHT - margin + 5);
+            graphCtx.textAlign = 'left';
+            graphCtx.textBaseline = 'top';
+            graphCtx.fillText('0', margin, GRAPH_HEIGHT - margin + 5);
+            graphCtx.textAlign = 'right';
+            graphCtx.fillText(maxStep, GRAPH_WIDTH - margin, GRAPH_HEIGHT - margin + 5);
+
+            // Draw data points
+            graphCtx.fillStyle = GRAPH_POINT_COLOR;
+            guidePathProgress.forEach(point => {
+                const x = margin + (point.step / xRange) * plotWidth;
+                const y = GRAPH_HEIGHT - margin - ((point.length - minPathLength) / yRange) * plotHeight;
+
+                graphCtx.beginPath();
+                graphCtx.arc(x, y, 2, 0, Math.PI * 2);
+                graphCtx.fill();
+            });
+
+            // Draw regression line
+            if (guidePathProgress.length >= 2) {
+                const linearReg = calculateLinearRegression(guidePathProgress);
+                const expReg = calculateExponentialRegression(guidePathProgress);
+
+                let bestRegression = null;
+                // Only consider valid regressions for comparison
+                const validLinear = linearReg.valid;
+                const validExp = expReg.valid;
+
+                if (validLinear && validExp) {
+                    bestRegression = linearReg.r2 > expReg.r2 ? { type: 'linear', ...linearReg } : { type: 'exponential', ...expReg };
+                } else if (validLinear) {
+                    bestRegression = { type: 'linear', ...linearReg };
+                } else if (validExp) {
+                    bestRegression = { type: 'exponential', ...expReg };
+                }
+
+                if (bestRegression && bestRegression.valid) {
+                    graphCtx.beginPath();
+                    graphCtx.strokeStyle = REGRESSION_LINE_COLOR;
+                    graphCtx.lineWidth = 1.5;
+                    graphCtx.setLineDash([5, 5]);
+
+                    // Define firstDataStep and lastDataStep
+                    const firstDataStep = guidePathProgress[0].step;
+                    const lastDataStep = guidePathProgress[guidePathProgress.length - 1].step;
+
+                    // Use a range of X values for plotting the regression line, not just the min/max data points
+                    // This creates a smoother line across the whole X-axis range of the data
+                    const plotStepIncrement = Math.max(1, Math.floor(xRange / 100)); // Plot at least 100 points
+                    for (let step = firstDataStep; step <= lastDataStep; step += plotStepIncrement) {
+                        let predictedY;
+                        if (bestRegression.type === 'linear') {
+                            predictedY = bestRegression.m * step + bestRegression.c;
+                        } else { // exponential
+                            predictedY = bestRegression.A * Math.exp(bestRegression.B * step);
+                        }
+
+                        const plotX = margin + (step / xRange) * plotWidth;
+                        const plotY = GRAPH_HEIGHT - margin - ((predictedY - minPathLength) / yRange) * plotHeight;
+
+                        if (step === firstDataStep) {
+                            graphCtx.moveTo(plotX, plotY);
+                        } else {
+                            graphCtx.lineTo(plotX, plotY);
+                        }
+                    }
+                    graphCtx.stroke();
+                    graphCtx.setLineDash([]); // Reset line dash
+                }
+            }
+        }
+
+        // --- Simulation Loop ---
+        let lastUpdateTime = 0;
+
+        function gameLoop(currentTime) {
+            if (!simulationRunning) return;
+
+            if (currentTime - lastUpdateTime > updateInterval) {
+                simulationStepCount++;
+                
+                evaporatePheromone(); // Pheromone evaporates for visual effect
+
+                ants.forEach(ant => {
+                    if (!ant.isMoving || ant.moveProgress >= 1) {
+                        ant.moveProgress = 0;
+
+                        if (ant.currentNodeIdx === endNodeIdx) {
+                            if (ant.pathLength < bestPath.length) {
+                                // New shortest path found! Update guide path and reset ALL ants.
+                                bestPath.length = ant.pathLength;
+                                bestPath.path = [...ant.path]; // Capture the path that led to this improvement
+                                domElements.bestPathInfo.textContent = `Shortest path found: ${bestPath.length.toFixed(2)} units (at step ${simulationStepCount})`;
+
+                                // Record this new best path for the graph
+                                guidePathProgress.push({ length: bestPath.length, step: simulationStepCount });
+                                if (guidePathProgress.length > MAX_GRAPH_POINTS) {
+                                    guidePathProgress.shift();
+                                }
+
+                                // Reset ALL ants to restart from startNode
+                                ants.forEach(a => resetSingleAnt(a, "new shortest path found"));
+
+                                // Check for simulation end condition
+                                // Using a small epsilon due to floating point arithmetic
+                                if (bestPath.length <= OPTIMAL_PATH_LENGTH + 0.001) {
+                                    simulationRunning = false;
+                                    domElements.bestPathInfo.textContent = `OPTIMAL PATH FOUND: ${bestPath.length.toFixed(2)} units (at step ${simulationStepCount})`;
+                                    console.log("Simulation stopped: Optimal path found.");
+                                }
+                                return; // All ants handled, break this ant's loop iteration
+                            } else {
+                                // Path not shorter, only this ant resets
+                                resetSingleAnt(ant, "path not shorter");
+                                return; // This ant handled
+                            }
+                        }
+
+                        // Select next node for the current ant
+                        const nextNodeIdx = selectNextNode(ant);
+
+                        if (nextNodeIdx === null) {
+                            // Ant stuck in dead end, reset it
+                            resetSingleAnt(ant, "stuck in dead end");
+                            return;
+                        }
+
+                        const currentNode = nodes[ant.currentNodeIdx];
+                        const nextNode = nodes[nextNodeIdx];
+                        const edgeKey = getEdgeKey(ant.currentNodeIdx, nextNodeIdx);
+                        const edge = edges.get(edgeKey);
+
+                        if (edge) {
+                            ant.pathLength += edge.distance;
+                            ant.currentNodeIdx = nextNodeIdx;
+                            ant.visitedNodes.add(nextNodeIdx);
+                            ant.path.push(nextNodeIdx);
+                            ant.targetX = nextNode.x;
+                            ant.targetY = nextNode.y;
+                            ant.isMoving = true;
+
+                            // Continuously deposit pheromone on the edge just traversed
+                            edge.pheromone += PHEROMONE_DEPOSIT_PER_STEP;
+                        } else {
+                            resetSingleAnt(ant, "missing edge during pathfinding");
+                        }
+                    }
+
+                    // Animate ant movement along the edge
+                    const prevNodeIdx = ant.path[ant.path.length - 2];
+                    const startNodeForMove = ant.path.length > 1 ? nodes[prevNodeIdx] : nodes[startNodeIdx];
+                    const endNodeForMove = nodes[ant.currentNodeIdx];
+
+                    ant.x = startNodeForMove.x + (endNodeForMove.x - startNodeForMove.x) * ant.moveProgress;
+                    ant.y = startNodeForMove.y + (endNodeForMove.y - startNodeForMove.y) * ant.moveProgress;
+                    ant.moveProgress += ant.speed;
+                });
+                lastUpdateTime = currentTime;
+            }
+
+            drawGrid();
+            drawAnts();
+            drawGraph();
+
+            animationFrameId = requestAnimationFrame(gameLoop);
+        }
+
+        // --- Event Listeners and Initial Setup ---
+
+        domElements.numAntsInput.addEventListener('input', (event) => {
+            numAnts = parseInt(event.target.value);
+            if (simulationRunning) resetSimulation();
+        });
+
+        domElements.simSpeedInput.addEventListener('input', (event) => {
+            updateInterval = parseInt(event.target.value);
+            domElements.speedValueSpan.textContent = `${updateInterval}ms`;
+        });
+
+        domElements.deviationProbabilityInput.addEventListener('input', (event) => {
+            deviationProbability = parseFloat(event.target.value);
+            domElements.deviationValueSpan.textContent = deviationProbability.toFixed(2);
+        });
+
+        // Removed findDiagonalPathCheckbox listener and logic
+        // domElements.findDiagonalPathCheckbox.addEventListener('change', (event) => {
+        //     findDiagonalPath = event.target.checked;
+        // });
+
+        domElements.startButton.addEventListener('click', resetSimulation);
+
+        // Set initial values and draw the scene once on load
+        domElements.numAntsInput.value = numAnts;
+        domElements.simSpeedInput.value = updateInterval;
+        domElements.speedValueSpan.textContent = `${updateInterval}ms`;
+        domElements.deviationProbabilityInput.value = deviationProbability;
+        domElements.deviationValueSpan.textContent = deviationProbability.toFixed(2);
+        // Removed initial checkbox state setting
+        // domElements.findDiagonalPathCheckbox.checked = findDiagonalPath;
+
+        resetSimulation();
+    </script>
+</body>
+</html>

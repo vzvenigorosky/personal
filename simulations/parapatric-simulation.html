@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Parapatric Speciation Animation</title>
+    <style>
+        /* Basic styling for the page */
+        body {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #1a1a2e; /* Very dark navy blue */
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            color: #f0f8ff;
+            text-align: center;
+        }
+        /* Styling for the canvas element */
+        canvas {
+            border-radius: 12px;
+            box-shadow: 0 8px 16px rgba(0,0,0,0.2);
+            max-width: 95%;
+            max-height: 75%;
+            aspect-ratio: 16 / 9;
+        }
+        /* Container for all text content */
+        .content-container {
+            margin-top: 20px;
+            max-width: 800px;
+            width: 90%;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+        /* Styling for the stage description text */
+        #stage-description {
+            font-size: 1.2em;
+            font-weight: bold;
+        }
+        /* Styling for the explanation text */
+        #explanation {
+            font-size: 1em;
+            line-height: 1.5;
+            color: #bdc8f5;
+        }
+        /* Styling for the reset button */
+        #resetButton {
+            margin-top: 10px;
+            padding: 10px 20px;
+            font-size: 1em;
+            font-weight: bold;
+            color: #fff;
+            background-color: #059669; /* Emerald Green */
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background-color 0.2s ease;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        }
+        #resetButton:hover {
+            background-color: #047857;
+        }
+    </style>
+</head>
+<body>
+
+    <canvas id="speciationCanvas"></canvas>
+    
+    <div class="content-container">
+        <div id="stage-description">Stage 1: A continuous population across a varied habitat.</div>
+        <div id="explanation">
+            <b>Parapatric speciation</b> occurs when a population is continuous, but does not mate randomly. The word comes from Greek: <i>para</i> ("beside") + <i>patris</i> ("fatherland"). Individuals are more likely to mate with their geographic neighbors, and different selective pressures at the extremes of the range cause divergence.
+        </div>
+        <button id="resetButton">Reset Animation</button>
+    </div>
+
+<script>
+    const canvas = document.getElementById('speciationCanvas');
+    const ctx = canvas.getContext('2d');
+    const stageDescription = document.getElementById('stage-description');
+    const resetButton = document.getElementById('resetButton');
+
+    // --- Configuration Constants ---
+    const FISH_COUNT = 80; 
+    const INITIAL_COLOR = { r: 255, g: 215, b: 0 }; // Gold
+    const BLUE_MORPH_COLOR = { r: 60, g: 130, b: 255 };
+    const RED_MORPH_COLOR = { r: 255, g: 70, b: 70 };
+    const HYBRID_COLOR = { r: 160, g: 100, b: 255 }; // Purple
+
+    let fishPopulation = [];
+    let animationStage = 1;
+    let frameCount = 0;
+    let animationFrameId;
+
+    // --- General Purpose Fish Class ---
+    class Fish {
+        constructor(x, y, color, morph) {
+            this.x = x; this.y = y; this.color = { ...color }; this.morph = morph;
+            this.vx = (Math.random() - 0.5) * 1.5; this.vy = (Math.random() - 0.5) * 1.5;
+            this.tailPhase = Math.random() * Math.PI * 2; this.tailOscillationSpeed = 0.2 + Math.random() * 0.1;
+            this.tailAmplitude = 4; this.bodyLength = 15; this.headLength = 8; this.tailLength = 12;
+            this.totalLength = this.headLength + this.bodyLength + this.tailLength; this.tailWidth = 14; this.bodyWidth = 8;
+        }
+        draw() {
+            const colorString = `rgb(${this.color.r}, ${this.color.g}, ${this.color.b})`;
+            const angle = Math.atan2(this.vy, this.vx);
+            ctx.save();
+            ctx.translate(this.x, this.y);
+            ctx.rotate(angle);
+            ctx.fillStyle = colorString;
+            ctx.fillRect(-this.bodyLength/2, -this.bodyWidth/2, this.bodyLength, this.bodyWidth);
+            ctx.beginPath();
+            ctx.moveTo(this.bodyLength/2, -this.bodyWidth/2); ctx.lineTo(this.bodyLength/2, this.bodyWidth/2); ctx.lineTo(this.bodyLength/2 + this.headLength, 0);
+            ctx.closePath(); ctx.fill();
+            const tailOscillationOffset = Math.sin(this.tailPhase) * this.tailAmplitude;
+            ctx.beginPath();
+            ctx.moveTo(-this.bodyLength/2, 0); ctx.lineTo(-this.bodyLength/2 - this.tailLength, -this.tailWidth/2 + tailOscillationOffset); ctx.lineTo(-this.bodyLength/2 - this.tailLength, this.tailWidth/2 + tailOscillationOffset);
+            ctx.closePath(); ctx.fill();
+            ctx.restore();
+        }
+        move() {
+            this.tailPhase += this.tailOscillationSpeed;
+            
+            // "Homing" instinct nudges fish back to their preferred side
+            if (this.morph === 'blue' && this.x > canvas.width * 0.55) this.vx -= 0.05;
+            if (this.morph === 'red' && this.x < canvas.width * 0.45) this.vx += 0.05;
+            
+            this.x += this.vx; this.y += this.vy;
+            const halfLen = this.totalLength / 2;
+            if (this.x < halfLen || this.x > canvas.width - halfLen) { this.vx *= -1; this.x = Math.max(halfLen, Math.min(canvas.width - halfLen, this.x)); }
+            if (this.y < halfLen || this.y > canvas.height - halfLen) { this.vy *= -1; this.y = Math.max(halfLen, Math.min(canvas.height - halfLen, this.y)); }
+        }
+    }
+
+    function lerpColor(start, end, amount) {
+        const t = Math.max(0, Math.min(1, amount));
+        return { r: start.r+(end.r-start.r)*t, g: start.g+(end.g-start.g)*t, b: start.b+(end.b-start.b)*t };
+    }
+
+    function resizeCanvas() {
+        const parent = canvas.parentElement;
+        const availableWidth = parent.clientWidth * 0.95;
+        const availableHeight = parent.clientHeight * 0.75;
+        const parentRatio = availableWidth / availableHeight;
+        const canvasRatio = 16 / 9;
+        if (parentRatio > canvasRatio) {
+            canvas.height = availableHeight; canvas.width = canvas.height * canvasRatio;
+        } else {
+            canvas.width = availableWidth; canvas.height = canvas.width / canvasRatio;
+        }
+        resetAnimation();
+    }
+
+    function resetAnimation() {
+        if (animationFrameId) cancelAnimationFrame(animationFrameId);
+        frameCount = 0; animationStage = 1;
+        stageDescription.textContent = 'Stage 1: A continuous population across a varied habitat.';
+        fishPopulation = [];
+        for (let i = 0; i < FISH_COUNT; i++) {
+            const x = Math.random() * canvas.width; const y = Math.random() * canvas.height;
+            fishPopulation.push(new Fish(x, y, INITIAL_COLOR, 'none'));
+        }
+        animate();
+    }
+
+    function drawBackground() {
+        const gradient = ctx.createLinearGradient(0, 0, canvas.width, 0);
+        gradient.addColorStop(0, `rgb(${BLUE_MORPH_COLOR.r}, ${BLUE_MORPH_COLOR.g}, ${BLUE_MORPH_COLOR.b})`);
+        gradient.addColorStop(1, `rgb(${RED_MORPH_COLOR.r}, ${RED_MORPH_COLOR.g}, ${RED_MORPH_COLOR.b})`);
+        ctx.fillStyle = gradient;
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+    }
+    
+    function animate() {
+        animationFrameId = requestAnimationFrame(animate);
+        frameCount++;
+        drawBackground();
+
+        if (frameCount > 300 && animationStage === 1) {
+            animationStage = 2; 
+            stageDescription.textContent = 'Stage 2: Different pressures cause populations at the extremes to diverge.';
+            // Assign morphs to all fish at the start of divergence
+            fishPopulation.forEach(fish => {
+                if (fish.morph === 'none') {
+                    fish.morph = (fish.x < canvas.width / 2) ? 'blue' : 'red';
+                }
+            });
+        }
+        if (frameCount > 800 && animationStage === 2) {
+            animationStage = 3; 
+            stageDescription.textContent = 'Stage 3: A stable hybrid zone forms where the populations meet.';
+        }
+
+        // --- Fish Logic ---
+        for (let i = fishPopulation.length - 1; i >= 0; i--) {
+            const fish = fishPopulation[i];
+            
+            if (animationStage >= 2 && fish.morph !== 'hybrid') {
+                const targetColor = fish.morph === 'blue' ? BLUE_MORPH_COLOR : RED_MORPH_COLOR;
+                fish.color = lerpColor(INITIAL_COLOR, targetColor, (frameCount - 300) / 500);
+            }
+            
+            fish.move();
+            fish.draw();
+
+            // Stage 3: Hybridization logic
+            if (animationStage === 3) {
+                // Check for interactions only in the central zone
+                const hybridZoneStart = canvas.width * 0.4;
+                const hybridZoneEnd = canvas.width * 0.6;
+                if(fish.x > hybridZoneStart && fish.x < hybridZoneEnd) {
+                    for(let j=0; j < fishPopulation.length; j++) {
+                        if (i === j) continue;
+                        const otherFish = fishPopulation[j];
+                        // Check for interaction between a blue and a red fish
+                        if (fish.morph === 'blue' && otherFish.morph === 'red') {
+                            const dist = Math.hypot(fish.x - otherFish.x, fish.y - otherFish.y);
+                            if (dist < 30) {
+                                fish.morph = 'hybrid';
+                                fish.color = HYBRID_COLOR;
+                                break; // Stop checking for this fish
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    window.addEventListener('resize', resizeCanvas);
+    resetButton.addEventListener('click', resetAnimation);
+    resizeCanvas();
+</script>
+
+</body>
+</html>

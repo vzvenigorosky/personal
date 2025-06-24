@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vincent Zvenigorosky | Molecular Biologist</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f8fafc; /* slate-50 */
+            color: #334155; /* slate-700 */
+        }
+        .header-gradient {
+            background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%);
+        }
+        .section-header {
+            border-bottom: 2px solid #3b82f6;
+            padding-bottom: 0.5rem;
+            margin-bottom: 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .card {
+            background-color: white;
+            border-radius: 0.75rem;
+            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -2px rgb(0 0 0 / 0.1);
+        }
+        .tag {
+            background-color: #e0f2fe; /* sky-100 */
+            color: #0369a1; /* sky-800 */
+            font-size: 0.75rem;
+            font-weight: 500;
+            padding: 0.25rem 0.75rem;
+            border-radius: 9999px;
+        }
+        canvas {
+            display: block;
+            width: 100%;
+            height: 100%;
+        }
+    </style>
+</head>
+<body class="antialiased">
+
+    <!-- Header -->
+    <header class="header-gradient text-white p-6 md:p-12 shadow-lg">
+        <div class="max-w-4xl mx-auto text-center">
+            <h1 class="text-4xl md:text-5xl font-bold">Vincent Zvenigorosky</h1>
+            <p class="mt-2 text-xl md:text-2xl opacity-90">Molecular Biologist & Bioinformatician</p>
+            <div class="mt-4 flex justify-center items-center space-x-6 text-sm">
+                <div>
+                    <i class="fas fa-envelope mr-2"></i>
+                    <a href="mailto:vincent.zvenigorosky@gmail.com" class="hover:underline">vincent.zvenigorosky@gmail.com</a>
+                </div>
+                <div>
+                    <i class="fas fa-phone mr-2"></i>
+                    +33(0)6.72.48.66.80
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Navigation -->
+    <nav class="bg-white sticky top-0 z-10 shadow-md">
+        <div class="max-w-4xl mx-auto">
+            <div class="flex justify-center space-x-4 md:space-x-8 py-3">
+                <a href="#about" class="text-gray-600 hover:text-blue-600 font-medium">About</a>
+                <a href="#research" class="text-gray-600 hover:text-blue-600 font-medium">Research</a>
+                <a href="#teaching" class="text-gray-600 hover:text-blue-600 font-medium">Teaching</a>
+                <a href="#simulations" class="text-gray-600 hover:text-blue-600 font-medium">Simulations</a>
+                <a href="#skills" class="text-gray-600 hover:text-blue-600 font-medium">Skills</a>
+            </div>
+        </div>
+    </nav>
+
+
+    <!-- Main Content -->
+    <main class="max-w-4xl mx-auto p-4 md:p-8">
+
+        <!-- About Section -->
+        <section id="about" class="mb-16 scroll-mt-20">
+             <div class="section-header">
+                <h2 class="text-3xl font-bold text-slate-800">About Me</h2>
+            </div>
+            <div class="text-lg text-slate-600 space-y-4">
+                <p>I am an interdisciplinary scientist with deep expertise in molecular biology, genetics, and computational analysis. My work bridges the gap between the laboratory and the computer, using cutting-edge genomic techniques to answer complex questions in evolutionary history, forensic science, and disease pathology.</p>
+                <p>From analyzing ancient DNA in archaeological samples to developing biostatistical models for modern genetic data, I am passionate about tackling challenging problems that require a multifaceted approach. I thrive on translating complex data into clear, compelling narratives and am dedicated to both pioneering research and educating the next generation of scientists.</p>
+            </div>
+        </section>
+
+        <!-- Research & Publications Section -->
+        <section id="research" class="mb-16 scroll-mt-20">
+            <div class="section-header">
+                <h2 class="text-3xl font-bold text-slate-800">Research Highlights</h2>
+                 <a href="#/research" class="inline-flex items-center px-4 py-2 bg-slate-100 hover:bg-slate-200 text-blue-600 rounded-full font-medium text-sm transition-colors">
+                    See All Publications
+                    <i class="fas fa-arrow-right ml-2"></i>
+                </a>
+            </div>
+            <p class="mb-8 text-slate-600">I have authored and co-authored numerous publications in international peer-reviewed journals. Below is a selection of my work. CLick the link above to see more.</p>
+            <div class="grid md:grid-cols-2 gap-6">
+                <!-- Publication Card 1 -->
+                <div class="card p-6">
+                    <h3 class="font-bold text-lg text-slate-800">Evaluation of whole-genome enrichment and sequencing of T. pallidum from FFPE samples after 75 years</h3>
+                    <p class="text-slate-500 mt-1">iScience (2024)</p>
+                    <p class="mt-2 text-slate-600">This study demonstrates the viability of recovering complete pathogen genomes from long-archived medical samples, opening new avenues for historical genomics.</p>
+                    <div class="mt-4"><span class="tag">First Author</span> <span class="tag">IF: 5.8</span></div>
+                </div>
+                 <!-- Publication Card 2 -->
+                <div class="card p-6">
+                    <h3 class="font-bold text-lg text-slate-800">The genetic legacy of legendary and historical Siberian chieftains</h3>
+                    <p class="text-slate-500 mt-1">Communications Biology (2020)</p>
+                    <p class="mt-2 text-slate-600">An in-depth archaeogenetic investigation into the kinship and lineage of historical figures in Siberia, blending historical accounts with genomic data.</p>
+                     <div class="mt-4"><span class="tag">First Author</span> <span class="tag">IF: 5.489</span></div>
+                </div>
+                 <!-- Publication Card 3 -->
+                <div class="card p-6">
+                    <h3 class="font-bold text-lg text-slate-800">Genetic kinship and admixture in Iron Age Scytho-Siberians</h3>
+                    <p class="text-slate-500 mt-1">Human Genetics (2019)</p>
+                    <p class="mt-2 text-slate-600">Co-first author publication detailing the population structure and family relationships within ancient Scytho-Siberian groups, revealing complex social structures.</p>
+                     <div class="mt-4"><span class="tag">Co-first Author</span> <span class="tag">IF: 5.331</span></div>
+                </div>
+                 <!-- Publication Card 4 -->
+                <div class="card p-6">
+                    <h3 class="font-bold text-lg text-slate-800">The genetics of kinship in remote human groups</h3>
+                    <p class="text-slate-500 mt-1">Forensic Science International: Genetics (2016)</p>
+                    <p class="mt-2 text-slate-600">This work explores novel methodologies for determining genetic relatedness in isolated populations, with significant implications for forensic and anthropological studies.</p>
+                     <div class="mt-4"><span class="tag">First Author</span> <span class="tag">IF: 4.882</span></div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Teaching Section -->
+        <section id="teaching" class="mb-16 scroll-mt-20">
+             <div class="section-header">
+                 <h2 class="text-3xl font-bold text-slate-800">Teaching & Mentoring</h2>
+                  <a href="#/teaching" class="inline-flex items-center px-4 py-2 bg-slate-100 hover:bg-slate-200 text-blue-600 rounded-full font-medium text-sm transition-colors">
+                    View Teaching Philosophy
+                    <i class="fas fa-arrow-right ml-2"></i>
+                </a>
+            </div>
+            <p class="mb-8 text-slate-600">I am committed to training the next generation of scientists. I have designed and taught courses at the university level, covering both theoretical concepts and practical applications in genetics.</p>
+            <div class="space-y-6">
+                <div class="card p-6">
+                    <h3 class="font-bold text-lg text-slate-800">Forensic Genetic Identification & Kinship</h3>
+                    <p class="text-blue-600 font-semibold">210+ Hours</p>
+                    <p class="mt-2 text-slate-600">Comprehensive instruction for Master's students in Forensic Medicine and Criminalistics. Topics include molecular biology methods, STR marker analysis, genetic profiling, and Bayesian statistical models for kinship determination. I have been responsible for preparing and grading exams for three years.</p>
+                </div>
+                <div class="card p-6">
+                    <h3 class="font-bold text-lg text-slate-800">Population Genetics</h3>
+                    <p class="text-blue-600 font-semibold">16 Hours</p>
+                    <p class="mt-2 text-slate-600">Delivered a series of lessons to Master's students in Ecology, Evolution, and Biology Education at the University of Strasbourg. The course focused on the use and interpretation of statistical methods and graphics in population genetics.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Bioinformatics & Simulations Section -->
+        <section id="simulations" class="mb-16 scroll-mt-20">
+             <div class="section-header">
+                <h2 class="text-3xl font-bold text-slate-800">Bioinformatics & Simulations</h2>
+                 <a href="#/simulations" class="inline-flex items-center px-4 py-2 bg-slate-100 hover:bg-slate-200 text-blue-600 rounded-full font-medium text-sm transition-colors">
+                    Explore More Simulations
+                    <i class="fas fa-arrow-right ml-2"></i>
+                </a>
+            </div>
+            <p class="mb-4 text-slate-600">A core part of my work involves computational biology, biostatistics, and creating simulations to model complex genetic processes. Below is a simple interactive visualization representing the double helix structure central to my genomic research. This is a placeholder for more complex simulations demonstrating population dynamics or phylogenetic analysis.</p>
+            <div class="card h-96 w-full p-4">
+                 <canvas id="dnaCanvas"></canvas>
+            </div>
+        </section>
+
+
+        <!-- Skills Section -->
+        <section id="skills" class="scroll-mt-20">
+             <div class="section-header">
+                 <h2 class="text-3xl font-bold text-slate-800">Skills Overview</h2>
+            </div>
+            <div class="grid md:grid-cols-2 gap-8">
+                <div>
+                    <h3 class="text-xl font-semibold mb-4 text-slate-700">Scientific & Technical</h3>
+                    <ul class="space-y-2">
+                        <li class="flex items-center"><i class="fas fa-check-circle text-blue-500 mr-3"></i>Bacterial & Cancer Genetics</li>
+                        <li class="flex items-center"><i class="fas fa-check-circle text-blue-500 mr-3"></i>Population & Evolutionary Genetics</li>
+                        <li class="flex items-center"><i class="fas fa-check-circle text-blue-500 mr-3"></i>Forensic Genetics & aDNA</li>
+                        <li class="flex items-center"><i class="fas fa-check-circle text-blue-500 mr-3"></i>NGS Data Analysis</li>
+                        <li class="flex items-center"><i class="fas fa-check-circle text-blue-500 mr-3"></i>Biostatistics & R Programming</li>
+                        <li class="flex items-center"><i class="fas fa-check-circle text-blue-500 mr-3"></i>ISO 17025 Quality Management</li>
+                    </ul>
+                </div>
+                <div>
+                    <h3 class="text-xl font-semibold mb-4 text-slate-700">Languages</h3>
+                     <ul class="space-y-2">
+                        <li class="flex items-center"><i class="fas fa-language text-blue-500 mr-3"></i>French (Native)</li>
+                        <li class="flex items-center"><i class="fas fa-language text-blue-500 mr-3"></i>English (Native)</li>
+                        <li class="flex items-center"><i class="fas fa-language text-blue-500 mr-3"></i>Russian</li>
+                        <li class="flex items-center"><i class="fas fa-language text-blue-500 mr-3"></i>German</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-slate-800 text-white mt-16 p-6 text-center">
+        <p>&copy; 2024 Vincent Zvenigorosky. All rights reserved.</p>
+        <p class="text-sm text-slate-400 mt-1">Website designed and built to showcase professional skills.</p>
+    </footer>
+
+    <script>
+        // Smooth scrolling for navigation links
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                // Keep default behavior for external-like links, but smooth-scroll for on-page anchors
+                if (this.getAttribute('href').length > 1 && this.getAttribute('href').startsWith('#/')) {
+                    // This is for future routing, do nothing for now.
+                    // Or, if you want to prevent clicks on these placeholder links:
+                    // e.preventDefault();
+                } else {
+                     e.preventDefault();
+                     document.querySelector(this.getAttribute('href')).scrollIntoView({
+                         behavior: 'smooth'
+                     });
+                }
+            });
+        });
+
+        // DNA Animation Simulation
+        const canvas = document.getElementById('dnaCanvas');
+        const ctx = canvas.getContext('2d');
+        let width, height;
+        let particles = [];
+        let time = 0;
+
+        function resizeCanvas() {
+            const container = canvas.parentElement;
+            width = canvas.width = container.clientWidth;
+            height = canvas.height = container.clientHeight;
+        }
+
+        class Particle {
+            constructor(y, strand) {
+                this.y = y;
+                this.strand = strand; // 0 or 1
+                this.x = 0;
+                this.z = 0;
+            }
+
+            update(t) {
+                const angle = this.y * 0.1 + t;
+                const radius = width * 0.2;
+                if (this.strand === 0) {
+                    this.x = width / 2 + Math.cos(angle) * radius;
+                    this.z = Math.sin(angle);
+                } else {
+                    this.x = width / 2 + Math.cos(angle + Math.PI) * radius;
+                    this.z = Math.sin(angle + Math.PI);
+                }
+            }
+
+            draw() {
+                ctx.beginPath();
+                const scale = (this.z + 1) / 2;
+                const r = 2 + scale * 4;
+                const alpha = 0.5 + scale * 0.5;
+                ctx.fillStyle = this.strand === 0 ? `rgba(59, 130, 246, ${alpha})` : `rgba(30, 64, 175, ${alpha})`;
+                ctx.arc(this.x, this.y, r, 0, Math.PI * 2);
+                ctx.fill();
+            }
+        }
+
+        function init() {
+            resizeCanvas();
+            particles = [];
+            for (let i = 0; i < height; i += 8) {
+                particles.push(new Particle(i, 0));
+                particles.push(new Particle(i, 1));
+            }
+        }
+
+        function animate() {
+            ctx.clearRect(0, 0, width, height);
+            time += 0.02;
+
+            // Sort particles by z-index for 3D effect
+            particles.sort((a, b) => a.z - b.z);
+
+            particles.forEach(p => {
+                p.update(time);
+                p.draw();
+            });
+
+            // Draw connections
+            for (let i = 0; i < particles.length; i += 2) {
+                // This logic needs to be more robust to find matching pairs
+                 const p1 = particles.find(p => p.y === Math.floor(i/2)*8 && p.strand === 0);
+                 const p2 = particles.find(p => p.y === Math.floor(i/2)*8 && p.strand === 1);
+
+                if(p1 && p2) {
+                     ctx.beginPath();
+                     ctx.moveTo(p1.x, p1.y);
+                     ctx.lineTo(p2.x, p2.y);
+                     const avgZ = (p1.z + p2.z) / 2;
+                     const alpha = 0.2 + ((avgZ + 1)/2) * 0.3;
+                     ctx.strokeStyle = `rgba(100, 116, 139, ${alpha})`;
+                     ctx.stroke();
+                }
+            }
+
+
+            requestAnimationFrame(animate);
+        }
+
+        window.addEventListener('resize', init);
+        
+        // Use a timeout to ensure the canvas is rendered before starting the animation
+        setTimeout(() => {
+             init();
+             animate();
+        }, 100);
+
+    </script>
+
+</body>
+</html>

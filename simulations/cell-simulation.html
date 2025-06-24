@@ -1,0 +1,717 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Enhanced Cell Simulation - Advanced Social & Physical Interactions</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        canvas { background-color: #4B5563; border-radius: 0.5rem; image-rendering: pixelated; display: block; }
+        .info-panel { background-color: #ffffff; border-radius: 0.5rem; padding: 1rem; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        .btn { padding: 0.5rem 1rem; border-radius: 0.375rem; font-weight: 500; transition: background-color 0.2s; cursor: pointer; }
+        .btn-primary { background-color: #3b82f6; color: white; }
+        .btn-primary:hover { background-color: #2563eb; }
+        .btn-secondary { background-color: #6b7280; color: white; }
+        .btn-secondary:hover { background-color: #4b5563; }
+        .btn-danger { background-color: #ef4444; color: white; }
+        .btn-danger:hover { background-color: #dc2626; }
+        .stat-card { background-color: #f9fafb; border: 1px solid #e5e7eb; border-radius: 0.5rem; padding: 0.75rem; }
+        #simulationStatus.restarting { color: #ef4444; font-weight: bold; }
+        #simulationStatus.running { color: #22c55e; }
+        #simulationStatus.paused, #simulationStatus.stopped, #simulationStatus.ready { color: #6b7280; }
+        .input-label { display: block; font-size: 0.875rem; font-weight: 500; color: #374151; margin-bottom: 0.25rem; }
+        .input-field, .select-field { width: 100%; padding: 0.5rem; border: 1px solid #d1d5db; border-radius: 0.375rem; box-sizing: border-box;}
+        .details-list { list-style-type: disc; list-style-position: inside; margin-left: 0.5rem; }
+        .details-list li { margin-bottom: 0.25rem;}
+        .checkbox-label { display: flex; align-items: center; font-size: 0.875rem; color: #374151; }
+        .checkbox-label input { margin-right: 0.5rem; }
+    </style>
+</head>
+<body class="bg-gray-100 text-gray-800 p-4 md:p-8">
+
+    <div class="container mx-auto max-w-7xl">
+        <header class="mb-6 text-center">
+            <h1 class="text-3xl md:text-4xl font-bold text-gray-700">Cell Simulation: Social & Physical Dynamics</h1>
+            <p class="text-gray-600 mt-1">Crowding defense, social targeting, and surface anchoring.</p>
+        </header>
+
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
+            <div class="lg:col-span-2 info-panel">
+                <canvas id="simulationCanvas" class="w-full h-auto aspect-[4/3]"></canvas>
+            </div>
+
+            <div class="space-y-4">
+                <div class="info-panel">
+                    <h2 class="text-xl font-semibold mb-3 text-gray-700">Controls & Settings</h2>
+                    <div class="grid grid-cols-2 gap-2 mb-4">
+                        <button id="startButton" class="btn btn-primary">Start</button>
+                        <button id="stopButton" class="btn btn-secondary">Stop</button>
+                        <button id="resetButton" class="btn btn-danger col-span-2">Apply Settings & Reset</button>
+                    </div>
+                    <div class="mb-3">
+                        <label for="simSpeed" class="input-label">Simulation Speed:</label>
+                        <input type="range" id="simSpeed" min="1" max="10" value="5" class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer">
+                    </div>
+                    <div class="mb-3">
+                        <label for="gravityStrengthInput" class="input-label">Gravity Strength: <span id="gravityStrengthValue">0.1</span></label>
+                        <input type="range" id="gravityStrengthInput" class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer" min="0" max="1" step="0.05" value="0.1">
+                    </div>
+                     <div class="mb-3">
+                        <label for="maxLifespanInput" class="input-label">Max Cell Lifespan (ticks): <span id="maxLifespanValue">5000</span></label>
+                        <input type="range" id="maxLifespanInput" class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer" min="1000" max="100000" step="1000" value="5000">
+                    </div>
+                    <div class="grid grid-cols-2 gap-3 mb-3">
+                        <div>
+                            <label for="canvasWidthInput" class="input-label">Initial Env. Width:</label>
+                            <input type="number" id="canvasWidthInput" class="input-field" value="800" min="300" max="1600" step="50">
+                        </div>
+                        <div>
+                            <label for="canvasHeightInput" class="input-label">Initial Env. Height:</label>
+                            <input type="number" id="canvasHeightInput" class="input-field" value="600" min="300" max="1200" step="50">
+                        </div>
+                    </div>
+                     <div class="grid grid-cols-2 gap-3 mb-3">
+                        <div>
+                            <label for="initialCellsInput" class="input-label">Initial Cells:</label>
+                            <input type="number" id="initialCellsInput" class="input-field" value="100" min="1" max="500">
+                        </div>
+                        <div>
+                            <label for="initialSugarInput" class="input-label">Initial Sugar:</label>
+                            <input type="number" id="initialSugarInput" class="input-field" value="1500" min="10" max="5000">
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="mapTypeInput" class="input-label">Map Type:</label>
+                        <select id="mapTypeInput" class="select-field">
+                            <option value="Open" selected>Open</option>
+                            <option value="VerticalBar">Vertical Bar</option>
+                            <option value="CircularObstacles">Circular Obstacles (C-Shapes)</option>
+                            <option value="OpenBoxes">Open Boxes</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="sugarSpawnRateInput" class="input-label">Auto Sugar Spawn Rate: <span id="sugarSpawnRateValue">0.15</span></label>
+                        <input type="range" id="sugarSpawnRateInput" class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer" min="0.00" max="0.5" step="0.01" value="0.15">
+                        <label class="checkbox-label mt-1">
+                            <input type="checkbox" id="enableAutoSugarSpawn" checked> Enable Auto Sugar
+                        </label>
+                    </div>
+                     <div class="grid grid-cols-2 gap-2 mb-3">
+                        <div>
+                            <label for="oneTimeSugarAmountInput" class="input-label">One-Time Sugar Amount:</label>
+                            <input type="number" id="oneTimeSugarAmountInput" class="input-field" value="50" min="10" max="500">
+                        </div>
+                        <button id="oneTimeSugarDropButton" class="btn btn-secondary self-end">Drop Sugar Pile</button>
+                    </div>
+                     <div class="mb-3">
+                        <label for="lightZonePercentageInput" class="input-label">Light Zone (% Top): <span id="lightZonePercentageValue">50</span>%</label>
+                        <input type="range" id="lightZonePercentageInput" class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer" min="0" max="100" step="5" value="50">
+                    </div>
+                     <div class="mb-3">
+                        <label for="temperatureInput" class="input-label">Global Temperature (°C): <span id="temperatureValue">25</span>°C</label>
+                        <input type="range" id="temperatureInput" class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer" min="0" max="100" step="1" value="25">
+                    </div>
+                    <div class="mb-3">
+                        <label for="shakeFrequencyInput" class="input-label">Shake Frequency (ticks, 0=off): <span id="shakeFrequencyValue">0</span></label>
+                        <input type="range" id="shakeFrequencyInput" class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer" min="0" max="500" step="10" value="0">
+                    </div>
+                    <div class="mb-3">
+                        <label for="shakeMagnitudeInput" class="input-label">Shake Max Strength (pixels): <span id="shakeMagnitudeValue">5</span></label>
+                        <input type="range" id="shakeMagnitudeInput" class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer" min="0" max="100" step="1" value="5">
+                    </div>
+                    <div class="grid grid-cols-2 gap-2 mt-3">
+                         <div>
+                            <label for="oneTimeShakeStrengthInput" class="input-label">One-Time Shake Str:</label>
+                            <input type="number" id="oneTimeShakeStrengthInput" class="input-field" value="20" min="1" max="200">
+                        </div>
+                        <button id="oneTimeShakeButton" class="btn btn-secondary self-end">Shake Now</button>
+                    </div>
+                     <p id="simulationStatus" class="text-sm text-center mt-3 p-2 rounded-md bg-gray-100">Not started</p>
+                </div>
+
+                <div class="info-panel">
+                    <h2 class="text-xl font-semibold mb-3 text-gray-700">Global Stats & Events</h2>
+                    <div class="space-y-2">
+                        <div class="stat-card">Cells: <span id="cellCount">0</span></div>
+                        <div class="stat-card">Total Sugar Pellets: <span id="totalSugar">0</span></div>
+                        <div class="stat-card">Sugar Pellets Consumed: <span id="sugarConsumedCount">0</span></div>
+                        <div class="stat-card">Net Energy from Sugar (ATP): <span id="totalEnergyFromSugar">0</span></div>
+                        <div class="stat-card">Net Energy from Photosynthesis: <span id="totalEnergyFromPhotosynthesis">0</span></div>
+                        <div class="stat-card">Avg. Energy: <span id="avgEnergy">0</span></div>
+                        <div class="stat-card">Avg. Biomass: <span id="avgBiomass">0</span></div>
+                        <div class="stat-card">Simulation Tick: <span id="simTick">0</span></div>
+                        <div class="stat-card">Current Unique Species (Signatures): <span id="currentUniqueSpecies">0</span></div>
+                        <div class="stat-card">Total Divisions: <span id="totalDivisions">0</span></div>
+                        <div class="stat-card">Total Deaths: <span id="totalDeaths">0</span></div>
+                        <div class="stat-card">Total Attacks: <span id="totalAttacks">0</span></div>
+                        <div class="stat-card">Total Speciations (Genetic): <span id="totalSpeciations">0</span></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="info-panel mb-6">
+            <h2 class="text-xl font-semibold mb-3 text-gray-700">Selected Cell Info (Click on a cell)</h2>
+            <div id="selectedCellInfo" class="text-sm space-y-1 text-gray-600">
+                <p>No cell selected.</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // --- Configuration Constants ---
+        const DEFAULTS = {
+            CANVAS_WIDTH: 800,
+            CANVAS_HEIGHT: 600,
+            CELL_MIN_RADIUS: 5,
+            CELL_MAX_RADIUS: 15,
+            INITIAL_CELLS: 100,
+            INITIAL_SUGAR_COUNT: 1500,
+            SUGAR_RADIUS: 2.5,
+            SUGAR_ENERGY_VALUE: 45,
+            SUGAR_UPTAKE_EFFICIENCY_BONUS_FACTOR: 0.6,
+            SUGAR_SPAWN_RATE: 0.15,
+            ENABLE_AUTO_SUGAR_SPAWN: true,
+            LIGHT_ZONE_PERCENTAGE: 50,
+            SHAKE_FREQUENCY: 0,
+            SHAKE_MAX_STRENGTH: 5,
+            DEFAULT_MAP_TYPE: 'Open',
+            DEFAULT_TEMPERATURE: 25,
+            GRAVITY_STRENGTH: 0.05,
+            BUOYANCY_EFFECTIVENESS: 0.15,
+            MAX_CELL_LIFESPAN: 5000,
+            TEMP_OPTIMAL: 50,
+            TEMP_EFFECT_SENSITIVITY: 0.02,
+            TEMP_MAX_MUTATION_BONUS_AT_HIGH_TEMP: 2.5,
+            TEMP_MIN_ACTIVITY_AT_ZERO_TEMP: 0.1,
+            TEMP_MAX_ACTIVITY_AT_HIGH_TEMP: 2.0,
+            HEAT_RESISTANCE_EFFECTIVENESS: 5,
+            COLD_RESISTANCE_EFFECTIVENESS: 5,
+            ENERGY_COST_PER_TICK: 0.011,
+            ENERGY_COST_PER_PROTEIN_EXPRESSION: 0.001,
+            ENERGY_COST_MOVE: 0.08,
+            ENERGY_COST_ATP_GEN: 0.15,
+            ENERGY_COST_DIVISION: 80,
+            GROWTH_ENERGY_THRESHOLD: 35,
+            DIVISION_SIZE_THRESHOLD_FACTOR: 1.8,
+            DIVISION_ENERGY_THRESHOLD: 100,
+            BASE_SUBSTITUTION_RATE: 0.002,
+            BASE_INSERTION_RATE: 0.0002,
+            BASE_DELETION_RATE: 0.0002,
+            MUTATION_RESISTANCE_FACTOR: 0.2,
+            LIGHT_MUTATION_MULTIPLIER: 1.5,
+            GENE_DUPLICATION_RATE: 0.005,
+            GENE_DELETION_RATE: 0.005,
+            PROTEIN_FUNCTION_THRESHOLD: 0.2,
+            MAX_GENE_LENGTH: 16,
+            MIN_GENE_LENGTH: 2,
+            INITIAL_GENES_PER_CELL: 4,
+            MAX_CELLS: 500,
+            INITIAL_CELL_ENERGY: 120,
+            ENERGY_COST_ATTACK: 8,
+            ENERGY_GAIN_FROM_PREY_FACTOR: 0.5,
+            PREDATION_HIGH_ENERGY_THRESHOLD_FACTOR: 2.5,
+            PREDATION_DIMINISHING_RETURN_FACTOR: 0.5,
+            LIGHT_VULNERABILITY_PREY_GAIN_BONUS: 0.1,
+            SUGAR_GAIN_FROM_PREY_FACTOR: 0.1,
+            BIOMASS_GAIN_FROM_PREY_FACTOR: 0.1,
+            RESOURCE_RECYCLE_EFFICIENCY_DEATH: 0.1,
+            ATTACK_RANGE_BASE: 1,
+            ATTACK_RANGE_AGGRESSION_BONUS: 3,
+            MIN_ENERGY_TO_ATTACK: 20,
+            EVENT_COUNT_UPDATE_INTERVAL: 100,
+            TRAIT_TO_COLOR_SENSITIVITY: 180,
+            MIN_FUNCTION_FOR_COLOR_EXPRESSION: 0.1,
+            PHOTOSYNTHESIS_GAIN_FACTOR: 0.25,
+            PHOTOSYNTHESIS_DARK_COST_FACTOR: 0.02,
+            PHOTOTAXIS_STRENGTH: 0.3,
+            GENERAL_REPULSION_STRENGTH: 0.2, // Passive repulsion force
+            GENERAL_ATTRACTION_STRENGTH: 0.15, // Passive attraction force
+            SOCIAL_PERCEPTION_RADIUS_FACTOR: 5, // Base radius factor for social targeting
+            SOCIAL_TARGETING_RANGE_BONUS_FACTOR: 20, // Extra range per social_attraction_target point
+            ANCHORING_EFFECTIVENESS_FACTOR: 0.95, // How much anchoring score reduces movement (0-1, 1=full stop)
+            ANCHORING_DISTANCE_THRESHOLD: 2, // How close to a surface to be considered for anchoring
+            CROWDING_DEFENSE_BONUS_PER_EXCESS_NEIGHBOR: 0.05, // e.g., 5% damage reduction per excess neighbor
+            MAX_CROWDING_DEFENSE_BONUS: 0.50, // Max 50% damage reduction from crowding
+            INTERFERENCE_RADIUS_FACTOR: 2.5,
+            MAX_NEIGHBORS_BEFORE_PENALTY: 3,
+            PHOTOSYNTHESIS_CROWDING_REDUCTION: 0.1,
+            ENERGY_COST_CROWDING_FACTOR: 0.003,
+            ATP_GENERATION_SUGAR_CONVERSION_RATE: 2.0,
+            METABOLIC_EFFICIENCY_SENSITIVITY: 0.4,
+            OBSTACLE_COLOR: 'rgba(107, 114, 128, 0.95)',
+            OBSTACLE_LINE_WIDTH: 12,
+            NUM_OPEN_BOXES: 3,
+            OPEN_BOX_MIN_SIZE: 50,
+            OPEN_BOX_MAX_SIZE: 150,
+        };
+
+        const AMINO_ACIDS = {
+            'S': { id: 'S', name: 'Structural', contributions: { stability: 0.25 } }, 'F': { id: 'F', name: 'SugarProcessor', contributions: { sugar_uptake_efficiency: 0.4 } },
+            'E': { id: 'E', name: 'ATPGenerator', contributions: { atp_generation: 0.35 } }, 'L': { id: 'L', name: 'MembraneLinker', contributions: { membrane_attachment: 0.4 } },
+            'M': { id: 'M', name: 'Motor', contributions: { motility: 0.3 } }, 'X': { id: 'X', name: 'SurfaceSensor', contributions: { sensing_sugar: 0.3, membrane_attachment: 0.1 } },
+            'A': { id: 'A', name: 'Aggressor', contributions: { aggression: 0.5 } }, 'K': { id: 'K', name: 'KinMarker', contributions: {} },
+            'Y': { id: 'Y', name: 'DNARepair', contributions: { mutation_resistance: 0.25 } }, 'H': { id: 'H', name: 'HelioProtein', contributions: { photosynthesis_efficiency: 0.5 } },
+            'V': { id: 'V', name: 'VisibleLightSeeker', contributions: { phototaxis_positive: 0.35 } }, 'N': { id: 'N', name: 'NyctoPhile', contributions: { phototaxis_negative: 0.35 } },
+            'J': { id: 'J', name: 'Jettison', contributions: { general_repulsion: 0.3 } }, 'C': { id: 'C', name: 'Cluster', contributions: { general_attraction: 0.25 } },
+            'T': { id: 'T', name: 'ThriftyMetabolism', contributions: { metabolic_efficiency: 0.2 } }, 'CR': {id: 'CR', name: 'ColdResist', contributions: { cold_resistance: 0.3 }},
+            'HR': {id: 'HR', name: 'HeatResist', contributions: { heat_resistance: 0.3 }},
+            'B': {id: 'B', name: 'Buoyant', contributions: { buoyancy: 0.5 }},
+            'So': {id: 'So', name: 'SocialSeeker', contributions: { social_attraction_target: 0.4 }}, // New
+            'An': {id: 'An', name: 'Anchor', contributions: { anchoring_strength: 0.6 }} // New
+        };
+        const AA_TYPES = Object.keys(AMINO_ACIDS);
+        const BASES = ['A', 'C', 'G', 'U'];
+        let GENETIC_CODE = {};
+
+        function initializeGeneticCode() { GENETIC_CODE = {}; const allPossibleCodons = []; BASES.forEach(b1 => { BASES.forEach(b2 => { BASES.forEach(b3 => { allPossibleCodons.push(b1 + b2 + b3); }); }); }); for (let i = allPossibleCodons.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [allPossibleCodons[i], allPossibleCodons[j]] = [allPossibleCodons[j], allPossibleCodons[i]]; } let codonIndex = 0; const aaTypesToAssign = [...AA_TYPES]; for (const aaType of aaTypesToAssign) { if (codonIndex < allPossibleCodons.length) { GENETIC_CODE[allPossibleCodons[codonIndex++]] = aaType; } else { break; } } while (codonIndex < allPossibleCodons.length) { GENETIC_CODE[allPossibleCodons[codonIndex++]] = 'STOP'; } if (!Object.values(GENETIC_CODE).includes('STOP')) { if (allPossibleCodons.length > 0) { GENETIC_CODE[allPossibleCodons[allPossibleCodons.length -1]] = 'STOP'; } else { GENETIC_CODE['UUU'] = 'STOP'; } } }
+        initializeGeneticCode();
+
+        function randomChoice(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
+        function randomFloat(min, max) { return Math.random() * (max - min) + min; }
+        function distance(p1, p2) { return Math.sqrt(Math.pow(p1.x - p2.x, 2) + Math.pow(p1.y - p2.y, 2)); }
+
+        class Protein {
+            constructor(aaSequence) { this.aaSequence = aaSequence; this.functions = this.deriveFunctions(); this.id = `P-${Math.random().toString(36).substr(2, 5)}`; this.aaIdSequence = this.aaSequence.map(aa => aa.id).join('-'); }
+            deriveFunctions() {
+                const potentialFunctions = { stability: 0, sugar_uptake_efficiency: 0, atp_generation: 0, membrane_attachment: 0, motility: 0, sensing_sugar: 0, aggression: 0, mutation_resistance: 0, photosynthesis_efficiency: 0, phototaxis_positive: 0, phototaxis_negative: 0, general_repulsion: 0, general_attraction: 0, metabolic_efficiency: 0, cold_resistance: 0, heat_resistance: 0, buoyancy: 0, social_attraction_target: 0, anchoring_strength: 0 }; // Added new
+                this.aaSequence.forEach(aa => { if (AMINO_ACIDS[aa.id] && AMINO_ACIDS[aa.id].contributions) { for (const funcName in AMINO_ACIDS[aa.id].contributions) { if (potentialFunctions.hasOwnProperty(funcName)) { potentialFunctions[funcName] += AMINO_ACIDS[aa.id].contributions[funcName]; } } } });
+                const actualFunctions = {};
+                for (const funcName in potentialFunctions) { if (potentialFunctions[funcName] >= DEFAULTS.PROTEIN_FUNCTION_THRESHOLD) { actualFunctions[funcName] = potentialFunctions[funcName]; } }
+                return actualFunctions;
+            }
+            getDescription() { const funcDesc = Object.entries(this.functions).map(([name, efficiency]) => `${name} (eff: ${efficiency.toFixed(2)})`).join(', '); return `Protein (${this.aaIdSequence}), Functions: ${funcDesc || 'None'}`; }
+        }
+        class Genome { constructor(genes = []) { this.genes = genes; } static createCodon() { return randomChoice(BASES) + randomChoice(BASES) + randomChoice(BASES); } static createGene(minCodons, maxCodons, preferredAAs = []) { const geneLength = Math.floor(randomFloat(minCodons, maxCodons)); const geneCodons = []; const stopCodons = Object.keys(GENETIC_CODE).filter(c => GENETIC_CODE[c] === 'STOP'); if (stopCodons.length === 0) stopCodons.push('UUU'); let availableCodingCodons; if (preferredAAs.length > 0) { availableCodingCodons = Object.keys(GENETIC_CODE).filter(c => preferredAAs.includes(GENETIC_CODE[c])); if (availableCodingCodons.length === 0) { availableCodingCodons = Object.keys(GENETIC_CODE).filter(c => GENETIC_CODE[c] !== 'STOP' && AMINO_ACIDS[GENETIC_CODE[c]]); } } else { availableCodingCodons = Object.keys(GENETIC_CODE).filter(c => GENETIC_CODE[c] !== 'STOP' && AMINO_ACIDS[GENETIC_CODE[c]]); } if (availableCodingCodons.length === 0) availableCodingCodons.push("AAA"); for (let j = 0; j < geneLength; j++) { geneCodons.push(randomChoice(availableCodingCodons)); } geneCodons.push(randomChoice(stopCodons)); return geneCodons; }
+            static createRandom(numGenes, minGeneLen, maxGeneLen) {
+                const genes = [];
+                genes.push(Genome.createGene(minGeneLen, maxGeneLen, ['K'])); // Species
+                if (numGenes > 1) genes.push(Genome.createGene(minGeneLen, maxGeneLen, ['M', 'B', 'An'])); // Motility, Buoyancy, Anchor
+                if (numGenes > 2) genes.push(Genome.createGene(minGeneLen, maxGeneLen, ['X', 'F', 'E', 'So'])); // Sensing, Metabolism, Social
+                if (numGenes > 3) genes.push(Genome.createGene(minGeneLen, maxGeneLen, ['H', 'Y', 'T'])); // Photosynthesis, Repair, Thrifty
+                for (let i = genes.length; i < numGenes; i++) { genes.push(Genome.createGene(minGeneLen, maxGeneLen, AA_TYPES.filter(aa => aa !== 'K'))); } // Fill with non-species genes
+                return new Genome(genes);
+            }
+            replicate(mutationResistanceScore = 0, currentTemp = DEFAULTS.TEMP_OPTIMAL, isInLightZone = false) { let tempMutationFactor = 1.0; if (currentTemp > DEFAULTS.TEMP_OPTIMAL) { tempMutationFactor = 1 + (DEFAULTS.TEMP_MAX_MUTATION_BONUS_AT_HIGH_TEMP - 1) * ((currentTemp - DEFAULTS.TEMP_OPTIMAL) / (100 - DEFAULTS.TEMP_OPTIMAL)); } else if (currentTemp < DEFAULTS.TEMP_OPTIMAL) { tempMutationFactor = 1 - (1 - DEFAULTS.TEMP_MIN_ACTIVITY_AT_ZERO_TEMP) * ((DEFAULTS.TEMP_OPTIMAL - currentTemp) / DEFAULTS.TEMP_OPTIMAL) * 0.5; } tempMutationFactor = Math.max(0.5, Math.min(tempMutationFactor, DEFAULTS.TEMP_MAX_MUTATION_BONUS_AT_HIGH_TEMP)); let effectiveSubRate = DEFAULTS.BASE_SUBSTITUTION_RATE * tempMutationFactor; let effectiveInsRate = DEFAULTS.BASE_INSERTION_RATE * tempMutationFactor; let effectiveDelRate = DEFAULTS.BASE_DELETION_RATE * tempMutationFactor; const resistanceEffect = 1 - Math.min(0.9, mutationResistanceScore * DEFAULTS.MUTATION_RESISTANCE_FACTOR); effectiveSubRate *= resistanceEffect; effectiveInsRate *= resistanceEffect; effectiveDelRate *= resistanceEffect; if (isInLightZone) { effectiveSubRate *= DEFAULTS.LIGHT_MUTATION_MULTIPLIER; effectiveInsRate *= DEFAULTS.LIGHT_MUTATION_MULTIPLIER; effectiveDelRate *= DEFAULTS.LIGHT_MUTATION_MULTIPLIER; } let newGenesArray = this.genes.map(geneCodonArray => { let baseString = geneCodonArray.slice(0, -1).join(''); const stopCodon = geneCodonArray[geneCodonArray.length -1]; let newBaseString = ""; for (let i = 0; i < baseString.length; i++) { if (Math.random() < effectiveDelRate) { continue; } if (Math.random() < effectiveInsRate) { newBaseString += randomChoice(BASES); } if (Math.random() < effectiveSubRate) { newBaseString += randomChoice(BASES); } else { newBaseString += baseString[i]; } } const newGeneCodons = []; for (let i = 0; i < newBaseString.length; i += 3) { if (i + 3 <= newBaseString.length) { newGeneCodons.push(newBaseString.substring(i, i + 3)); } } newGeneCodons.push(stopCodon); return newGeneCodons; }); if (Math.random() < DEFAULTS.GENE_DUPLICATION_RATE * this.genes.length) { if (newGenesArray.length > 0 && newGenesArray.length < 20) { const idx = Math.floor(Math.random() * newGenesArray.length); newGenesArray.splice(idx, 0, JSON.parse(JSON.stringify(newGenesArray[idx]))); } } if (newGenesArray.length > 1 && Math.random() < DEFAULTS.GENE_DELETION_RATE * this.genes.length) { let idxDel = Math.floor(Math.random() * newGenesArray.length); if (idxDel === 0 && newGenesArray.length > 1 && Math.random() < 0.5) { idxDel = Math.floor(randomFloat(1, newGenesArray.length)); } if (newGenesArray.length > 1) { newGenesArray.splice(idxDel, 1); } } if (newGenesArray.length === 0) { newGenesArray.push(Genome.createGene(DEFAULTS.MIN_GENE_LENGTH, DEFAULTS.MAX_GENE_LENGTH, ['K'])); } return new Genome(newGenesArray); } translateToProteins() { const proteins = []; this.genes.forEach(geneCodons => { const aaSequence = []; for (const codon of geneCodons) { const aaId = GENETIC_CODE[codon]; if (!aaId || aaId === 'STOP' || !AMINO_ACIDS[aaId]) break; aaSequence.push(AMINO_ACIDS[aaId]); } if (aaSequence.length > 0) proteins.push(new Protein(aaSequence)); }); return proteins; } getDescription() { return this.genes.map((gene, i) => `Gene ${i}${i===0 ? '(Species)' : ''}: ${gene.join('-')}`).join('<br>'); } }
+
+        class Cell {
+            constructor(id, x, y, genome, initialEnergy, initialInternalSugar, environment) { this.id = id; this.x = x; this.y = y; this.radius = DEFAULTS.CELL_MIN_RADIUS; this.genome = genome; this.proteins = this.genome.translateToProteins(); this.functionalScores = this.calculateFunctionalScores(); this.speciesSignature = (this.proteins.length > 0 && this.proteins[0]) ? this.proteins[0].aaIdSequence : "undefined-" + Math.random().toString(16).slice(2,8); this.energy = initialEnergy; this.internalSugar = initialInternalSugar; this.biomass = 0; this.environment = environment; const rScore = this.functionalScores.aggression || 0, gScore = this.functionalScores.photosynthesis_efficiency || 0, bScore = this.functionalScores.sugar_uptake_efficiency || 0; if (rScore + gScore + bScore < DEFAULTS.MIN_FUNCTION_FOR_COLOR_EXPRESSION) { this.color = `rgb(128, 128, 128)`; } else { this.color = `rgb(${Math.min(255, Math.floor(rScore * DEFAULTS.TRAIT_TO_COLOR_SENSITIVITY))}, ${Math.min(255, Math.floor(gScore * DEFAULTS.TRAIT_TO_COLOR_SENSITIVITY))}, ${Math.min(255, Math.floor(bScore * DEFAULTS.TRAIT_TO_COLOR_SENSITIVITY))})`; } this.targetSugar = null; this.targetCell = null; this.age = 0; this.timeSinceLastSugar = 0; this.timeSinceLastAttackAttempt = 0; this.currentSensingRange = 0; this.isInLightZone = false; this.isAnchoredThisTick = false; }
+            calculateFunctionalScores() { const scores = { stability: 0, sugar_uptake_efficiency: 0, atp_generation: 0, membrane_attachment: 0, motility: 0, sensing_sugar: 0, aggression: 0, mutation_resistance: 0, photosynthesis_efficiency: 0, phototaxis_positive: 0, phototaxis_negative: 0, general_repulsion: 0, general_attraction: 0, metabolic_efficiency: 0, cold_resistance: 0, heat_resistance: 0, buoyancy: 0, social_attraction_target: 0, anchoring_strength: 0 }; this.proteins.forEach(p => { for (const funcName in p.functions) { if (scores.hasOwnProperty(funcName)) { scores[funcName] += p.functions[funcName]; } } }); return scores; }
+            update() {
+                this.age++; this.timeSinceLastSugar++; this.timeSinceLastAttackAttempt++;
+                if (this.age > this.environment.maxCellLifespan) { this.energy = -1; }
+
+                let effectiveTemperature = this.environment.currentTemperature; if (effectiveTemperature < DEFAULTS.TEMP_OPTIMAL) { effectiveTemperature = Math.min(DEFAULTS.TEMP_OPTIMAL, effectiveTemperature + (this.functionalScores.cold_resistance || 0) * DEFAULTS.COLD_RESISTANCE_EFFECTIVENESS); } else if (effectiveTemperature > DEFAULTS.TEMP_OPTIMAL) { effectiveTemperature = Math.max(DEFAULTS.TEMP_OPTIMAL, effectiveTemperature - (this.functionalScores.heat_resistance || 0) * DEFAULTS.HEAT_RESISTANCE_EFFECTIVENESS); } let activityFactor = 1.0; if (effectiveTemperature <= 0) { activityFactor = DEFAULTS.TEMP_MIN_ACTIVITY_AT_ZERO_TEMP; } else if (effectiveTemperature >= 100) { this.energy = -1; } else { const dev = effectiveTemperature - DEFAULTS.TEMP_OPTIMAL; activityFactor = Math.max(DEFAULTS.TEMP_MIN_ACTIVITY_AT_ZERO_TEMP, Math.min(1 + dev * DEFAULTS.TEMP_EFFECT_SENSITIVITY, DEFAULTS.TEMP_MAX_ACTIVITY_AT_HIGH_TEMP)); } let baseRate = DEFAULTS.ENERGY_COST_PER_TICK * (1 - Math.min(0.8, (this.functionalScores.metabolic_efficiency || 0) * DEFAULTS.METABOLIC_EFFICIENCY_SENSITIVITY)); let baseMetabolicCost = baseRate * (1 + (this.radius - DEFAULTS.CELL_MIN_RADIUS) / DEFAULTS.CELL_MIN_RADIUS) * activityFactor; let proteinExpressionCost = this.proteins.length * DEFAULTS.ENERGY_COST_PER_PROTEIN_EXPRESSION * activityFactor;
+                
+                let neighborCount = 0; const interferenceRadius = this.radius * DEFAULTS.INTERFERENCE_RADIUS_FACTOR;
+                this.environment.cells.forEach(oc => { if (oc !== this && distance(this, oc) < interferenceRadius + oc.radius) neighborCount++; });
+                this.currentNeighborCount = neighborCount; // Store for attack resistance check
+
+                let currentPhotoGainFactor = (this.functionalScores.photosynthesis_efficiency || 0) > 0 ? (this.functionalScores.photosynthesis_efficiency * DEFAULTS.PHOTOSYNTHESIS_GAIN_FACTOR) * activityFactor : 0; let crowdingPenaltyCost = 0; if (neighborCount > DEFAULTS.MAX_NEIGHBORS_BEFORE_PENALTY) { const excess = neighborCount - DEFAULTS.MAX_NEIGHBORS_BEFORE_PENALTY; crowdingPenaltyCost = excess * DEFAULTS.ENERGY_COST_CROWDING_FACTOR * activityFactor; if (currentPhotoGainFactor > 0) currentPhotoGainFactor *= Math.max(0, 1 - excess * DEFAULTS.PHOTOSYNTHESIS_CROWDING_REDUCTION); } this.energy -= (baseMetabolicCost + proteinExpressionCost + crowdingPenaltyCost); this.isInLightZone = this.y < this.environment.canvasHeight * (this.environment.lightZonePercentage / 100); if (this.isInLightZone && currentPhotoGainFactor > 0) { this.energy += currentPhotoGainFactor; this.environment.totalEventCounts.totalEnergyFromPhotosynthesisValue += currentPhotoGainFactor; } else if (!this.isInLightZone && (this.functionalScores.photosynthesis_efficiency || 0) > 0) { this.energy -= this.functionalScores.photosynthesis_efficiency * DEFAULTS.PHOTOSYNTHESIS_DARK_COST_FACTOR * activityFactor; }
+                
+                if ((this.functionalScores.sensing_sugar || 0) > 0 && (!this.targetSugar || this.timeSinceLastSugar > 50) && !this.targetCell) { this.findClosestSugar(this.functionalScores.sensing_sugar * 75 + this.radius + 10); this.timeSinceLastSugar = 0; }
+                if ((this.functionalScores.aggression || 0) > 0 && this.energy > DEFAULTS.MIN_ENERGY_TO_ATTACK && this.timeSinceLastAttackAttempt > 20) { if (!this.targetCell || !this.environment.cells.includes(this.targetCell)) { this.findClosestCellTarget(this.functionalScores.aggression * DEFAULTS.ATTACK_RANGE_AGGRESSION_BONUS + this.radius + DEFAULTS.ATTACK_RANGE_BASE); } if (this.targetCell && this.targetCell.speciesSignature !== this.speciesSignature) { this.attemptAttack(); this.timeSinceLastAttackAttempt = 0; } else if (this.targetCell && this.targetCell.speciesSignature === this.speciesSignature) { this.targetCell = null; } }
+                
+                this.isAnchoredThisTick = false; // Reset anchor status
+                if ((this.functionalScores.motility || 0) > 0 || Math.abs(this.environment.gravityStrength - (this.functionalScores.buoyancy || 0) * DEFAULTS.BUOYANCY_EFFECTIVENESS) > 0.001 || (this.functionalScores.social_attraction_target || 0) > 0 ) {
+                    this.move(this.functionalScores.motility || 0, activityFactor);
+                }
+                
+                if ((this.functionalScores.atp_generation || 0) > 0 && this.internalSugar > 0) { this.generateATP(this.functionalScores.atp_generation, activityFactor); } if (this.energy > DEFAULTS.GROWTH_ENERGY_THRESHOLD && this.radius < DEFAULTS.CELL_MAX_RADIUS) { const ga = 0.05 * (this.energy / DEFAULTS.GROWTH_ENERGY_THRESHOLD) * activityFactor; this.radius = Math.min(this.radius + ga, DEFAULTS.CELL_MAX_RADIUS); this.energy -= ga * 10; } const divSizeThresh = DEFAULTS.CELL_MIN_RADIUS * DEFAULTS.DIVISION_SIZE_THRESHOLD_FACTOR; if (this.radius >= divSizeThresh && this.energy > DEFAULTS.DIVISION_ENERGY_THRESHOLD && (this.energy - DEFAULTS.ENERGY_COST_DIVISION * activityFactor) / 2 > DEFAULTS.ENERGY_COST_PER_TICK * activityFactor * 100) { this.divide(); }
+                if (this.energy <= 0 || ((this.functionalScores.stability || 0) < 0.05 && Math.random() < 0.02)) { this.environment.currentIntervalEventCounts.deaths++; this.environment.removeCell(this); this.environment.addSugarPellets(this.x, this.y, this.internalSugar * DEFAULTS.RESOURCE_RECYCLE_EFFICIENCY_DEATH + (this.energy > 0 ? this.energy : 0) * DEFAULTS.RESOURCE_RECYCLE_EFFICIENCY_DEATH / 2 + this.biomass * DEFAULTS.RESOURCE_RECYCLE_EFFICIENCY_DEATH); }
+            }
+            findClosestSugar(sensingRange) { this.currentSensingRange = sensingRange; let closestDist = Infinity; let foundSugar = null; this.environment.sugars.forEach(s => { const d = distance(this, s); if (d < sensingRange && d < closestDist) { closestDist = d; foundSugar = s; } }); this.targetSugar = foundSugar; if (foundSugar) this.targetCell = null; }
+            findClosestCellTarget(attackRange) { let closestDist = Infinity; let potentialTarget = null; this.environment.cells.forEach(c => { if (c === this) return; const d = distance(this, c); if (d < attackRange && d < closestDist) { closestDist = d; potentialTarget = c; } }); this.targetCell = potentialTarget; if (potentialTarget) this.targetSugar = null; }
+            findClosestSocialTarget(perceptionRadius) { // New method
+                let closestDist = Infinity;
+                let socialTarget = null;
+                this.environment.cells.forEach(otherCell => {
+                    if (otherCell === this) return;
+                    const d = distance(this, otherCell);
+                    if (d < perceptionRadius && d < closestDist) {
+                        closestDist = d;
+                        socialTarget = otherCell;
+                    }
+                });
+                return socialTarget;
+            }
+            attemptAttack() {
+                if (!this.targetCell || !this.environment.cells.includes(this.targetCell) || this.energy < DEFAULTS.MIN_ENERGY_TO_ATTACK) { this.targetCell = null; return; }
+                this.energy -= DEFAULTS.ENERGY_COST_ATTACK;
+                const actualAttackRange = this.radius + this.targetCell.radius + DEFAULTS.ATTACK_RANGE_BASE + (this.functionalScores.aggression * DEFAULTS.ATTACK_RANGE_AGGRESSION_BONUS);
+
+                if (distance(this, this.targetCell) <= actualAttackRange) {
+                    let eGainFactor = DEFAULTS.ENERGY_GAIN_FROM_PREY_FACTOR, sGainFactor = DEFAULTS.SUGAR_GAIN_FROM_PREY_FACTOR, bGainFactor = DEFAULTS.BIOMASS_GAIN_FROM_PREY_FACTOR;
+                    if (this.energy > DEFAULTS.INITIAL_CELL_ENERGY * DEFAULTS.PREDATION_HIGH_ENERGY_THRESHOLD_FACTOR) { eGainFactor *= DEFAULTS.PREDATION_DIMINISHING_RETURN_FACTOR; sGainFactor *= DEFAULTS.PREDATION_DIMINISHING_RETURN_FACTOR; bGainFactor *= DEFAULTS.PREDATION_DIMINISHING_RETURN_FACTOR; }
+                    if (this.targetCell.isInLightZone) { eGainFactor += DEFAULTS.LIGHT_VULNERABILITY_PREY_GAIN_BONUS; }
+
+                    // Apply crowding defense bonus
+                    const targetNeighbors = this.targetCell.currentNeighborCount || 0;
+                    if (targetNeighbors > DEFAULTS.MAX_NEIGHBORS_BEFORE_PENALTY) {
+                        const excessNeighbors = targetNeighbors - DEFAULTS.MAX_NEIGHBORS_BEFORE_PENALTY;
+                        const defenseMultiplier = 1.0 - Math.min(DEFAULTS.MAX_CROWDING_DEFENSE_BONUS, excessNeighbors * DEFAULTS.CROWDING_DEFENSE_BONUS_PER_EXCESS_NEIGHBOR);
+                        eGainFactor *= defenseMultiplier;
+                        sGainFactor *= defenseMultiplier;
+                        bGainFactor *= defenseMultiplier;
+                    }
+
+                    const pE = this.targetCell.energy, pS = this.targetCell.internalSugar, pB = this.targetCell.biomass;
+                    this.energy += pE * eGainFactor; this.internalSugar += pS * sGainFactor; this.biomass += (pE + pS) * bGainFactor + pB;
+                    this.environment.currentIntervalEventCounts.attacks++; this.environment.currentIntervalEventCounts.deaths++;
+                    this.environment.removeCell(this.targetCell); this.targetCell = null;
+                } else { this.targetCell = null; }
+            }
+            move(motilityScore, activityFactor = 1) {
+                const prevCellY = this.y;
+                let netVerticalForce = this.environment.gravityStrength - (this.functionalScores.buoyancy || 0) * DEFAULTS.BUOYANCY_EFFECTIVENESS;
+                netVerticalForce *= activityFactor;
+                this.isAnchoredThisTick = false; // Reset before vertical movement
+
+                if (Math.abs(netVerticalForce) > 0.001) {
+                    let intendedCellY = prevCellY + netVerticalForce;
+                    let finalCellY = intendedCellY;
+                    if (netVerticalForce > 0) { finalCellY = Math.min(finalCellY, this.environment.canvasHeight - this.radius); }
+                    else { finalCellY = Math.max(finalCellY, this.radius); }
+
+                    for (const obs of this.environment.obstacles) {
+                        let potentialRestingYOnThisObs = (netVerticalForce > 0) ? Infinity : -Infinity;
+                        if (obs.type === 'rect') { if (this.x + this.radius > obs.x && this.x - this.radius < obs.x + obs.width) { if (netVerticalForce > 0 && prevCellY - this.radius < obs.y && intendedCellY >= obs.y - this.radius) { potentialRestingYOnThisObs = obs.y - this.radius; } else if (netVerticalForce < 0 && prevCellY + this.radius > obs.y + obs.height && intendedCellY <= obs.y + obs.height + this.radius) { potentialRestingYOnThisObs = obs.y + obs.height + this.radius; } }
+                        } else if (obs.type === 'arc' && obs.isWall) { const dx = this.x - obs.x; if (Math.abs(dx) <= obs.radius) { let onSegment = false; let surfaceY = 0; if (netVerticalForce > 0) { const yOffset = -Math.sqrt(Math.max(0, obs.radius * obs.radius - dx * dx)); surfaceY = obs.y + yOffset; let angle = (Math.atan2(yOffset, dx) + 2 * Math.PI) % (2 * Math.PI); let start = (obs.wallStartAngle + 2 * Math.PI) % (2 * Math.PI); let end = (obs.wallEndAngle + 2 * Math.PI) % (2 * Math.PI); onSegment = (start <= end) ? (angle >= start && angle <= end) : (angle >= start || angle <= end); if (onSegment && prevCellY - this.radius < surfaceY && intendedCellY >= surfaceY - this.radius) { potentialRestingYOnThisObs = surfaceY - this.radius; } } else { const yOffset = Math.sqrt(Math.max(0, obs.radius * obs.radius - dx * dx)); surfaceY = obs.y + yOffset; let angle = (Math.atan2(yOffset, dx) + 2 * Math.PI) % (2 * Math.PI); let start = (obs.wallStartAngle + 2 * Math.PI) % (2 * Math.PI); let end = (obs.wallEndAngle + 2 * Math.PI) % (2 * Math.PI); onSegment = (start <= end) ? (angle >= start && angle <= end) : (angle >= start || angle <= end); if (onSegment && prevCellY + this.radius > surfaceY && intendedCellY <= surfaceY + this.radius) { potentialRestingYOnThisObs = surfaceY + this.radius; } } } }
+                        if (netVerticalForce > 0 && potentialRestingYOnThisObs < finalCellY) { finalCellY = potentialRestingYOnThisObs; this.isAnchoredThisTick = true; }
+                        else if (netVerticalForce < 0 && potentialRestingYOnThisObs > finalCellY) { finalCellY = potentialRestingYOnThisObs; this.isAnchoredThisTick = true; }
+                    }
+                    this.y = finalCellY;
+                    this.y = Math.max(this.radius, Math.min(this.y, this.environment.canvasHeight - this.radius));
+                    if (this.y === this.radius || this.y === this.environment.canvasHeight - this.radius) this.isAnchoredThisTick = true; // Anchored to floor/ceiling
+                }
+
+                // Check for anchoring after vertical movement if not already set by obstacle landing
+                if (!this.isAnchoredThisTick && (this.functionalScores.anchoring_strength || 0) > 0) {
+                    const anchorThreshold = this.radius + DEFAULTS.ANCHORING_DISTANCE_THRESHOLD;
+                    if (this.x - this.radius < anchorThreshold || this.x + this.radius > this.environment.canvasWidth - anchorThreshold ||
+                        this.y - this.radius < anchorThreshold || this.y + this.radius > this.environment.canvasHeight - anchorThreshold) {
+                        this.isAnchoredThisTick = true;
+                    }
+                    if (!this.isAnchoredThisTick) {
+                        for (const obs of this.environment.obstacles) {
+                            if (this.environment.checkCollision(this.x, this.y, this.radius + DEFAULTS.ANCHORING_DISTANCE_THRESHOLD, obs)) { // Check slightly larger radius
+                                this.isAnchoredThisTick = true; break;
+                            }
+                        }
+                    }
+                }
+
+                let dx = 0, dy = 0; let targetX = this.x, targetY = this.y;
+                let currentSocialTarget = null;
+                if ((this.functionalScores.social_attraction_target || 0) > 0 && !this.targetCell && !this.targetSugar) {
+                    const perceptionRadius = this.radius * DEFAULTS.SOCIAL_PERCEPTION_RADIUS_FACTOR + (this.functionalScores.social_attraction_target || 0) * DEFAULTS.SOCIAL_TARGETING_RANGE_BONUS_FACTOR;
+                    currentSocialTarget = this.findClosestSocialTarget(perceptionRadius);
+                }
+
+                if (currentSocialTarget) { targetX = currentSocialTarget.x; targetY = currentSocialTarget.y; }
+                else if (this.targetCell && (this.functionalScores.aggression || 0) > 0 && this.targetCell.speciesSignature !== this.speciesSignature) { targetX = this.targetCell.x; targetY = this.targetCell.y; }
+                else if (this.targetSugar) { targetX = this.targetSugar.x; targetY = this.targetSugar.y; }
+                else { targetX += randomFloat(-1, 1) * 50; targetY += randomFloat(-1, 1) * 50; }
+
+                let socialDX = 0, socialDY = 0; const perceptionRadiusPassive = this.radius * DEFAULTS.SOCIAL_PERCEPTION_RADIUS_FACTOR;
+                if ((this.functionalScores.general_repulsion || 0) > 0 || (this.functionalScores.general_attraction || 0) > 0) { this.environment.cells.forEach(oc => { if (oc === this) return; const d = distance(this, oc); if (d < perceptionRadiusPassive && d > 0) { const angle = Math.atan2(oc.y - this.y, oc.x - this.x); const force = 1 / (d*d); if ((this.functionalScores.general_repulsion || 0) > 0) { socialDX -= Math.cos(angle) * force * this.functionalScores.general_repulsion * DEFAULTS.GENERAL_REPULSION_STRENGTH; socialDY -= Math.sin(angle) * force * this.functionalScores.general_repulsion * DEFAULTS.GENERAL_REPULSION_STRENGTH; } if ((this.functionalScores.general_attraction || 0) > 0) { socialDX += Math.cos(angle) * force * this.functionalScores.general_attraction * DEFAULTS.GENERAL_ATTRACTION_STRENGTH; socialDY += Math.sin(angle) * force * this.functionalScores.general_attraction * DEFAULTS.GENERAL_ATTRACTION_STRENGTH; } } }); }
+                let phototaxisDY = 0; if ((this.functionalScores.phototaxis_positive || 0) > 0) { phototaxisDY -= this.functionalScores.phototaxis_positive * DEFAULTS.PHOTOTAXIS_STRENGTH * activityFactor; } if ((this.functionalScores.phototaxis_negative || 0) > 0) { phototaxisDY += this.functionalScores.phototaxis_negative * DEFAULTS.PHOTOTAXIS_STRENGTH * activityFactor; }
+                
+                if (motilityScore > 0 || currentSocialTarget) { // Only calculate motility if has score OR has social target
+                    const moveSpeed = (motilityScore > 0 ? motilityScore * 0.6 * activityFactor + 0.1 : (currentSocialTarget ? (this.functionalScores.social_attraction_target || 0) * 0.4 * activityFactor + 0.05 : 0)); // Slower base for social if no motility
+                    const angleToTarget = Math.atan2(targetY - this.y, targetX - this.x);
+                    dx = Math.cos(angleToTarget) * moveSpeed + socialDX * moveSpeed; dy = Math.sin(angleToTarget) * moveSpeed + phototaxisDY * moveSpeed + socialDY * moveSpeed;
+                    const totalMoveMag = Math.sqrt(dx*dx + dy*dy); if (totalMoveMag > moveSpeed && totalMoveMag > 0) { dx = (dx / totalMoveMag) * moveSpeed; dy = (dy / totalMoveMag) * moveSpeed; }
+                } else { dx = 0; dy = 0; }
+
+
+                if (this.isAnchoredThisTick && (this.functionalScores.anchoring_strength || 0) > 0) {
+                    const reductionFactor = 1.0 - Math.min(0.99, (this.functionalScores.anchoring_strength || 0) * DEFAULTS.ANCHORING_EFFECTIVENESS_FACTOR);
+                    dx *= reductionFactor;
+                    dy *= reductionFactor;
+                }
+
+                let newMotilityX = this.x + dx; let newMotilityY = this.y + dy;
+                if (this.environment.checkCollision(newMotilityX, newMotilityY, this.radius)) { if (!this.environment.checkCollision(newMotilityX, this.y, this.radius)) { this.x = newMotilityX; } else if (!this.environment.checkCollision(this.x, newMotilityY, this.radius)) { this.y = newMotilityY; } } else { this.x = newMotilityX; this.y = newMotilityY; }
+                this.x = Math.max(this.radius, Math.min(this.x, this.environment.canvasWidth - this.radius)); this.y = Math.max(this.radius, Math.min(this.y, this.environment.canvasHeight - this.radius));
+                if (this.targetSugar && distance(this, this.targetSugar) < this.radius + this.targetSugar.radius) { const sugarGain = DEFAULTS.SUGAR_ENERGY_VALUE * (1 + (this.functionalScores.sugar_uptake_efficiency || 0) * DEFAULTS.SUGAR_UPTAKE_EFFICIENCY_BONUS_FACTOR); this.environment.consumeSugar(this.targetSugar); this.internalSugar += sugarGain; this.environment.totalEventCounts.totalSugarConsumedValue++; this.targetSugar = null; this.timeSinceLastSugar = 0; } else if (this.targetSugar && this.currentSensingRange > 0 && distance(this, this.targetSugar) > this.currentSensingRange * 1.2) { this.targetSugar = null; }
+            }
+            generateATP(atpGenScore, activityFactor = 1) { const sugarToConvert = Math.min(this.internalSugar, atpGenScore * 2.5 + 0.5) * activityFactor; if (sugarToConvert > 0) { this.internalSugar -= sugarToConvert; const energyFromATP = sugarToConvert * DEFAULTS.ATP_GENERATION_SUGAR_CONVERSION_RATE; const costOfATP = DEFAULTS.ENERGY_COST_ATP_GEN * atpGenScore * activityFactor; const netGain = energyFromATP - costOfATP; this.energy += netGain; this.environment.totalEventCounts.totalEnergyFromSugarValue += netGain; } }
+            divide() { this.energy -= DEFAULTS.ENERGY_COST_DIVISION; this.environment.currentIntervalEventCounts.divisions++; const childGenome = this.genome.replicate(this.functionalScores.mutation_resistance || 0, this.environment.currentTemperature, this.isInLightZone); const childEnergy = this.energy / 2; this.energy /= 2; const childInternalSugar = this.internalSugar / 2; this.internalSugar /= 2; const childBiomass = this.biomass / 2; this.biomass /= 2; const originalRadius = this.radius; this.radius = DEFAULTS.CELL_MIN_RADIUS; const angle = Math.random() * 2 * Math.PI; const offsetDist = originalRadius + DEFAULTS.CELL_MIN_RADIUS + 2; let childX = this.x + Math.cos(angle) * offsetDist, childY = this.y + Math.sin(angle) * offsetDist; let attempts = 0; while (this.environment.checkCollision(childX, childY, DEFAULTS.CELL_MIN_RADIUS) && attempts < 20) { const na = Math.random() * 2 * Math.PI; childX = this.x + Math.cos(na) * offsetDist; childY = this.y + Math.sin(na) * offsetDist; attempts++; } if (attempts >= 20) { childX = this.x + (Math.random() < 0.5 ? -offsetDist : offsetDist) * 0.5; childY = this.y + (Math.random() < 0.5 ? -offsetDist : offsetDist) * 0.5; } childX = Math.max(DEFAULTS.CELL_MIN_RADIUS, Math.min(childX, this.environment.canvasWidth - DEFAULTS.CELL_MIN_RADIUS)); childY = Math.max(DEFAULTS.CELL_MIN_RADIUS, Math.min(childY, this.environment.canvasHeight - DEFAULTS.CELL_MIN_RADIUS)); const childCell = this.environment.addCell(childX, childY, childGenome, childEnergy, childInternalSugar, childBiomass); if (childCell && childCell.speciesSignature !== this.speciesSignature) { this.environment.currentIntervalEventCounts.speciations++; } }
+            draw(ctx) { ctx.beginPath(); ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2); let finalColor = this.color; if ((this.functionalScores.aggression || 0) > 0.1) { const match = this.color.match(/rgb\((\d+),\s*(\d+),\s*(\d+)\)/); if (match) { let [_, r, g, b] = match.map(Number); r = Math.min(255, r + Math.floor(this.functionalScores.aggression * 20)); g = Math.max(0, g - Math.floor(this.functionalScores.aggression * 10)); b = Math.max(0, b - Math.floor(this.functionalScores.aggression * 10)); finalColor = `rgb(${r},${g},${b})`; } } ctx.fillStyle = finalColor; ctx.fill(); if ((this.functionalScores.membrane_attachment || 0) > 0) { ctx.strokeStyle = `rgba(0,0,0,${Math.min(0.8, this.functionalScores.membrane_attachment * 0.5)})`; ctx.lineWidth = Math.max(1, this.functionalScores.membrane_attachment * 1.5); ctx.stroke(); } if (this.environment.selectedCell === this) { ctx.strokeStyle = '#FFFF00'; ctx.lineWidth = 3; ctx.stroke(); } }
+            getInfo() { let info = `<p><b>Cell ID:</b> ${this.id}</p><p><b>Species Signature:</b> <span style="font-family: monospace; font-size: 0.8em; word-break: break-all;">${this.speciesSignature}</span></p><p><b>Color (RGB):</b> <span style="display:inline-block; width:12px; height:12px; background-color:${this.color}; border:1px solid #ccc; margin-right: 4px;"></span> ${this.color}</p>`; let baseRate = DEFAULTS.ENERGY_COST_PER_TICK * (1 - Math.min(0.8, (this.functionalScores.metabolic_efficiency || 0) * DEFAULTS.METABOLIC_EFFICIENCY_SENSITIVITY)); info += `<p><b>Base Metabolic Cost/tick:</b> ${(baseRate * (1 + (this.radius - DEFAULTS.CELL_MIN_RADIUS) / DEFAULTS.CELL_MIN_RADIUS)).toFixed(3)}</p>`; info += `<p><b>Protein Expression Cost/tick:</b> ${(this.proteins.length * DEFAULTS.ENERGY_COST_PER_PROTEIN_EXPRESSION).toFixed(3)}</p>`; info += `<p><b>Energy from 1 Sugar Pellet (base):</b> ${DEFAULTS.SUGAR_ENERGY_VALUE}</p>`; const uptakeBonus = (1 + (this.functionalScores.sugar_uptake_efficiency || 0) * DEFAULTS.SUGAR_UPTAKE_EFFICIENCY_BONUS_FACTOR); info += `<p><b>Sugar Uptake Bonus Factor:</b> ${uptakeBonus.toFixed(2)} (Actual internal sugar gained: ${(DEFAULTS.SUGAR_ENERGY_VALUE * uptakeBonus).toFixed(1)})</p>`; info += `<p><b>ATP Conversion Rate (per sugar unit):</b> ${DEFAULTS.ATP_GENERATION_SUGAR_CONVERSION_RATE}</p><p><b>ATP Generation Cost (per activation):</b> ${(DEFAULTS.ENERGY_COST_ATP_GEN * (this.functionalScores.atp_generation || 0.1)).toFixed(3)}</p>`; let photoGain = (this.functionalScores.photosynthesis_efficiency || 0) * DEFAULTS.PHOTOSYNTHESIS_GAIN_FACTOR; let nCount = 0; this.environment.cells.forEach(oc => { if (oc !== this && distance(this, oc) < this.radius * DEFAULTS.INTERFERENCE_RADIUS_FACTOR + oc.radius) nCount++; }); if (nCount > DEFAULTS.MAX_NEIGHBORS_BEFORE_PENALTY) { photoGain *= Math.max(0, 1 - (nCount - DEFAULTS.MAX_NEIGHBORS_BEFORE_PENALTY) * DEFAULTS.PHOTOSYNTHESIS_CROWDING_REDUCTION); } info += `<p><b>Potential Photosynthesis/tick (if light, current crowding):</b> ${this.isInLightZone ? photoGain.toFixed(3) : '0 (in dark)'}</p>`; info += `<p><b>Position:</b> (${this.x.toFixed(1)}, ${this.y.toFixed(1)})</p><p><b>Radius:</b> ${this.radius.toFixed(1)}</p><p><b>Energy:</b> ${this.energy.toFixed(1)}</p><p><b>Internal Sugar:</b> ${this.internalSugar.toFixed(1)}</p><p><b>Biomass:</b> ${this.biomass.toFixed(1)}</p><p><b>Age:</b> ${this.age} ticks</p>`; info += `<p><b>Functional Scores:</b></p><ul class="details-list">`; Object.entries(this.functionalScores).forEach(([func, val]) => { if (val > 0) info += `<li>${func}: ${val.toFixed(2)}</li>`; }); info += `</ul><p class="mt-1"><b>Genome (${this.genome.genes.length} genes):</b></p><div class="p-1 bg-gray-100 text-gray-700 rounded text-xs overflow-auto max-h-20">${this.genome.getDescription()}</div>`; info += `<p class="mt-1"><b>Proteins (${this.proteins.length}):</b></p><ul class="details-list text-xs overflow-auto max-h-28">`; this.proteins.forEach(p => info += `<li>${p.getDescription()}</li>`); info += `</ul>`; return info; }
+        }
+
+        class Simulation {
+            constructor(canvasId) {
+                this.canvas = document.getElementById(canvasId); this.ctx = this.canvas.getContext('2d');
+                this.cells = []; this.sugars = []; this.obstacles = [];
+                this.mapType = DEFAULTS.DEFAULT_MAP_TYPE; this.tickCount = 0; this.isRunning = false; this.animationFrameId = null;
+                this.selectedCell = null; this.simSpeed = 5; this.restarting = false;
+                this.statusElement = document.getElementById('simulationStatus');
+                this.gravityStrengthInput = document.getElementById('gravityStrengthInput');
+                this.gravityStrengthValueDisplay = document.getElementById('gravityStrengthValue');
+                this.maxLifespanInput = document.getElementById('maxLifespanInput');
+                this.maxLifespanValueDisplay = document.getElementById('maxLifespanValue');
+
+                this.canvasWidthInput = document.getElementById('canvasWidthInput'); this.canvasHeightInput = document.getElementById('canvasHeightInput');
+                this.initialCellsInput = document.getElementById('initialCellsInput'); this.initialSugarInput = document.getElementById('initialSugarInput');
+                this.mapTypeInput = document.getElementById('mapTypeInput'); this.sugarSpawnRateInput = document.getElementById('sugarSpawnRateInput');
+                this.sugarSpawnRateValueDisplay = document.getElementById('sugarSpawnRateValue'); this.enableAutoSugarSpawnInput = document.getElementById('enableAutoSugarSpawn');
+                this.oneTimeSugarAmountInput = document.getElementById('oneTimeSugarAmountInput'); this.oneTimeSugarDropButton = document.getElementById('oneTimeSugarDropButton');
+                this.lightZonePercentageInput = document.getElementById('lightZonePercentageInput'); this.lightZonePercentageValueDisplay = document.getElementById('lightZonePercentageValue');
+                this.temperatureInput = document.getElementById('temperatureInput'); this.temperatureValueDisplay = document.getElementById('temperatureValue');
+                this.shakeFrequencyInput = document.getElementById('shakeFrequencyInput'); this.shakeFrequencyValueDisplay = document.getElementById('shakeFrequencyValue');
+                this.shakeMagnitudeInput = document.getElementById('shakeMagnitudeInput'); this.shakeMagnitudeValueDisplay = document.getElementById('shakeMagnitudeValue');
+                this.oneTimeShakeStrengthInput = document.getElementById('oneTimeShakeStrengthInput'); this.oneTimeShakeButton = document.getElementById('oneTimeShakeButton');
+
+                this.canvasWidth = parseInt(this.canvasWidthInput.value) || DEFAULTS.CANVAS_WIDTH;
+                this.canvasHeight = parseInt(this.canvasHeightInput.value) || DEFAULTS.CANVAS_HEIGHT;
+                this.canvas.width = this.canvasWidth; this.canvas.height = this.canvasHeight;
+
+                this.gravityStrength = DEFAULTS.GRAVITY_STRENGTH;
+                this.maxCellLifespan = DEFAULTS.MAX_CELL_LIFESPAN;
+                this.sugarSpawnRate = DEFAULTS.SUGAR_SPAWN_RATE; this.enableAutoSugarSpawn = DEFAULTS.ENABLE_AUTO_SUGAR_SPAWN;
+                this.lightZonePercentage = DEFAULTS.LIGHT_ZONE_PERCENTAGE; this.currentTemperature = DEFAULTS.DEFAULT_TEMPERATURE;
+                this.shakeFrequency = DEFAULTS.SHAKE_FREQUENCY; this.shakeMaxStrength = DEFAULTS.SHAKE_MAX_STRENGTH;
+
+                this.currentIntervalEventCounts = { divisions: 0, deaths: 0, attacks: 0, speciations: 0 };
+                this.totalEventCounts = { divisions: 0, deaths: 0, attacks: 0, speciations: 0, totalSugarConsumedValue: 0, totalEnergyFromSugarValue: 0, totalEnergyFromPhotosynthesisValue: 0 };
+
+                if (this.canvas) { this.canvas.addEventListener('click', (event) => this.handleCanvasClick(event)); }
+                this.resizeObserver = new ResizeObserver(entries => { for (let entry of entries) { const newWidth = Math.round(entry.target.clientWidth); const newHeight = Math.round(entry.target.clientHeight); if (this.canvas.width !== newWidth || this.canvas.height !== newHeight) { this.canvas.width = newWidth; this.canvas.height = newHeight; this.canvasWidth = newWidth; this.canvasHeight = newHeight; this.defineObstacles(); this.draw(); this.updateSelectedCellInfo(); } } });
+                this.resizeObserver.observe(this.canvas);
+
+                if (this.gravityStrengthInput) { this.gravityStrengthInput.addEventListener('input', (e) => { this.gravityStrength = parseFloat(e.target.value); if (this.gravityStrengthValueDisplay) this.gravityStrengthValueDisplay.textContent = this.gravityStrength.toFixed(2); }); }
+                if (this.maxLifespanInput) { this.maxLifespanInput.addEventListener('input', (e) => { this.maxCellLifespan = parseInt(e.target.value); if (this.maxLifespanValueDisplay) this.maxLifespanValueDisplay.textContent = this.maxCellLifespan; }); }
+                this.sugarSpawnRateInput.addEventListener('input', (e) => { this.sugarSpawnRate = parseFloat(e.target.value); this.sugarSpawnRateValueDisplay.textContent = this.sugarSpawnRate.toFixed(2); });
+                this.enableAutoSugarSpawnInput.addEventListener('change', (e) => { this.enableAutoSugarSpawn = e.target.checked; });
+                this.oneTimeSugarDropButton.addEventListener('click', () => { this.applyManualSugarDrop(parseInt(this.oneTimeSugarAmountInput.value) || 50); });
+                this.lightZonePercentageInput.addEventListener('input', (e) => { this.lightZonePercentage = parseInt(e.target.value); this.lightZonePercentageValueDisplay.textContent = this.lightZonePercentage; this.draw(); });
+                this.temperatureInput.addEventListener('input', (e) => { this.currentTemperature = parseInt(e.target.value); this.temperatureValueDisplay.textContent = this.currentTemperature; });
+                this.shakeFrequencyInput.addEventListener('input', (e) => { this.shakeFrequency = parseInt(e.target.value); this.shakeFrequencyValueDisplay.textContent = this.shakeFrequency; });
+                this.shakeMagnitudeInput.addEventListener('input', (e) => { this.shakeMaxStrength = parseInt(e.target.value); this.shakeMagnitudeValueDisplay.textContent = this.shakeMaxStrength; });
+                this.oneTimeShakeButton.addEventListener('click', () => { this.applyManualShake(parseInt(this.oneTimeShakeStrengthInput.value) || 20); });
+                this.updateStatus("Not started", "stopped");
+            }
+            updateStatus(message, type = "running") { if (this.statusElement) { this.statusElement.textContent = message; this.statusElement.className = `text-sm text-center mt-3 p-2 rounded-md bg-gray-100 ${type}`; } }
+            applySettings() {
+                let newCanvasWidth = parseInt(this.canvasWidthInput.value) || DEFAULTS.CANVAS_WIDTH;
+                let newCanvasHeight = parseInt(this.canvasHeightInput.value) || DEFAULTS.CANVAS_HEIGHT;
+                this.gravityStrength = parseFloat(this.gravityStrengthInput.value); 
+                if (isNaN(this.gravityStrength)) this.gravityStrength = DEFAULTS.GRAVITY_STRENGTH;
+                this.maxCellLifespan = parseInt(this.maxLifespanInput.value) || DEFAULTS.MAX_CELL_LIFESPAN;
+
+                this.sugarSpawnRate = parseFloat(this.sugarSpawnRateInput.value) || DEFAULTS.SUGAR_SPAWN_RATE;
+                this.enableAutoSugarSpawn = this.enableAutoSugarSpawnInput.checked;
+                this.lightZonePercentage = parseInt(this.lightZonePercentageInput.value) || DEFAULTS.LIGHT_ZONE_PERCENTAGE;
+                this.currentTemperature = parseInt(this.temperatureInput.value) || DEFAULTS.DEFAULT_TEMPERATURE;
+                this.shakeFrequency = parseInt(this.shakeFrequencyInput.value) || DEFAULTS.SHAKE_FREQUENCY;
+                this.shakeMaxStrength = parseInt(this.shakeMagnitudeInput.value) || DEFAULTS.SHAKE_MAX_STRENGTH;
+                this.mapType = this.mapTypeInput.value || DEFAULTS.DEFAULT_MAP_TYPE;
+                if (this.canvas.width !== newCanvasWidth || this.canvas.height !== newCanvasHeight) { this.canvas.width = newCanvasWidth; this.canvas.height = newCanvasHeight; this.canvasWidth = newCanvasWidth; this.canvasHeight = newCanvasHeight; }
+                this.canvasWidthInput.value = this.canvasWidth; this.canvasHeightInput.value = this.canvasHeight;
+                this.gravityStrengthInput.value = this.gravityStrength;
+                if(this.gravityStrengthValueDisplay) this.gravityStrengthValueDisplay.textContent = this.gravityStrength.toFixed(2);
+                this.maxLifespanInput.value = this.maxCellLifespan;
+                if(this.maxLifespanValueDisplay) this.maxLifespanValueDisplay.textContent = this.maxCellLifespan;
+                this.sugarSpawnRateInput.value = this.sugarSpawnRate; this.sugarSpawnRateValueDisplay.textContent = this.sugarSpawnRate.toFixed(2);
+                this.enableAutoSugarSpawnInput.checked = this.enableAutoSugarSpawn;
+                this.lightZonePercentageInput.value = this.lightZonePercentage; this.lightZonePercentageValueDisplay.textContent = this.lightZonePercentage;
+                this.temperatureInput.value = this.currentTemperature; this.temperatureValueDisplay.textContent = this.currentTemperature;
+                this.shakeFrequencyInput.value = this.shakeFrequency; this.shakeFrequencyValueDisplay.textContent = this.shakeFrequency;
+                this.shakeMagnitudeInput.value = this.shakeMaxStrength; this.shakeMagnitudeValueDisplay.textContent = this.shakeMaxStrength;
+                this.mapTypeInput.value = this.mapType;
+            }
+            applyManualShake(strength) {
+                if (!this.isRunning && this.cells.length === 0 && this.sugars.length === 0) return;
+                this.cells.forEach(cell => {
+                    const shakeX = randomFloat(-strength, strength); const shakeY = randomFloat(-strength, strength);
+                    cell.x = Math.max(cell.radius, Math.min(cell.x + shakeX, this.canvasWidth - cell.radius));
+                    cell.y = Math.max(cell.radius, Math.min(cell.y + shakeY, this.canvasHeight - cell.radius));
+                });
+                this.sugars.forEach(sugar => {
+                    const shakeX = randomFloat(-strength, strength); const shakeY = randomFloat(-strength, strength);
+                    sugar.x = Math.max(sugar.radius, Math.min(sugar.x + shakeX, this.canvasWidth - sugar.radius));
+                    sugar.y = Math.max(sugar.radius, Math.min(sugar.y + shakeY, this.canvasHeight - sugar.radius));
+                });
+                if (!this.isRunning) this.draw();
+            }
+            applyManualSugarDrop(amount) { const numPellets = Math.ceil(amount / (DEFAULTS.SUGAR_ENERGY_VALUE / 2)); const pileRadius = 30; let attempts = 0, pileX, pileY; do { pileX = randomFloat(pileRadius, this.canvasWidth - pileRadius); pileY = randomFloat(pileRadius, this.canvasHeight - pileRadius); attempts++; } while (this.checkCollision(pileX, pileY, pileRadius) && attempts < 50); for (let i = 0; i < numPellets; i++) { const sx = Math.max(DEFAULTS.SUGAR_RADIUS, Math.min(pileX + randomFloat(-pileRadius, pileRadius), this.canvasWidth - DEFAULTS.SUGAR_RADIUS)); const sy = Math.max(DEFAULTS.SUGAR_RADIUS, Math.min(pileY + randomFloat(-pileRadius, pileRadius), this.canvasHeight - DEFAULTS.SUGAR_RADIUS)); if (!this.checkCollision(sx, sy, DEFAULTS.SUGAR_RADIUS)) { this.sugars.push({ x: sx, y: sy, radius: DEFAULTS.SUGAR_RADIUS, id: `MS-${Math.random().toString(36).substr(2,5)}` }); } } if (!this.isRunning) this.draw(); }
+            defineObstacles() {
+                this.obstacles = []; const w = this.canvasWidth, h = this.canvasHeight;
+                if (this.mapType === 'VerticalBar') { const bw = Math.max(20, w * 0.025), gs = Math.max(30, h * 0.1); this.obstacles.push({ type: 'rect', x: w/2 - bw/2, y: gs, width: bw, height: h - 2 * gs, id: 'obs-bar-main' }); }
+                else if (this.mapType === 'CircularObstacles') { const numCircles = 3, maxR = Math.min(w,h) / 4, minR = Math.min(w,h) / 8; for (let i = 0; i < numCircles; i++) { const r = randomFloat(minR, maxR); let obsX, obsY, attempts = 0; do { obsX = randomFloat(r + 20, w - r - 20); obsY = randomFloat(r + 20, h - r - 20); attempts++; let overlaps = false; for(const eo of this.obstacles){ if(eo.type === 'arc' && distance({x: obsX, y: obsY}, eo) < r + eo.radius + 20) { overlaps = true; break; } } if(!overlaps) break; } while (attempts < 50); const openingAngle = Math.PI / 2.5, wallStart = randomFloat(0, Math.PI * 2), wallEnd = (wallStart + (Math.PI * 2 - openingAngle) + 2 * Math.PI) % (2 * Math.PI); this.obstacles.push({ type: 'arc', x: obsX, y: obsY, radius: r, wallStartAngle: wallStart, wallEndAngle: wallEnd, isWall: true, id: `obs-circle-${i}` }); } }
+                else if (this.mapType === 'OpenBoxes') {
+                    const numBoxes = DEFAULTS.NUM_OPEN_BOXES;
+                    const wallThickness = DEFAULTS.OBSTACLE_LINE_WIDTH;
+                    for (let i = 0; i < numBoxes; i++) {
+                        const boxSize = randomFloat(DEFAULTS.OPEN_BOX_MIN_SIZE, DEFAULTS.OPEN_BOX_MAX_SIZE);
+                        let boxX, boxY, attempts = 0;
+                        let overlaps;
+                        do {
+                            overlaps = false;
+                            boxX = randomFloat(wallThickness, w - boxSize - wallThickness);
+                            boxY = randomFloat(wallThickness, h - boxSize - wallThickness);
+                            // Check for overlap with existing boxes (simple bounding box check)
+                            for(const existingObs of this.obstacles){
+                                if(existingObs.boxId === `box-${i}`) continue; // Don't check against parts of the same box being built
+                                if(existingObs.type === 'rect' && // Assuming boxes are made of rects
+                                   boxX < existingObs.x + existingObs.width && boxX + boxSize > existingObs.x &&
+                                   boxY < existingObs.y + existingObs.height && boxY + boxSize > existingObs.y) {
+                                    overlaps = true; break;
+                                }
+                            }
+                            attempts++;
+                        } while (overlaps && attempts < 50);
+
+
+                        const missingSide = Math.floor(Math.random() * 4); // 0: top, 1: right, 2: bottom, 3: left
+                        const boxId = `box-${i}`;
+
+                        if (missingSide !== 0) this.obstacles.push({ type: 'rect', x: boxX, y: boxY, width: boxSize, height: wallThickness, id: `${boxId}-top`, boxId: boxId});
+                        if (missingSide !== 1) this.obstacles.push({ type: 'rect', x: boxX + boxSize - wallThickness, y: boxY, width: wallThickness, height: boxSize, id: `${boxId}-right`, boxId: boxId});
+                        if (missingSide !== 2) this.obstacles.push({ type: 'rect', x: boxX, y: boxY + boxSize - wallThickness, width: boxSize, height: wallThickness, id: `${boxId}-bottom`, boxId: boxId});
+                        if (missingSide !== 3) this.obstacles.push({ type: 'rect', x: boxX, y: boxY, width: wallThickness, height: boxSize, id: `${boxId}-left`, boxId: boxId});
+                    }
+                }
+            }
+            checkCollision(x, y, radius, specificObstacle = null) {
+                const obstaclesToCheck = specificObstacle ? [specificObstacle] : this.obstacles;
+                for (const obs of obstaclesToCheck) {
+                    if (obs.type === 'rect') { if (x + radius > obs.x && x - radius < obs.x + obs.width && y + radius > obs.y && y - radius < obs.y + obs.height) return true; }
+                    else if (obs.type === 'arc' && obs.isWall) {
+                        const dx = x - obs.x, dy = y - obs.y, dist = Math.sqrt(dx*dx + dy*dy);
+                        if (Math.abs(dist - obs.radius) < radius + DEFAULTS.OBSTACLE_LINE_WIDTH / 2) {
+                            let angle = (Math.atan2(dy, dx) + 2 * Math.PI) % (2 * Math.PI);
+                            let start = (obs.wallStartAngle + 2 * Math.PI) % (2 * Math.PI), end = (obs.wallEndAngle + 2 * Math.PI) % (2 * Math.PI);
+                            if (start <= end) { if (angle >= start && angle <= end) return true; } else { if (angle >= start || angle <= end) return true; }
+                        }
+                    }
+                } return false;
+            }
+            init() { this.applySettings(); this.defineObstacles(); this.cells = []; this.sugars = []; this.tickCount = 0; this.selectedCell = null; this.restarting = false; this.currentIntervalEventCounts = { divisions: 0, deaths: 0, attacks: 0, speciations: 0 }; this.totalEventCounts = { divisions: 0, deaths: 0, attacks: 0, speciations: 0, totalSugarConsumedValue: 0, totalEnergyFromSugarValue: 0, totalEnergyFromPhotosynthesisValue: 0 }; const numInitialCells = parseInt(this.initialCellsInput.value) || DEFAULTS.INITIAL_CELLS; const numInitialSugar = parseInt(this.initialSugarInput.value) || DEFAULTS.INITIAL_SUGAR_COUNT; this.initialCellsInput.value = numInitialCells; this.initialSugarInput.value = numInitialSugar; for (let i = 0; i < numInitialCells; i++) { let cx, cy, attempts = 0; do { cx = randomFloat(DEFAULTS.CELL_MAX_RADIUS, this.canvasWidth - DEFAULTS.CELL_MAX_RADIUS); cy = randomFloat(DEFAULTS.CELL_MAX_RADIUS, this.canvasHeight - DEFAULTS.CELL_MAX_RADIUS); attempts++; } while (this.checkCollision(cx, cy, DEFAULTS.CELL_MAX_RADIUS) && attempts < 100); this.addCell(cx, cy, Genome.createRandom(DEFAULTS.INITIAL_GENES_PER_CELL, DEFAULTS.MIN_GENE_LENGTH, DEFAULTS.MAX_GENE_LENGTH), DEFAULTS.INITIAL_CELL_ENERGY, 0, 0); } for (let i = 0; i < numInitialSugar; i++) { this.spawnSugar(); } this.updateStats(); this.updateSelectedCellInfo(); this.draw(); this.updateStatus("Ready to start", "ready"); }
+            spawnSugar() { let sx, sy, attempts = 0; do { sx = randomFloat(DEFAULTS.SUGAR_RADIUS, this.canvasWidth - DEFAULTS.SUGAR_RADIUS); sy = randomFloat(DEFAULTS.SUGAR_RADIUS, this.canvasHeight - DEFAULTS.SUGAR_RADIUS); attempts++; } while (this.checkCollision(sx, sy, DEFAULTS.SUGAR_RADIUS) && attempts < 100); this.sugars.push({ x: sx, y: sy, radius: DEFAULTS.SUGAR_RADIUS, id: `S-${Math.random().toString(36).substr(2,5)}` }); }
+            addSugarPellets(x, y, amount) { if (amount > 0) { const num = Math.ceil(amount / (DEFAULTS.SUGAR_ENERGY_VALUE / 3)); for(let i=0; i<num; i++) { const sx = Math.max(DEFAULTS.SUGAR_RADIUS, Math.min(x + randomFloat(-10,10), this.canvasWidth - DEFAULTS.SUGAR_RADIUS)), sy = Math.max(DEFAULTS.SUGAR_RADIUS, Math.min(y + randomFloat(-10,10), this.canvasHeight - DEFAULTS.SUGAR_RADIUS)); if(!this.checkCollision(sx, sy, DEFAULTS.SUGAR_RADIUS * 0.8)) { this.sugars.push({ x: sx, y: sy, radius: DEFAULTS.SUGAR_RADIUS * 0.8, id: `DS-${Math.random().toString(36).substr(2,5)}` }); } } } }
+            consumeSugar(sugar) { this.sugars = this.sugars.filter(s => s !== sugar); }
+            addCell(x,y,g,e,is=0,bm=0) { if (this.cells.length < DEFAULTS.MAX_CELLS) { const nc = new Cell(`C-${this.tickCount}-${Math.random().toString(36).substr(2,4)}`,x,y,g,e,is,this); nc.biomass=bm; this.cells.push(nc); return nc; } return null; }
+            removeCell(cell) { this.cells = this.cells.filter(c => c !== cell); if (this.selectedCell === cell) this.selectedCell = null; }
+            handleCanvasClick(event) { const rect = this.canvas.getBoundingClientRect(); const scaleX = this.canvas.width / rect.width; const scaleY = this.canvas.height / rect.height; const clickX = (event.clientX - rect.left) * scaleX; const clickY = (event.clientY - rect.top) * scaleY; let clickedCell = null; for (let i = this.cells.length - 1; i >= 0; i--) { const cell = this.cells[i]; if (distance({x: clickX, y: clickY}, cell) < cell.radius) { clickedCell = cell; break; } } if (this.selectedCell !== clickedCell) { this.selectedCell = clickedCell; this.updateSelectedCellInfo(); this.draw(); } else if (clickedCell === null && this.selectedCell !== null) { this.selectedCell = null; this.updateSelectedCellInfo(); this.draw(); } }
+            updateSelectedCellInfo() { const id = document.getElementById('selectedCellInfo'); if(id) { id.innerHTML = this.selectedCell ? this.selectedCell.getInfo() : '<p>No cell selected.</p>'; }}
+
+            step() {
+                if (!this.isRunning) return;
+                this.tickCount++;
+
+                if (this.shakeFrequency > 0 && this.tickCount % this.shakeFrequency === 0) {
+                    const strength = this.shakeMaxStrength;
+                    this.cells.forEach(c => {
+                        const sx = randomFloat(-strength, strength); const sy = randomFloat(-strength, strength);
+                        c.x = Math.max(c.radius, Math.min(c.x + sx, this.canvasWidth - c.radius));
+                        c.y = Math.max(c.radius, Math.min(c.y + sy, this.canvasHeight - c.radius));
+                    });
+                    this.sugars.forEach(s => {
+                        const sx = randomFloat(-strength, strength); const sy = randomFloat(-strength, strength);
+                        s.x = Math.max(s.radius, Math.min(s.x + sx, this.canvasWidth - s.radius));
+                        s.y = Math.max(s.radius, Math.min(s.y + sy, this.canvasHeight - s.radius));
+                    });
+                }
+
+                this.sugars.forEach(sugar => {
+                    const prevSugarY = sugar.y;
+                    let intendedSugarY = sugar.y + this.gravityStrength;
+                    let bestRestingY = Math.min(intendedSugarY, this.canvasHeight - sugar.radius);
+
+                    for (const obs of this.obstacles) {
+                        if (obs.type === 'rect') {
+                            if (sugar.x + sugar.radius > obs.x && sugar.x - sugar.radius < obs.x + obs.width) {
+                                if (prevSugarY - sugar.radius < obs.y && intendedSugarY >= obs.y - sugar.radius) { // Falling onto rect top
+                                    bestRestingY = Math.min(bestRestingY, obs.y - sugar.radius);
+                                } else if (this.gravityStrength > 0 && prevSugarY + sugar.radius > obs.y + obs.height && intendedSugarY <= obs.y + obs.height + sugar.radius) {
+                                    // This case is for sugar already below a rect trying to pass through its bottom, which shouldn't happen if gravity is positive.
+                                    // If gravity were negative, this would be relevant for sticking to underside.
+                                    // For now, with positive gravity, sugar just passes if it's already below.
+                                    // However, if it's inside a box, it should hit the bottom wall of the box.
+                                    if (sugar.y > obs.y && sugar.y < obs.y + obs.height) { // If sugar is vertically within the rect
+                                        bestRestingY = Math.min(bestRestingY, obs.y + obs.height - sugar.radius);
+                                    }
+                                }
+                            }
+                        } else if (obs.type === 'arc' && obs.isWall) {
+                            const dxToArcCenter = sugar.x - obs.x;
+                            if (Math.abs(dxToArcCenter) <= obs.radius) {
+                                const yOffsetOuter = -Math.sqrt(Math.max(0, obs.radius * obs.radius - dxToArcCenter * dxToArcCenter));
+                                const arcOuterSurfaceY = obs.y + yOffsetOuter;
+                                let angleOuter = (Math.atan2(yOffsetOuter, dxToArcCenter) + 2 * Math.PI) % (2 * Math.PI);
+                                let start = (obs.wallStartAngle + 2 * Math.PI) % (2 * Math.PI);
+                                let end = (obs.wallEndAngle + 2 * Math.PI) % (2 * Math.PI);
+                                let onOuterWallSegment = (start <= end) ? (angleOuter >= start && angleOuter <= end) : (angleOuter >= start || angleOuter <= end);
+
+                                if (onOuterWallSegment && prevSugarY - sugar.radius < arcOuterSurfaceY && intendedSugarY >= arcOuterSurfaceY - sugar.radius) {
+                                    bestRestingY = Math.min(bestRestingY, arcOuterSurfaceY - sugar.radius);
+                                } else {
+                                    const yOffsetInner = Math.sqrt(Math.max(0, obs.radius * obs.radius - dxToArcCenter * dxToArcCenter));
+                                    const arcInnerSurfaceY = obs.y + yOffsetInner;
+                                    let angleInner = (Math.atan2(yOffsetInner, dxToArcCenter) + 2 * Math.PI) % (2 * Math.PI);
+                                    let onInnerWallSegment = (start <= end) ? (angleInner >= start && angleInner <= end) : (angleInner >= start || angleInner <= end);
+
+                                    // Check if sugar is within the vertical bounds of the arc's "bowl" part
+                                    const arcTopY = obs.y + yOffsetOuter; // Topmost point of the arc wall at sugar's x
+                                    const arcBottomY = obs.y + yOffsetInner; // Bottommost point of the arc wall at sugar's x
+
+                                    if (onInnerWallSegment &&
+                                        intendedSugarY + sugar.radius >= arcInnerSurfaceY && // Trying to go below or at inner bottom
+                                        prevSugarY < arcInnerSurfaceY && // Was above inner bottom
+                                        sugar.y > arcTopY // Ensure it's below the top opening of the C to settle inside
+                                        ) {
+                                        bestRestingY = Math.min(bestRestingY, arcInnerSurfaceY - sugar.radius);
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    sugar.y = Math.max(sugar.radius, bestRestingY);
+                });
+
+
+                for (let i = this.cells.length - 1; i >= 0; i--) { if(this.cells[i]) this.cells[i].update(); }
+                if (this.enableAutoSugarSpawn && Math.random() < this.sugarSpawnRate && this.sugars.length < (parseInt(this.initialSugarInput.value) || DEFAULTS.INITIAL_SUGAR_COUNT) * 1.5) { this.spawnSugar(); }
+                if (this.tickCount % DEFAULTS.EVENT_COUNT_UPDATE_INTERVAL === 0) { Object.keys(this.currentIntervalEventCounts).forEach(k => { this.totalEventCounts[k] += this.currentIntervalEventCounts[k]; this.currentIntervalEventCounts[k] = 0; }); }
+                this.updateStats();
+                if (this.selectedCell && !this.cells.includes(this.selectedCell)) this.selectedCell = null;
+                this.updateSelectedCellInfo();
+            }
+
+            draw() { this.ctx.clearRect(0, 0, this.canvasWidth, this.canvasHeight); const lightZoneH = this.canvasHeight * (this.lightZonePercentage / 100); if (lightZoneH > 0) { this.ctx.fillStyle = 'rgba(255, 255, 224, 0.35)'; this.ctx.fillRect(0, 0, this.canvasWidth, lightZoneH); } this.ctx.strokeStyle = DEFAULTS.OBSTACLE_COLOR; this.ctx.fillStyle = DEFAULTS.OBSTACLE_COLOR; this.ctx.lineWidth = DEFAULTS.OBSTACLE_LINE_WIDTH; this.obstacles.forEach(obs => { if (obs.type === 'rect') { this.ctx.fillRect(obs.x, obs.y, obs.width, obs.height); } else if (obs.type === 'arc') { this.ctx.beginPath(); this.ctx.arc(obs.x, obs.y, obs.radius, obs.wallStartAngle, obs.wallEndAngle); this.ctx.stroke(); } }); this.ctx.fillStyle = 'rgba(60, 179, 113, 0.7)'; this.sugars.forEach(s => { this.ctx.beginPath(); this.ctx.arc(s.x, s.y, s.radius, 0, Math.PI * 2); this.ctx.fill(); }); this.cells.forEach(c => c.draw(this.ctx)); }
+            loop() { for(let i = 0; i < this.simSpeed; i++) { if (!this.isRunning) break; this.step(); } this.draw(); if (this.isRunning && this.cells.length === 0 && this.tickCount > 0 && !this.restarting) { this.restarting = true; this.stop(); this.updateStatus(`All cells died (tick ${this.tickCount}). Restarting...`, "restarting"); setTimeout(() => { this.init(); this.start(); }, 1000); return; } if (this.isRunning) this.animationFrameId = requestAnimationFrame(() => this.loop()); }
+            start() { if (!this.isRunning) { this.isRunning = true; this.restarting = false; this.updateStatus("Running", "running"); this.loop(); } }
+            stop() { this.isRunning = false; if (this.animationFrameId) { cancelAnimationFrame(this.animationFrameId); this.animationFrameId = null; } if (!this.restarting) { if (this.cells.length > 0) this.updateStatus("Paused", "paused"); else if (this.tickCount > 0) this.updateStatus("Stopped (No cells)", "stopped"); else this.updateStatus("Ready", "ready"); } }
+            reset() { this.stop(); this.init(); }
+            updateStats() { const setText = (id, value) => { const el = document.getElementById(id); if (el) el.textContent = value; }; setText('cellCount', this.cells.length); setText('totalSugar', this.sugars.length); setText('simTick', this.tickCount); setText('sugarConsumedCount', this.totalEventCounts.totalSugarConsumedValue); setText('totalEnergyFromSugar', this.totalEventCounts.totalEnergyFromSugarValue.toFixed(1)); setText('totalEnergyFromPhotosynthesis', this.totalEventCounts.totalEnergyFromPhotosynthesisValue.toFixed(1)); const uniqueSpecies = new Set(); this.cells.forEach(c => uniqueSpecies.add(c.speciesSignature)); setText('currentUniqueSpecies', uniqueSpecies.size); let totalE = 0, totalB = 0; this.cells.forEach(c => { totalE += c.energy; totalB += c.biomass; }); setText('avgEnergy', this.cells.length > 0 ? (totalE / this.cells.length).toFixed(1) : "N/A"); setText('avgBiomass', this.cells.length > 0 ? (totalB / this.cells.length).toFixed(1) : "N/A"); setText('totalDivisions', this.totalEventCounts.divisions); setText('totalDeaths', this.totalEventCounts.deaths); setText('totalAttacks', this.totalEventCounts.attacks); setText('totalSpeciations', this.totalEventCounts.speciations); }
+            setSpeed(speed) { this.simSpeed = parseInt(speed, 10); }
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const simulation = new Simulation('simulationCanvas');
+            const setInitialInputValue = (id, defaultVal, prop = 'value', txtToo = false, prec = null) => { const el = document.getElementById(id); if (!el) return; let val = defaultVal; if (prec !== null && typeof defaultVal === 'number') val = defaultVal.toFixed(prec); el[prop] = val; if (txtToo) { const dispEl = document.getElementById(id + 'Value'); if (dispEl) dispEl.textContent = val; } };
+            setInitialInputValue('canvasWidthInput', DEFAULTS.CANVAS_WIDTH);
+            setInitialInputValue('canvasHeightInput', DEFAULTS.CANVAS_HEIGHT);
+            setInitialInputValue('initialCellsInput', DEFAULTS.INITIAL_CELLS);
+            setInitialInputValue('initialSugarInput', DEFAULTS.INITIAL_SUGAR_COUNT);
+            setInitialInputValue('gravityStrengthInput', DEFAULTS.GRAVITY_STRENGTH, 'value', true, 2);
+            setInitialInputValue('maxLifespanInput', DEFAULTS.MAX_CELL_LIFESPAN, 'value', true);
+            setInitialInputValue('sugarSpawnRateInput', DEFAULTS.SUGAR_SPAWN_RATE, 'value', true, 2);
+            setInitialInputValue('lightZonePercentageInput', DEFAULTS.LIGHT_ZONE_PERCENTAGE, 'value', true);
+            setInitialInputValue('temperatureInput', DEFAULTS.DEFAULT_TEMPERATURE, 'value', true);
+            setInitialInputValue('shakeFrequencyInput', DEFAULTS.SHAKE_FREQUENCY, 'value', true);
+            setInitialInputValue('shakeMagnitudeInput', DEFAULTS.SHAKE_MAX_STRENGTH, 'value', true);
+            simulation.init();
+            document.getElementById('startButton').addEventListener('click', () => simulation.start());
+            document.getElementById('stopButton').addEventListener('click', () => simulation.stop());
+            document.getElementById('resetButton').addEventListener('click', () => simulation.reset());
+            document.getElementById('simSpeed').addEventListener('input', (e) => simulation.setSpeed(e.target.value));
+        });
+    </script>
+</body>
+</html>

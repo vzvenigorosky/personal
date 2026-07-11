@@ -3,272 +3,307 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Publications & Communications | Vincent Zvenigorosky</title>
+    <title>Publications | Vincent Zvenigorosky</title>
+    <meta name="description" content="Peer-reviewed publications, book chapters and journal articles by Vincent Zvenigorosky in forensic, evolutionary and archaeological genetics.">
+    <script>(function(){try{var t=localStorage.getItem('vz-theme');if(t!=='light'){document.documentElement.classList.add('dark');}}catch(e){document.documentElement.classList.add('dark');}})();</script>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap" rel="stylesheet">
-    <style>
-        body {
-            font-family: 'Inter', sans-serif;
-            background-color: #f8fafc; /* slate-50 */
-            color: #334155; /* slate-700 */
-        }
-        .header-gradient {
-            background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%);
-        }
-        .card {
-            background-color: white;
-            border-radius: 0.5rem;
-            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
-            transition: box-shadow 0.3s;
-            border-left-width: 4px;
-        }
-        .card:hover {
-            box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -2px rgb(0 0 0 / 0.1);
-        }
-        .entry-tag {
-            font-size: 0.75rem;
-            font-weight: 600;
-            padding: 0.125rem 0.5rem;
-            border-radius: 9999px;
-            display: inline-block;
-            margin-bottom: 0.75rem;
-        }
-    </style>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script src="assets/site.js"></script>
 </head>
-<body class="antialiased">
+<body class="bg-slate-50 text-slate-700 dark:bg-slate-950 dark:text-slate-300 font-sans antialiased">
 
-    <!-- Header -->
-    <header class="header-gradient text-white p-6 md:p-12 shadow-lg">
-        <div class="max-w-4xl mx-auto text-center">
-            <h1 class="text-4xl md:text-5xl font-bold">Vincent Zvenigorosky</h1>
-            <p class="mt-2 text-xl md:text-2xl opacity-90">Molecular Biologist & Bioinformatician</p>
-             <div class="mt-4 flex justify-center items-center space-x-6 text-sm">
-                <div>
-                    <i class="fas fa-envelope mr-2"></i>
-                    <a href="mailto:vincent.zvenigorosky@gmail.com" class="hover:underline">vincent.zvenigorosky@gmail.com</a>
-                </div>
-                <div>
-                    <i class="fas fa-phone mr-2"></i>
-                    +33(0)6.72.48.66.80
+    <!-- Top bar -->
+    <header class="sticky top-0 z-30 bg-white/90 dark:bg-slate-900/90 backdrop-blur border-b border-slate-200 dark:border-slate-800">
+        <div class="max-w-6xl mx-auto px-4 sm:px-6">
+            <div class="flex items-center justify-between h-16">
+                <a href="index.html" class="text-base sm:text-lg font-bold text-slate-900 dark:text-white whitespace-nowrap">Vincent Zvenigorosky <span class="hidden sm:inline text-slate-400 dark:text-slate-500 font-medium">· PhD</span></a>
+                <nav class="hidden md:flex items-center gap-6 text-sm font-medium">
+                    <a href="index.html" class="text-slate-600 dark:text-slate-300 hover:text-blue-600 dark:hover:text-sky-400 transition-colors">About</a>
+                    <a href="publications.html" class="text-blue-600 dark:text-sky-400 border-b-2 border-blue-600 dark:border-sky-400 pb-0.5">Publications</a>
+                    <a href="talks.html" class="text-slate-600 dark:text-slate-300 hover:text-blue-600 dark:hover:text-sky-400 transition-colors">Talks</a>
+                    <a href="teaching.html" class="text-slate-600 dark:text-slate-300 hover:text-blue-600 dark:hover:text-sky-400 transition-colors">Teaching</a>
+                    <a href="portfolio.html" class="text-slate-600 dark:text-slate-300 hover:text-blue-600 dark:hover:text-sky-400 transition-colors">Portfolio</a>
+                    <a href="blog.html" class="text-slate-600 dark:text-slate-300 hover:text-blue-600 dark:hover:text-sky-400 transition-colors">Blog</a>
+                    <button data-theme-toggle aria-label="Toggle theme" class="ml-1 w-9 h-9 grid place-items-center rounded-full text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"><i class="fas fa-moon"></i></button>
+                </nav>
+                <div class="md:hidden flex items-center gap-1">
+                    <button data-theme-toggle aria-label="Toggle theme" class="w-9 h-9 grid place-items-center rounded-full text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800"><i class="fas fa-moon"></i></button>
+                    <button data-menu-toggle aria-label="Menu" class="w-9 h-9 grid place-items-center rounded-full text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800"><i class="fas fa-bars"></i></button>
                 </div>
             </div>
+            <nav data-mobile-nav class="hidden md:hidden flex-col gap-1 pb-4 text-sm font-medium">
+                <a href="index.html" class="py-2 text-slate-600 dark:text-slate-300">About</a>
+                <a href="publications.html" class="py-2 text-blue-600 dark:text-sky-400">Publications</a>
+                <a href="talks.html" class="py-2 text-slate-600 dark:text-slate-300">Talks</a>
+                <a href="teaching.html" class="py-2 text-slate-600 dark:text-slate-300">Teaching</a>
+                <a href="portfolio.html" class="py-2 text-slate-600 dark:text-slate-300">Portfolio</a>
+                <a href="blog.html" class="py-2 text-slate-600 dark:text-slate-300">Blog</a>
+            </nav>
         </div>
     </header>
 
-    <!-- Navigation -->
-    <nav class="bg-white sticky top-0 z-10 shadow-md">
-        <div class="max-w-7xl mx-auto">
-            <div class="flex justify-center space-x-4 md:space-x-8 py-3">
-                <a href="index.html#about" class="text-gray-600 hover:text-blue-600 font-medium">About</a>
-                <a href="index.html#research" class="text-gray-600 hover:text-blue-600 font-medium">Research</a>
-                <a href="index.html#teaching" class="text-gray-600 hover:text-blue-600 font-medium">Teaching</a>
-                <a href="simulations.html" class="text-gray-600 hover:text-blue-600 font-medium">Simulations</a>
-                <a href="#" class="text-blue-600 font-bold">Publications</a>
-            </div>
+    <div class="max-w-6xl mx-auto px-4 sm:px-6 py-8 md:py-12">
+        <div class="md:grid md:grid-cols-[18rem_minmax(0,1fr)] md:gap-12">
+
+            <!-- Sidebar -->
+            <aside class="mb-12 md:mb-0">
+                <div class="md:sticky md:top-24 text-center md:text-left">
+                    <div class="relative mx-auto md:mx-0 w-40 h-40 rounded-full overflow-hidden ring-4 ring-white dark:ring-slate-800 shadow-lg bg-gradient-to-br from-blue-600 to-sky-400">
+                        <img data-avatar-img src="assets/profile.jpg" alt="Vincent Zvenigorosky" class="hidden w-full h-full object-cover">
+                        <div data-avatar-fallback class="absolute inset-0 flex items-center justify-center text-5xl font-bold text-white tracking-tight">VZ</div>
+                    </div>
+                    <h1 class="mt-5 text-xl font-bold text-slate-900 dark:text-white">Vincent Zvenigorosky</h1>
+                    <p class="text-blue-600 dark:text-sky-400 font-medium">Forensic Geneticist, PhD</p>
+                    <p class="mt-3 text-sm leading-relaxed text-slate-600 dark:text-slate-400">Molecular biologist &amp; bioinformatician working on ancient and forensic DNA, kinship and population genetics.</p>
+
+                    <ul class="mt-6 space-y-3 text-sm inline-block text-left">
+                        <li class="flex items-center gap-3 text-slate-600 dark:text-slate-400"><i class="fa-solid fa-location-dot w-4 text-center text-slate-400 dark:text-slate-500"></i> Strasbourg, France (EU)</li>
+                        <li class="flex items-center gap-3 text-slate-600 dark:text-slate-400"><i class="fa-solid fa-building-columns w-4 text-center text-slate-400 dark:text-slate-500"></i> StrasGene · Université Paris Cité</li>
+                        <li><a href="mailto:vincent.zvenigorosky@gmail.com" class="flex items-center gap-3 text-slate-600 dark:text-slate-400 hover:text-blue-600 dark:hover:text-sky-400 transition-colors"><i class="fa-solid fa-envelope w-4 text-center"></i> Email</a></li>
+                        <li><a href="https://github.com/vzvenigorosky" target="_blank" rel="noopener noreferrer" class="flex items-center gap-3 text-slate-600 dark:text-slate-400 hover:text-blue-600 dark:hover:text-sky-400 transition-colors"><i class="fa-brands fa-github w-4 text-center"></i> GitHub</a></li>
+                        <li><a href="https://www.linkedin.com/in/vincent-zvenigorosky-89b18911a" target="_blank" rel="noopener noreferrer" class="flex items-center gap-3 text-slate-600 dark:text-slate-400 hover:text-blue-600 dark:hover:text-sky-400 transition-colors"><i class="fa-brands fa-linkedin w-4 text-center"></i> LinkedIn</a></li>
+                        <li><a href="https://orcid.org/0000-0002-5922-4872" target="_blank" rel="noopener noreferrer" class="flex items-center gap-3 text-slate-600 dark:text-slate-400 hover:text-blue-600 dark:hover:text-sky-400 transition-colors"><i class="fa-brands fa-orcid w-4 text-center"></i> ORCID</a></li>
+                        <li><a href="https://www.researchgate.net/profile/Vincent-Zvenigorosky" target="_blank" rel="noopener noreferrer" class="flex items-center gap-3 text-slate-600 dark:text-slate-400 hover:text-blue-600 dark:hover:text-sky-400 transition-colors"><i class="fa-brands fa-researchgate w-4 text-center"></i> ResearchGate</a></li>
+                    </ul>
+                </div>
+            </aside>
+
+            <!-- Main content -->
+            <main>
+                <section class="mb-8">
+                    <h2 class="text-2xl md:text-3xl font-bold text-slate-900 dark:text-white">Publications</h2>
+                    <p class="mt-4 text-base md:text-lg leading-relaxed">Peer-reviewed research in forensic, evolutionary and archaeological genetics. My name is shown in <strong class="text-slate-900 dark:text-white">bold</strong>; an asterisk (*) marks shared first authorship.</p>
+                    <div class="mt-6 grid grid-cols-2 sm:grid-cols-4 gap-3">
+                        <div class="rounded-lg bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-4 text-center">
+                            <div class="text-2xl font-bold text-blue-600 dark:text-sky-400">17</div>
+                            <div class="text-xs text-slate-500 dark:text-slate-400 mt-1">Int. peer-reviewed<br>(+1 national)</div>
+                        </div>
+                        <div class="rounded-lg bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-4 text-center">
+                            <div class="text-2xl font-bold text-blue-600 dark:text-sky-400">7</div>
+                            <div class="text-xs text-slate-500 dark:text-slate-400 mt-1">First author<br>(+1 national)</div>
+                        </div>
+                        <div class="rounded-lg bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-4 text-center">
+                            <div class="text-2xl font-bold text-blue-600 dark:text-sky-400">1</div>
+                            <div class="text-xs text-slate-500 dark:text-slate-400 mt-1">Book chapter</div>
+                        </div>
+                        <div class="rounded-lg bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-4 text-center">
+                            <div class="text-2xl font-bold text-blue-600 dark:text-sky-400">2</div>
+                            <div class="text-xs text-slate-500 dark:text-slate-400 mt-1">Under review</div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- 2026 -->
+                <h3 class="text-lg font-bold text-slate-500 dark:text-slate-400 tracking-wide mt-10 mb-4">2026</h3>
+                <div class="space-y-4">
+                    <article class="pub">
+                        <span class="pub-tag pub-tag-first">First author</span>
+                        <h4 class="pub-title-plain">An innovative genetic genealogy approach to the identification of three victims of World War I and World War II: the new ForenSeq Kintelligence kit</h4>
+                        <p class="pub-authors"><strong>Zvenigorosky, V.</strong>, Gonzalez, A., Fausser, J.L., Veith, G., Frémont, B., Delabarde, T., Ludes, B. &amp; Keyser, C.</p>
+                        <p class="pub-venue"><em>Forensic Science International: Genetics</em>, p.103492.</p>
+                    </article>
+                    <article class="pub">
+                        <span class="pub-tag pub-tag-pub">Publication</span>
+                        <a href="https://doi.org/10.1038/s41586-025-09856-5" target="_blank" rel="noopener noreferrer" class="pub-title">An ancient DNA perspective on the Russian conquest of Yakutia</a>
+                        <p class="pub-authors">Crubézy, É., Guarino-Vignon, P., Seguin-Orlando, A., … <strong>Zvenigorosky, V.</strong>, … Quintana-Murci, L. &amp; Orlando, L.</p>
+                        <p class="pub-venue"><em>Nature</em>, 650, pp.389–398.</p>
+                    </article>
+                </div>
+
+                <!-- 2025 -->
+                <h3 class="text-lg font-bold text-slate-500 dark:text-slate-400 tracking-wide mt-10 mb-4">2025</h3>
+                <div class="space-y-4">
+                    <article class="pub">
+                        <span class="pub-tag pub-tag-pub">Publication</span>
+                        <h4 class="pub-title-plain">Human-specific genomic evolution of a regulatory network enables fine-tuning of N-cadherin gene expression</h4>
+                        <p class="pub-authors">Erdmann, É., Agolli, S., Fix, S., Cottard, F., Keyser, C., <strong>Zvenigorosky, V.</strong>, Gonzalez, A., Haili, Z., Kieffer, B. &amp; Céraline, J.</p>
+                        <p class="pub-venue"><em>Cellular and Molecular Life Sciences</em>, 82(1), p.196.</p>
+                    </article>
+                </div>
+
+                <!-- 2024 -->
+                <h3 class="text-lg font-bold text-slate-500 dark:text-slate-400 tracking-wide mt-10 mb-4">2024</h3>
+                <div class="space-y-4">
+                    <article class="pub">
+                        <span class="pub-tag pub-tag-first">First author</span>
+                        <a href="https://doi.org/10.1016/j.isci.2023.108651" target="_blank" rel="noopener noreferrer" class="pub-title">Evaluation of whole-genome enrichment and sequencing of T. pallidum from FFPE samples after 75 years</a>
+                        <p class="pub-authors"><strong>Zvenigorosky, V.</strong>, Gonzalez, A., Veith, G., Close-Koenig, T., Cannet, C., Fausser, J.L., Wenger, A., Toutous-Trellu, L., Keyser, C. &amp; Bonah, C.</p>
+                        <p class="pub-venue"><em>iScience</em>. IF: 5.8</p>
+                    </article>
+                </div>
+
+                <!-- 2023 -->
+                <h3 class="text-lg font-bold text-slate-500 dark:text-slate-400 tracking-wide mt-10 mb-4">2023</h3>
+                <div class="space-y-4">
+                    <article class="pub">
+                        <span class="pub-tag pub-tag-pub">Publication</span>
+                        <a href="https://doi.org/10.1134/S1022795423060054" target="_blank" rel="noopener noreferrer" class="pub-title">The Y-chromosome lineage variation in ancient and modern populations of the Sakha (Yakuts)</a>
+                        <p class="pub-authors">Fedorova, S.A., <strong>Zvenigorosky, V.</strong> &amp; Alekseev, A.N.</p>
+                        <p class="pub-venue"><em>Russian Journal of Genetics</em>, 59, pp.544–550. IF: 0.6</p>
+                    </article>
+                </div>
+
+                <!-- 2022 -->
+                <h3 class="text-lg font-bold text-slate-500 dark:text-slate-400 tracking-wide mt-10 mb-4">2022</h3>
+                <div class="space-y-4">
+                    <article class="pub">
+                        <span class="pub-tag pub-tag-book">Book chapter</span>
+                        <h4 class="pub-title-plain">Occupations et espaces sacrés dans l'Altaï Mongol — Les sites archéologiques de Burgast et Ikh Khatuu (1100 a.C. – 1100 p.C.)</h4>
+                        <p class="pub-authors">Lepetz, S., Bernard, V., Cervel, M., Joly, D., Bayarkhuu, N., Saunier, I., Turbat, T. &amp; Zazzo, A.</p>
+                        <p class="pub-venue"><em>Éditions Mergoil</em>, p.335. ISBN: 978-2-35518-122-1</p>
+                    </article>
+                </div>
+
+                <!-- 2021 -->
+                <h3 class="text-lg font-bold text-slate-500 dark:text-slate-400 tracking-wide mt-10 mb-4">2021</h3>
+                <div class="space-y-4">
+                    <article class="pub">
+                        <span class="pub-tag pub-tag-pub">Publication</span>
+                        <a href="https://doi.org/10.3390/biology10100974" target="_blank" rel="noopener noreferrer" class="pub-title">Sucrose is not the whole story: risk factors and oral health at the contact (Yakutia, Siberia — 16th/19th c.)</a>
+                        <p class="pub-authors">Crubézy, E., Duchesne, S., Razafindrazaka, H., … <strong>Zvenigorosky, V.</strong> &amp; Prados-Frutos, J.C.</p>
+                        <p class="pub-venue"><em>Biology</em>, 10, 974. IF: 5.079</p>
+                    </article>
+                    <article class="pub">
+                        <span class="pub-tag pub-tag-pub">Publication</span>
+                        <a href="https://doi.org/10.3390/biology10121271" target="_blank" rel="noopener noreferrer" class="pub-title">At the origins of tobacco-smoking and tea consumption in a virgin population (Yakutia, 1650–1900 A.D.)</a>
+                        <p class="pub-authors">Macé, M., Richeval, C., Alcouffe, A., … <strong>Zvenigorosky, V.</strong>, … Gaulier, J.-M. &amp; Crubézy, E.</p>
+                        <p class="pub-venue"><em>Biology</em>, 10, 1271. IF: 5.079</p>
+                    </article>
+                </div>
+
+                <!-- 2020 -->
+                <h3 class="text-lg font-bold text-slate-500 dark:text-slate-400 tracking-wide mt-10 mb-4">2020</h3>
+                <div class="space-y-4">
+                    <article class="pub">
+                        <span class="pub-tag pub-tag-first">First author</span>
+                        <a href="https://doi.org/10.1038/s42003-020-01307-3" target="_blank" rel="noopener noreferrer" class="pub-title">The genetic legacy of legendary and historical Siberian chieftains</a>
+                        <p class="pub-authors"><strong>Zvenigorosky, V.</strong>, Duchesne, S., Romanova, L., … Ludes, B., Crubézy, E. &amp; Keyser, C.</p>
+                        <p class="pub-venue"><em>Communications Biology</em>, 3(1):581. IF: 5.489</p>
+                    </article>
+                    <article class="pub">
+                        <span class="pub-tag pub-tag-first">First author</span>
+                        <a href="https://doi.org/10.1007/s00414-020-02298-w" target="_blank" rel="noopener noreferrer" class="pub-title">The limitations of kinship determinations using STR data in ill-defined populations</a>
+                        <p class="pub-authors"><strong>Zvenigorosky, V.</strong>, Sabbagh, A., Gonzalez, A., … Crubézy, É. &amp; Ludes, B.</p>
+                        <p class="pub-venue"><em>International Journal of Legal Medicine</em>. IF: 2.686</p>
+                    </article>
+                    <article class="pub">
+                        <span class="pub-tag pub-tag-pub">Publication</span>
+                        <h4 class="pub-title-plain">Genetic evidence suggests a sense of family, parity and conquest in the Xiongnu Iron Age nomads of Mongolia</h4>
+                        <p class="pub-authors">Keyser, C., <strong>Zvenigorosky, V.</strong>, Gonzalez, A., … Crubézy, E. &amp; Ludes, B.</p>
+                        <p class="pub-venue"><em>Human Genetics</em>. IF: 5.331</p>
+                    </article>
+                    <article class="pub">
+                        <span class="pub-tag pub-tag-pub">Publication</span>
+                        <h4 class="pub-title-plain">The petrous bone: ideal substrate in legal medicine?</h4>
+                        <p class="pub-authors">Gonzalez, A., Cannet, C., <strong>Zvenigorosky, V.</strong>, Geraut, A., Koch, G., Delabarde, T., Ludes, B., Raul, J.S. &amp; Keyser, C.</p>
+                        <p class="pub-venue"><em>Forensic Science International: Genetics</em>, p.102305. IF: 4.882</p>
+                    </article>
+                </div>
+
+                <!-- 2019 -->
+                <h3 class="text-lg font-bold text-slate-500 dark:text-slate-400 tracking-wide mt-10 mb-4">2019</h3>
+                <div class="space-y-4">
+                    <article class="pub">
+                        <span class="pub-tag pub-tag-first">Co-first author</span>
+                        <a href="https://doi.org/10.1007/s00439-019-02002-y" target="_blank" rel="noopener noreferrer" class="pub-title">Genetic kinship and admixture in Iron Age Scytho-Siberians</a>
+                        <p class="pub-authors">Mary, L.*, <strong>Zvenigorosky, V.*</strong>, Kovalev, A., … Ludes, B. &amp; Keyser, C.</p>
+                        <p class="pub-venue"><em>Human Genetics</em>, 138(4), pp.411–423. IF: 5.331</p>
+                    </article>
+                    <article class="pub">
+                        <span class="pub-tag pub-tag-first">First author</span>
+                        <h4 class="pub-title-plain">Persistence and disappearance of traditional patrilocality: matrimonial strategies and postnuptial residence patterns in two Eastern Siberian communities of the 21st century</h4>
+                        <p class="pub-authors"><strong>Zvenigorosky, V.</strong>, Nikolaeva, D., Romanov, G., Solovev, A., Barashkov, N., Crubézy, É., Fedorova, S. &amp; Keyser, C.</p>
+                        <p class="pub-venue"><em>Sibirica</em>, 18(1), pp.53–70. IF: 0.6</p>
+                    </article>
+                </div>
+
+                <!-- 2018 -->
+                <h3 class="text-lg font-bold text-slate-500 dark:text-slate-400 tracking-wide mt-10 mb-4">2018</h3>
+                <div class="space-y-4">
+                    <article class="pub">
+                        <span class="pub-tag pub-tag-pub">Publication</span>
+                        <a href="https://doi.org/10.1002/ajpa.23486" target="_blank" rel="noopener noreferrer" class="pub-title">New genetic evidence of affinities and discontinuities between Bronze Age Siberian populations</a>
+                        <p class="pub-authors">Hollard, C., <strong>Zvenigorosky, V.</strong>, Kovalev, A., … Ludes, B. &amp; Keyser, C.</p>
+                        <p class="pub-venue"><em>American Journal of Physical Anthropology</em>, 167(1), pp.97–107. IF: 2.868</p>
+                    </article>
+                </div>
+
+                <!-- 2017 -->
+                <h3 class="text-lg font-bold text-slate-500 dark:text-slate-400 tracking-wide mt-10 mb-4">2017</h3>
+                <div class="space-y-4">
+                    <article class="pub">
+                        <span class="pub-tag pub-tag-pub">Publication</span>
+                        <h4 class="pub-title-plain">Case report: on the use of the HID-Ion AmpliSeq™ Ancestry Panel in a real forensic case</h4>
+                        <p class="pub-authors">Hollard, C., Keyser, C., Delabarde, T., Gonzalez, A., Lamego, C.V., <strong>Zvenigorosky, V.</strong> &amp; Ludes, B.</p>
+                        <p class="pub-venue"><em>International Journal of Legal Medicine</em>, 131(2), pp.351–358. IF: 2.686</p>
+                    </article>
+                    <article class="pub">
+                        <span class="pub-tag pub-tag-national">National journal · First author</span>
+                        <h4 class="pub-title-plain">A new approach to genetic kinship testing in Yakut archaeology</h4>
+                        <p class="pub-authors"><strong>Zvenigorosky, V.</strong>, Fedorova, S.A., Hollard, C., Gonzalez, A., Alekseev, A., Bravina, R.I., Crubézy, E. &amp; Keyser, C.</p>
+                        <p class="pub-venue"><em>Yakut Medical Journal</em>, 3(59), pp.16–20.</p>
+                    </article>
+                </div>
+
+                <!-- 2016 -->
+                <h3 class="text-lg font-bold text-slate-500 dark:text-slate-400 tracking-wide mt-10 mb-4">2016</h3>
+                <div class="space-y-4">
+                    <article class="pub">
+                        <span class="pub-tag pub-tag-first">First author</span>
+                        <a href="https://doi.org/10.1016/j.fsigen.2016.08.006" target="_blank" rel="noopener noreferrer" class="pub-title">The genetics of kinship in remote human groups</a>
+                        <p class="pub-authors"><strong>Zvenigorosky, V.</strong>, Crubézy, E., Gibert, M., Thèves, C., Hollard, C., Gonzalez, A., Fedorova, S.A., Alexeev, A.N., Bravina, R.I., Ludes, B. &amp; Keyser, C.</p>
+                        <p class="pub-venue"><em>Forensic Science International: Genetics</em>, 25, pp.52–62. IF: 4.882</p>
+                    </article>
+                </div>
+
+                <!-- Under review -->
+                <h3 class="text-lg font-bold text-slate-500 dark:text-slate-400 tracking-wide mt-10 mb-4">Under review</h3>
+                <div class="space-y-4">
+                    <article class="pub pub-review">
+                        <span class="pub-tag pub-tag-review">Preprint · Under review</span>
+                        <a href="https://www.biorxiv.org/content/10.1101/2025.10.17.681771v1" target="_blank" rel="noopener noreferrer" class="pub-title">Quantification of human DNA from century-old archived FFPE samples for retrospective genomic studies</a>
+                        <p class="pub-venue"><em>bioRxiv</em> preprint.</p>
+                    </article>
+                    <article class="pub pub-review">
+                        <span class="pub-tag pub-tag-review">Under review</span>
+                        <h4 class="pub-title-plain">A family portrait in death: burial decisions and social structure at the Iron Age Saghil site (Mongolia)</h4>
+                    </article>
+                </div>
+            </main>
         </div>
-    </nav>
+    </div>
 
-
-    <!-- Main Content -->
-    <main class="max-w-5xl mx-auto p-4 md:p-8">
-
-        <section id="publications-timeline">
-            <h2 class="text-3xl font-bold text-slate-800 border-b-2 border-blue-600 pb-2 mb-8">Publications & Communications</h2>
-
-            <!-- Year 2025 -->
-            <h3 class="text-2xl font-semibold text-slate-700 mt-8 mb-4">2025</h3>
-            <div class="space-y-6">
-                 <div class="card p-6 border-purple-500">
-                    <div class="entry-tag bg-purple-100 text-purple-800">Invited Speaker</div>
-                    <h4 class="text-lg font-bold text-slate-800">Archeogenomics and migration in Eurasia, from the late Iron Age to the Mongols</h4>
-                    <p class="mt-2 text-slate-500"><em>Collège de France, Paris</em></p>
-                </div>
-                <div class="card p-6 border-teal-500">
-                    <div class="entry-tag bg-teal-100 text-teal-800">In Press</div>
-                    <h4 class="text-lg font-bold text-slate-800">Human-Specific Genomic Evolution of a Regulatory Network Enables Fine-Tuning of N-Cadherin Gene Expression</h4>
-                    <p class="mt-2 text-slate-500"><em>Cellular and Molecular Life Sciences</em></p>
-                </div>
-            </div>
-
-            <!-- Year 2024 -->
-            <h3 class="text-2xl font-semibold text-slate-700 mt-8 mb-4">2024</h3>
-            <div class="space-y-6">
-                <div class="card p-6 border-blue-500">
-                    <div class="entry-tag bg-blue-100 text-blue-800">Publication</div>
-                    <a href="https://doi.org/10.1016/j.isci.2023.108651" target="_blank" rel="noopener noreferrer" class="text-lg font-bold text-slate-800 hover:text-blue-600 transition-colors">Evaluation of whole-genome enrichment and sequencing of T. pallidum from FFPE samples after 75 years</a>
-                    <p class="text-slate-600 mt-2"><strong>Zvenigorosky, V.</strong>, Gonzalez, A., Veith, G., et al.</p>
-                    <p class="mt-2 text-slate-500"><em>iScience</em>. IF: 5.8</p>
-                </div>
-            </div>
-            
-            <!-- Year 2023 -->
-            <h3 class="text-2xl font-semibold text-slate-700 mt-8 mb-4">2023</h3>
-            <div class="space-y-6">
-                 <div class="card p-6 border-blue-500">
-                    <div class="entry-tag bg-blue-100 text-blue-800">Publication</div>
-                    <a href="https://doi.org/10.1134/51022795423060054" target="_blank" rel="noopener noreferrer" class="text-lg font-bold text-slate-800 hover:text-blue-600 transition-colors">The Y-Chromosome Lineage Variation in Ancient and Modern Populations of the Sakha (Yakuts)</a>
-                    <p class="text-slate-600 mt-2">Fedorova, S.A., <strong>Zvenigorosky, V.</strong> & Alekseev, A.N.</p>
-                    <p class="mt-2 text-slate-500"><em>Russian Journal of Genetics</em>, 59, pp.544-550. IF: 0.6</p>
-                </div>
-            </div>
-
-            <!-- Year 2022 -->
-            <h3 class="text-2xl font-semibold text-slate-700 mt-8 mb-4">2022</h3>
-            <div class="space-y-6">
-                <div class="card p-6 border-purple-500">
-                    <div class="entry-tag bg-purple-100 text-purple-800">Invited Speaker</div>
-                    <h4 class="text-lg font-bold text-slate-800">Human genetic identity: phenotype, kinship and biogeographic origins</h4>
-                    <p class="mt-2 text-slate-500"><em>Maison des Sciences de l'Homme de Paris Nord, Paris</em></p>
-                </div>
-                <div class="card p-6 border-purple-500">
-                    <div class="entry-tag bg-purple-100 text-purple-800">Invited Speaker</div>
-                    <h4 class="text-lg font-bold text-slate-800">Paleogenetics of Indo-European peoples: the state of research</h4>
-                    <p class="mt-2 text-slate-500"><em>Société Française d'Études Indo-Européennes, Paris</em></p>
-                </div>
-                <div class="card p-6 border-green-500">
-                    <div class="entry-tag bg-green-100 text-green-800">Book Chapter</div>
-                    <h4 class="text-lg font-bold text-slate-800">Occupations et espaces sacrés dans l'Altaï Mongol - Les sites archéologiques de Burgast et Ikh Khatuu (1100 a.C. - 1100 p.C.)</h4>
-                    <p class="text-slate-600 mt-2">Lepetz, S., Bernard, V., Cervel, M., et al.</p>
-                    <p class="mt-2 text-slate-500"><em>Editions Mergoil</em>, p.335. ISBN: 978-2-35518-122-1</p>
-                </div>
-            </div>
-            
-            <!-- Year 2021 -->
-            <h3 class="text-2xl font-semibold text-slate-700 mt-8 mb-4">2021</h3>
-            <div class="space-y-6">
-                 <div class="card p-6 border-blue-500">
-                    <div class="entry-tag bg-blue-100 text-blue-800">Publication</div>
-                    <a href="https://doi.org/10.3390/biology10121271" target="_blank" rel="noopener noreferrer" class="text-lg font-bold text-slate-800 hover:text-blue-600 transition-colors">At the Origins of Tobacco-Smoking and Tea Consumption in a Virgin Population...</a>
-                    <p class="text-slate-600 mt-2">Macé, M., Richeval, C., Alcouffe, A., ... <strong>Zvenigorosky, V.</strong>, et al.</p>
-                    <p class="mt-2 text-slate-500"><em>Biology</em>, 10(12), p.1271. IF: 5.079</p>
-                </div>
-                <div class="card p-6 border-blue-500">
-                    <div class="entry-tag bg-blue-100 text-blue-800">Publication</div>
-                    <a href="https://doi.org/10.3390/biology10100974" target="_blank" rel="noopener noreferrer" class="text-lg font-bold text-slate-800 hover:text-blue-600 transition-colors">Sucrose Is Not the Whole Story: Risk Factors and Oral Health at the Contact...</a>
-                    <p class="text-slate-600 mt-2">Crubézy, E., Duchesne, S., Razafindrazaka, H., ... <strong>Zvenigorosky, V.</strong>, et al.</p>
-                    <p class="mt-2 text-slate-500"><em>Biology</em>, 10, p.974. IF: 5.079</p>
-                </div>
-            </div>
-
-            <!-- Year 2020 -->
-            <h3 class="text-2xl font-semibold text-slate-700 mt-8 mb-4">2020</h3>
-            <div class="space-y-6">
-                <div class="card p-6 border-gray-500">
-                    <div class="entry-tag bg-gray-100 text-gray-800">Interview</div>
-                    <h4 class="text-lg font-bold text-slate-800">Interview on the genetic makeup of ancient Siberians</h4>
-                    <p class="mt-2 text-slate-500"><em>Cahiers de Science et Vie, n°196</em></p>
-                </div>
-                <div class="card p-6 border-blue-500">
-                    <div class="entry-tag bg-blue-100 text-blue-800">Publication</div>
-                    <a href="https://doi.org/10.1038/s42003-020-01307-3" target="_blank" rel="noopener noreferrer" class="text-lg font-bold text-slate-800 hover:text-blue-600 transition-colors">The genetic legacy of legendary and historical Siberian chieftains</a>
-                    <p class="text-slate-600 mt-2"><strong>Zvenigorosky, V.</strong>, Duchesne S., Romanova L., et al.</p>
-                    <p class="mt-2 text-slate-500"><em>Communications Biology</em>, 3(1), p.581. IF: 5.489</p>
-                </div>
-                 <!-- Other 2020 publications... -->
-            </div>
-
-            <!-- Year 2019 -->
-            <h3 class="text-2xl font-semibold text-slate-700 mt-8 mb-4">2019</h3>
-            <div class="space-y-6">
-                <div class="card p-6 border-purple-500">
-                    <div class="entry-tag bg-purple-100 text-purple-800">Congress</div>
-                    <h4 class="text-lg font-bold text-slate-800">The limitations of kinship determinations using STR data in ill-defined populations</h4>
-                    <p class="text-slate-600 mt-2"><strong>Zvenigorosky, V.</strong>, Sabbagh, A., Gonzalez, A., et al.</p>
-                    <p class="mt-2 text-slate-500"><em>28th congress of the international society for forensic genetics, Prague</em></p>
-                </div>
-                 <div class="card p-6 border-blue-500">
-                    <div class="entry-tag bg-blue-100 text-blue-800">Publication</div>
-                    <a href="https://doi.org/10.1007/s00439-019-02002-y" target="_blank" rel="noopener noreferrer" class="text-lg font-bold text-slate-800 hover:text-blue-600 transition-colors">Genetic kinship and admixture in Iron Age Scytho-Siberians</a>
-                    <p class="text-slate-600 mt-2">Mary, L.*, <strong>Zvenigorosky, V.*</strong>, Kovalev, A., et al.</p>
-                    <p class="mt-2 text-slate-500"><em>Human Genetics</em>, 138(4), pp.411-423. IF: 5.331</p>
-                </div>
-                <!-- Other 2019 publications... -->
-            </div>
-
-             <!-- Year 2018 -->
-            <h3 class="text-2xl font-semibold text-slate-700 mt-8 mb-4">2018</h3>
-            <div class="space-y-6">
-                <div class="card p-6 border-purple-500">
-                    <div class="entry-tag bg-purple-100 text-purple-800">Communication</div>
-                    <h4 class="text-lg font-bold text-slate-800">L'identification génétique d'une tombe médiévale anonyme en Sibérie Orientale</h4>
-                     <p class="text-slate-600 mt-2"><strong>Zvenigorosky, V.</strong>, Romanova L., Crubezy E., Keyser C.</p>
-                    <p class="mt-2 text-slate-500"><em>GALF (Groupement des Anthropologues de Langue Française), Coimbra</em></p>
-                </div>
-                <div class="card p-6 border-blue-500">
-                     <div class="entry-tag bg-blue-100 text-blue-800">Publication</div>
-                    <a href="https://doi.org/10.1002/ajpa.23486" target="_blank" rel="noopener noreferrer" class="text-lg font-bold text-slate-800 hover:text-blue-600 transition-colors">New genetic evidence of affinities and discontinuities between bronze age Siberian populations</a>
-                    <p class="text-slate-600 mt-2">Hollard, C., <strong>Zvenigorosky, V.</strong>, Kovalev, A., et al.</p>
-                    <p class="mt-2 text-slate-500"><em>American Journal of Physical Anthropology</em>, 167(1), pp.97-107. IF: 2.868</p>
-                </div>
-            </div>
-
-            <!-- Year 2017 -->
-            <h3 class="text-2xl font-semibold text-slate-700 mt-8 mb-4">2017</h3>
-             <div class="space-y-6">
-                 <div class="card p-6 border-yellow-500">
-                    <div class="entry-tag bg-yellow-100 text-yellow-800">Poster</div>
-                    <h4 class="text-lg font-bold text-slate-800">Matrimonial culture in two Eastern Siberian communities</h4>
-                     <p class="text-slate-600 mt-2"><strong>Zvenigorosky, V.</strong>, Romanov G., Solovev A., et al.</p>
-                    <p class="mt-2 text-slate-500"><em>Fifth Toulouse Economics and Biology Workshop, Toulouse School of Economics</em></p>
-                </div>
-                <div class="card p-6 border-purple-500">
-                    <div class="entry-tag bg-purple-100 text-purple-800">Communication</div>
-                    <h4 class="text-lg font-bold text-slate-800">Genetic interactions in Early Bronze Age Southern Siberia</h4>
-                    <p class="mt-2 text-slate-500"><em>Monuments and Pastoral Regimes, Bonn, Allemagne</em></p>
-                </div>
-                <!-- Other 2017 entries... -->
-            </div>
-
-            <!-- Year 2016 -->
-            <h3 class="text-2xl font-semibold text-slate-700 mt-8 mb-4">2016</h3>
-            <div class="space-y-6">
-                 <div class="card p-6 border-purple-500">
-                    <div class="entry-tag bg-purple-100 text-purple-800">Communication</div>
-                    <h4 class="text-lg font-bold text-slate-800">Approche génétique de l'identification des parentés en contexte archéologique</h4>
-                     <p class="text-slate-600 mt-2"><strong>Zvenigorosky, V.</strong>, Keyser C., Mata X., et al.</p>
-                    <p class="mt-2 text-slate-500"><em>GALF (Groupement des Anthropologues de langue Française), Toulouse</em></p>
-                </div>
-                <div class="card p-6 border-blue-500">
-                    <div class="entry-tag bg-blue-100 text-blue-800">Publication</div>
-                    <a href="https://doi.org/10.1016/j.fsigen.2016.08.006" target="_blank" rel="noopener noreferrer" class="text-lg font-bold text-slate-800 hover:text-blue-600 transition-colors">The genetics of kinship in remote human groups</a>
-                    <p class="text-slate-600 mt-2"><strong>Zvenigorosky, V.</strong>, Crubézy, E., Gibert, M., et al.</p>
-                    <p class="mt-2 text-slate-500"><em>Forensic Science International: Genetics</em>, 25, pp.52-62. IF: 4.882</p>
-                </div>
-            </div>
-
-            <!-- In Progress -->
-            <h3 class="text-2xl font-semibold text-slate-700 mt-8 mb-4">Upcoming Work</h3>
-            <div class="space-y-6">
-                 <div class="card p-6 border-orange-500">
-                    <div class="entry-tag bg-orange-100 text-orange-800">Being Revised</div>
-                    <h4 class="text-lg font-bold text-slate-800">An innovative genetic genealogy approach to the identification of three victims of World War I and World War II: The new Forenseq Kintelligence kit</h4>
-                </div>
-                 <div class="card p-6 border-orange-500">
-                    <div class="entry-tag bg-orange-100 text-orange-800">Being Revised</div>
-                    <h4 class="text-lg font-bold text-slate-800">An ancient DNA perspective on the Russian Conquest of Yakutia</h4>
-                </div>
-                 <div class="card p-6 border-pink-500">
-                    <div class="entry-tag bg-pink-100 text-pink-800">In Preparation</div>
-                    <h4 class="text-lg font-bold text-slate-800">Genetic data reveals organized family burial in Iron Age Mongolia</h4>
-                </div>
-                <div class="card p-6 border-pink-500">
-                    <div class="entry-tag bg-pink-100 text-pink-800">In Preparation</div>
-                    <h4 class="text-lg font-bold text-slate-800">Reliable collection of high-quality DNA from a large FFPE archive</h4>
-                </div>
-            </div>
-
-        </section>
-
-    </main>
-
-    <!-- Footer -->
-    <footer class="bg-slate-800 text-white mt-16 p-6 text-center">
-        <p>&copy; 2024 Vincent Zvenigorosky. All rights reserved.</p>
-        <p class="text-sm text-slate-400 mt-1">Website designed and built to showcase professional skills.</p>
+    <footer class="border-t border-slate-200 dark:border-slate-800 mt-8">
+        <div class="max-w-6xl mx-auto px-4 sm:px-6 py-6 text-sm text-slate-500 dark:text-slate-400 flex flex-col sm:flex-row justify-between gap-2">
+            <p>&copy; <span id="year">2026</span> Vincent Zvenigorosky</p>
+            <p>Strasbourg, France</p>
+        </div>
     </footer>
 
+    <style>
+        .pub { background:#fff; border:1px solid #e2e8f0; border-left:4px solid #3b82f6; border-radius:0.5rem; padding:1.25rem; }
+        .dark .pub { background:#0f172a; border-color:#1e293b; border-left-color:#38bdf8; }
+        .pub-review { border-left-style:dashed; }
+        .pub-title { display:inline-block; font-weight:700; color:#0f172a; line-height:1.4; }
+        .pub-title:hover { color:#2563eb; text-decoration:underline; }
+        .dark .pub-title { color:#f1f5f9; }
+        .dark .pub-title:hover { color:#7dd3fc; }
+        .pub-title-plain { font-weight:700; color:#0f172a; line-height:1.4; }
+        .dark .pub-title-plain { color:#f1f5f9; }
+        .pub-authors { margin-top:0.4rem; font-size:0.9rem; color:#475569; }
+        .dark .pub-authors { color:#94a3b8; }
+        .pub-venue { margin-top:0.25rem; font-size:0.85rem; color:#64748b; }
+        .dark .pub-venue { color:#94a3b8; }
+        .pub-tag { display:inline-block; font-size:0.7rem; font-weight:600; padding:0.15rem 0.6rem; border-radius:9999px; margin-bottom:0.6rem; }
+        .pub-tag-pub { background:#dbeafe; color:#1e40af; } .dark .pub-tag-pub { background:rgba(59,130,246,0.15); color:#93c5fd; }
+        .pub-tag-first { background:#ede9fe; color:#5b21b6; } .dark .pub-tag-first { background:rgba(139,92,246,0.15); color:#c4b5fd; }
+        .pub-tag-book { background:#dcfce7; color:#166534; } .dark .pub-tag-book { background:rgba(34,197,94,0.15); color:#86efac; }
+        .pub-tag-national { background:#f1f5f9; color:#475569; } .dark .pub-tag-national { background:rgba(148,163,184,0.15); color:#cbd5e1; }
+        .pub-tag-review { background:#ffedd5; color:#9a3412; } .dark .pub-tag-review { background:rgba(249,115,22,0.15); color:#fdba74; }
+    </style>
+    <script>document.getElementById('year').textContent = new Date().getFullYear();</script>
 </body>
 </html>

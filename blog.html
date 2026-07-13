@@ -34,13 +34,13 @@
                     <button data-menu-toggle aria-label="Menu" class="w-9 h-9 grid place-items-center rounded-full text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800"><i class="fas fa-bars"></i></button>
                 </div>
             </div>
-            <nav data-mobile-nav class="hidden md:hidden flex-col gap-1 pb-4 text-sm font-medium">
-                <a href="index.html" class="py-2 text-slate-600 dark:text-slate-300">About</a>
-                <a href="publications.html" class="py-2 text-slate-600 dark:text-slate-300">Publications</a>
-                <a href="talks.html" class="py-2 text-slate-600 dark:text-slate-300">Talks</a>
-                <a href="teaching.html" class="py-2 text-slate-600 dark:text-slate-300">Teaching</a>
-                <a href="portfolio.html" class="py-2 text-slate-600 dark:text-slate-300">Portfolio</a>
-                <a href="blog.html" class="py-2 text-blue-600 dark:text-sky-400">Blog</a>
+            <nav data-mobile-nav class="hidden md:hidden pb-3 pt-2 mt-1 border-t border-slate-200 dark:border-slate-800 text-sm font-medium">
+                <a href="index.html" class="block py-2 text-slate-600 dark:text-slate-300">About</a>
+                <a href="publications.html" class="block py-2 text-slate-600 dark:text-slate-300">Publications</a>
+                <a href="talks.html" class="block py-2 text-slate-600 dark:text-slate-300">Talks</a>
+                <a href="teaching.html" class="block py-2 text-slate-600 dark:text-slate-300">Teaching</a>
+                <a href="portfolio.html" class="block py-2 text-slate-600 dark:text-slate-300">Portfolio</a>
+                <a href="blog.html" class="block py-2 text-blue-600 dark:text-sky-400">Blog</a>
             </nav>
         </div>
     </header>
@@ -49,24 +49,29 @@
         <div class="md:grid md:grid-cols-[18rem_minmax(0,1fr)] md:gap-12">
 
             <!-- Sidebar -->
-            <aside class="mb-12 md:mb-0">
-                <div class="md:sticky md:top-24 text-center md:text-left">
-                    <div class="relative mx-auto md:mx-0 w-40 h-40 rounded-full overflow-hidden ring-4 ring-white dark:ring-slate-800 shadow-lg bg-gradient-to-br from-blue-600 to-sky-400">
-                        <img data-avatar-img src="assets/profile.jpg" alt="Vincent Zvenigorosky" class="hidden w-full h-full object-cover">
-                        <div data-avatar-fallback class="absolute inset-0 flex items-center justify-center text-5xl font-bold text-white tracking-tight">VZ</div>
+            <aside class="mb-8 md:mb-0">
+                <div class="md:sticky md:top-24">
+                    <div class="flex items-center gap-4 md:block">
+                        <div class="relative shrink-0 w-24 h-24 md:w-40 md:h-40 rounded-full overflow-hidden ring-4 ring-white dark:ring-slate-800 shadow-lg bg-gradient-to-br from-blue-600 to-sky-400">
+                            <img data-avatar-img src="assets/profile.jpg" alt="Vincent Zvenigorosky" class="hidden w-full h-full object-cover">
+                            <div data-avatar-fallback class="absolute inset-0 flex items-center justify-center text-3xl md:text-5xl font-bold text-white tracking-tight">VZ</div>
+                        </div>
+                        <div class="md:mt-5">
+                            <h1 class="text-lg md:text-xl font-bold text-slate-900 dark:text-white leading-tight">Vincent Zvenigorosky</h1>
+                            <p class="text-blue-600 dark:text-sky-400 font-medium text-sm md:text-base">Forensic Geneticist, PhD</p>
+                            <p class="mt-1 text-xs text-slate-500 dark:text-slate-400 md:hidden"><i class="fa-solid fa-location-dot mr-1"></i>Strasbourg, France</p>
+                        </div>
                     </div>
-                    <h1 class="mt-5 text-xl font-bold text-slate-900 dark:text-white">Vincent Zvenigorosky</h1>
-                    <p class="text-blue-600 dark:text-sky-400 font-medium">Forensic Geneticist, PhD</p>
-                    <p class="mt-3 text-sm leading-relaxed text-slate-600 dark:text-slate-400">Molecular biologist &amp; bioinformatician working on ancient and forensic DNA, kinship and population genetics.</p>
+                    <p class="mt-4 md:mt-3 text-sm leading-relaxed text-slate-600 dark:text-slate-400 hidden sm:block">Molecular biologist &amp; bioinformatician working on ancient and forensic DNA, kinship and population genetics.</p>
 
-                    <ul class="mt-6 space-y-3 text-sm inline-block text-left">
-                        <li class="flex items-center gap-3 text-slate-600 dark:text-slate-400"><i class="fa-solid fa-location-dot w-4 text-center text-slate-400 dark:text-slate-500"></i> Strasbourg, France (EU)</li>
-                        <li class="flex items-center gap-3 text-slate-600 dark:text-slate-400"><i class="fa-solid fa-building-columns w-4 text-center text-slate-400 dark:text-slate-500"></i> StrasGene · Université Paris Cité</li>
-                        <li><a href="mailto:vincent.zvenigorosky@gmail.com" class="flex items-center gap-3 text-slate-600 dark:text-slate-400 hover:text-blue-600 dark:hover:text-sky-400 transition-colors"><i class="fa-solid fa-envelope w-4 text-center"></i> Email</a></li>
-                        <li><a href="https://github.com/vzvenigorosky" target="_blank" rel="noopener noreferrer" class="flex items-center gap-3 text-slate-600 dark:text-slate-400 hover:text-blue-600 dark:hover:text-sky-400 transition-colors"><i class="fa-brands fa-github w-4 text-center"></i> GitHub</a></li>
-                        <li><a href="https://www.linkedin.com/in/vincent-zvenigorosky-89b18911a" target="_blank" rel="noopener noreferrer" class="flex items-center gap-3 text-slate-600 dark:text-slate-400 hover:text-blue-600 dark:hover:text-sky-400 transition-colors"><i class="fa-brands fa-linkedin w-4 text-center"></i> LinkedIn</a></li>
-                        <li><a href="https://orcid.org/0000-0002-5922-4872" target="_blank" rel="noopener noreferrer" class="flex items-center gap-3 text-slate-600 dark:text-slate-400 hover:text-blue-600 dark:hover:text-sky-400 transition-colors"><i class="fa-brands fa-orcid w-4 text-center"></i> ORCID</a></li>
-                        <li><a href="https://www.researchgate.net/profile/Vincent-Zvenigorosky" target="_blank" rel="noopener noreferrer" class="flex items-center gap-3 text-slate-600 dark:text-slate-400 hover:text-blue-600 dark:hover:text-sky-400 transition-colors"><i class="fa-brands fa-researchgate w-4 text-center"></i> ResearchGate</a></li>
+                    <ul class="mt-4 md:mt-6 flex flex-wrap items-center gap-x-5 gap-y-3 md:block md:space-y-3 text-sm">
+                        <li class="hidden md:flex items-center gap-3 text-slate-600 dark:text-slate-400"><i class="fa-solid fa-location-dot w-4 text-center text-slate-400 dark:text-slate-500"></i> Strasbourg, France (EU)</li>
+                        <li class="hidden md:flex items-center gap-3 text-slate-600 dark:text-slate-400"><i class="fa-solid fa-building-columns w-4 text-center text-slate-400 dark:text-slate-500"></i> StrasGene · Université Paris Cité</li>
+                        <li><a href="mailto:vincent.zvenigorosky@gmail.com" aria-label="Email" class="flex items-center gap-3 text-slate-600 dark:text-slate-400 hover:text-blue-600 dark:hover:text-sky-400 transition-colors"><i class="fa-solid fa-envelope w-5 md:w-4 text-center text-lg md:text-sm"></i><span class="hidden md:inline">Email</span></a></li>
+                        <li><a href="https://github.com/vzvenigorosky" target="_blank" rel="noopener noreferrer" aria-label="GitHub" class="flex items-center gap-3 text-slate-600 dark:text-slate-400 hover:text-blue-600 dark:hover:text-sky-400 transition-colors"><i class="fa-brands fa-github w-5 md:w-4 text-center text-lg md:text-sm"></i><span class="hidden md:inline">GitHub</span></a></li>
+                        <li><a href="https://www.linkedin.com/in/vincent-zvenigorosky-89b18911a" target="_blank" rel="noopener noreferrer" aria-label="LinkedIn" class="flex items-center gap-3 text-slate-600 dark:text-slate-400 hover:text-blue-600 dark:hover:text-sky-400 transition-colors"><i class="fa-brands fa-linkedin w-5 md:w-4 text-center text-lg md:text-sm"></i><span class="hidden md:inline">LinkedIn</span></a></li>
+                        <li><a href="https://orcid.org/0000-0002-5922-4872" target="_blank" rel="noopener noreferrer" aria-label="ORCID" class="flex items-center gap-3 text-slate-600 dark:text-slate-400 hover:text-blue-600 dark:hover:text-sky-400 transition-colors"><i class="fa-brands fa-orcid w-5 md:w-4 text-center text-lg md:text-sm"></i><span class="hidden md:inline">ORCID</span></a></li>
+                        <li><a href="https://www.researchgate.net/profile/Vincent-Zvenigorosky" target="_blank" rel="noopener noreferrer" aria-label="ResearchGate" class="flex items-center gap-3 text-slate-600 dark:text-slate-400 hover:text-blue-600 dark:hover:text-sky-400 transition-colors"><i class="fa-brands fa-researchgate w-5 md:w-4 text-center text-lg md:text-sm"></i><span class="hidden md:inline">ResearchGate</span></a></li>
                     </ul>
                 </div>
             </aside>

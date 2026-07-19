@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Vincent Zvenigorosky, PhD | Forensic Geneticist</title>
+  <style>
+    :root {
+      --primary: #1B365D; --secondary: #2F4F4F; --text: #333333;
+      --muted: #666666; --border: #D9E0E6; --bg: #FFFFFF; --accent-bg: #F6F8FA;
+    }
+    * { box-sizing: border-box; }
+    html, body {
+      margin: 0; padding: 0; background: #ECEFF3; color: var(--text);
+      font-family: Arial, Helvetica, sans-serif; line-height: 1.45;
+      -webkit-print-color-adjust: exact; print-color-adjust: exact;
+    }
+    a { color: var(--primary); text-decoration: none; word-break: break-word; }
+    a:hover { text-decoration: underline; }
+    .cv-document { max-width: 960px; margin: 24px auto; padding: 0; }
+    .page {
+      background: var(--bg); width: 210mm; min-height: 297mm;
+      margin: 0 auto 20px auto; padding: 14mm 16mm 22mm 16mm;
+      box-shadow: 0 2px 14px rgba(0,0,0,0.08); position: relative; overflow: hidden;
+    }
+    .page:last-child { margin-bottom: 0; }
+    .header { border-bottom: 3px solid var(--primary); padding-bottom: 10px; margin-bottom: 14px; }
+    .name { font-size: 31px; font-weight: 700; color: var(--primary); margin: 0 0 4px 0; letter-spacing: 0.2px; }
+    .title { font-size: 15px; font-weight: 700; color: var(--secondary); margin: 0 0 10px 0; }
+    .contact-grid { display: flex; flex-wrap: wrap; gap: 8px 18px; font-size: 13px; color: var(--muted); }
+    .contact-item { display: inline-block; }
+    .section { margin-bottom: 14px; }
+    .section-title {
+      font-size: 14px; text-transform: uppercase; letter-spacing: 1.2px; color: var(--primary);
+      border-bottom: 2px solid var(--border); padding-bottom: 5px; margin: 0 0 8px 0; font-weight: 700;
+    }
+    .summary { font-size: 13.5px; margin: 0; text-align: justify; }
+    .skills-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px 20px; }
+    .skill-card { background: var(--accent-bg); border: 1px solid var(--border); border-left: 4px solid var(--secondary); padding: 9px 12px; }
+    .skill-card h3 { font-size: 12.5px; margin: 0 0 5px 0; color: var(--secondary); text-transform: uppercase; letter-spacing: 0.8px; }
+    .skill-card ul { margin: 0; padding-left: 16px; font-size: 12.5px; }
+    .skill-card li { margin: 2px 0; }
+    .experience-item, .education-item, .publication-item { margin-bottom: 10px; page-break-inside: avoid; }
+    .experience-header, .education-header { display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; margin-bottom: 3px; flex-wrap: wrap; }
+    .job-title, .degree { font-size: 14px; font-weight: 700; color: var(--text); margin: 0; }
+    .organisation, .institution { font-size: 13px; color: var(--secondary); font-weight: 700; margin: 1px 0 0 0; }
+    .dates { font-size: 12.5px; color: var(--muted); font-weight: 700; white-space: nowrap; margin-top: 1px; }
+    .experience-meta { font-size: 12.5px; color: var(--muted); margin-bottom: 4px; }
+    ul.bullets { margin: 4px 0 0 0; padding-left: 18px; font-size: 13px; }
+    ul.bullets li { margin: 2px 0; }
+    .publication-item { padding-left: 0; }
+    .publication-citation { font-size: 12.5px; margin: 0 0 2px 0; line-height: 1.5; }
+    .doi { font-size: 11.5px; color: var(--muted); }
+    .pub-year { font-size: 12px; font-weight: 700; color: var(--primary); text-transform: uppercase; letter-spacing: 0.8px; margin: 8px 0 3px 0; }
+    .orcid-note { margin-top: 10px; font-size: 12.5px; color: var(--muted); border-top: 1px solid var(--border); padding-top: 8px; }
+    .footer-note { position: absolute; bottom: 10mm; left: 16mm; right: 16mm; font-size: 11px; color: #7A7A7A; border-top: 1px solid var(--border); padding-top: 6px; }
+    @media screen and (max-width: 1000px) {
+      .cv-document { margin: 0; }
+      .page { width: 100%; min-height: auto; margin: 0 0 16px 0; padding: 24px 18px; box-shadow: none; }
+    }
+    @media screen and (max-width: 680px) {
+      .skills-grid { grid-template-columns: 1fr; }
+      .experience-header, .education-header { flex-direction: column; gap: 4px; }
+      .dates { white-space: normal; }
+      .name { font-size: 26px; }
+    }
+    @page { size: A4; margin: 10mm 14mm 16mm 14mm; }
+    @media print {
+      html, body { background: #FFFFFF; }
+      .cv-document { max-width: none; margin: 0; }
+      .page {
+        width: auto; height: auto; min-height: unset;
+        margin: 0; padding: 0;
+        box-shadow: none;
+        page-break-after: always;
+        overflow: visible;
+      }
+      .page:last-child { page-break-after: auto; }
+      .footer-note { position: static; border-top: 1px solid #D9E0E6; margin-top: 12px; padding-top: 5px; }
+      a { text-decoration: none; }
+      body { line-height: 1.35; }
+      .section { margin-bottom: 9px; }
+      .experience-item, .education-item, .publication-item { margin-bottom: 7px; }
+      .section-title { margin-bottom: 6px; padding-bottom: 4px; }
+      ul.bullets { margin-top: 3px; }
+      ul.bullets li { margin: 1px 0; }
+      .pub-year { margin: 3px 0 1px 0; font-size: 11px; }
+      .publication-citation { font-size: 12px; line-height: 1.35; margin-bottom: 1px; }
+      .publication-item { margin-bottom: 4px; }
+      .orcid-note { margin-top: 7px; padding-top: 6px; font-size: 12px; }
+      .page2 { line-height: 1.28; }
+      .header { padding-bottom: 6px; margin-bottom: 8px; }
+      .summary { font-size: 13px; }
+      .skills-grid { gap: 7px 20px; }
+      .skill-card { padding: 7px 10px; }
+      .skill-card li { margin: 1px 0; }
+    }
+  </style>
+</head>
+<body>
+<main class="cv-document">
+
+<!-- PAGE 1 -->
+<section class="page">
+  <header class="header">
+    <h1 class="name">Vincent Zvenigorosky, PhD</h1>
+    <p class="title">Forensic Geneticist &nbsp;&bull;&nbsp; Quality Manager (ISO 17025) &nbsp;&bull;&nbsp; Molecular Anthropology</p>
+    <div class="contact-grid">
+      <span class="contact-item">Strasbourg, France (EU) &middot; Field experience in Siberia</span>
+      <span class="contact-item"><a href="mailto:vincent.zvenigorosky@proton.me">vincent.zvenigorosky@proton.me</a></span>
+    </div>
+  </header>
+
+  <section class="section">
+    <h2 class="section-title">Professional Summary</h2>
+    <p class="summary">PhD-trained forensic geneticist and molecular anthropologist with over a decade of experience spanning forensic identification, ancient DNA, population genetics, and bacterial genomics. Currently serving as Quality Manager at StrasGene (ISO 17025), responsible for designing and implementing quality and document management systems. Publication record of 17+ international peer-reviewed articles (7 as first author), extensive fieldwork in Siberia, and 210+ hours of university teaching. Native French and English speaker, with working proficiency in Russian and German.</p>
+  </section>
+
+  <section class="section">
+    <h2 class="section-title">Core Competencies</h2>
+    <div class="skills-grid">
+      <div class="skill-card">
+        <h3>Forensic &amp; Molecular Genetics</h3>
+        <ul>
+          <li>STR profiling and forensic identification</li>
+          <li>Kinship determination (Bayesian models)</li>
+          <li>Ancient and degraded DNA (FFPE, aDNA)</li>
+          <li>NGS / whole-genome enrichment sequencing</li>
+          <li>Mitochondrial and Y-chromosome analysis</li>
+          <li>Phenotypic and epigenetic markers</li>
+        </ul>
+      </div>
+      <div class="skill-card">
+        <h3>Bioinformatics &amp; Analysis</h3>
+        <ul>
+          <li>Population genetics and archaeogenetics</li>
+          <li>Phylogenetics and evolutionary analysis</li>
+          <li>Biostatistics and data interpretation</li>
+          <li>Antibiotic resistance detection</li>
+          <li>Reproducible computational workflows</li>
+          <li>Scientific writing and publication strategy</li>
+        </ul>
+      </div>
+      <div class="skill-card">
+        <h3>Quality &amp; Management</h3>
+        <ul>
+          <li>ISO 17025 quality management systems</li>
+          <li>SOP design, writing and implementation</li>
+          <li>Document management system design</li>
+          <li>Laboratory quality and compliance</li>
+          <li>Supervision and mentoring</li>
+          <li>Project coordination and reporting</li>
+        </ul>
+      </div>
+      <div class="skill-card">
+        <h3>Languages</h3>
+        <ul>
+          <li>French &mdash; Native</li>
+          <li>English &mdash; Native</li>
+          <li>Russian &mdash; Working proficiency</li>
+          <li>German &mdash; B1/B2</li>
+          <li>Spanish &mdash; Notions</li>
+          <li>Yakut &mdash; Notions</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <section class="section">
+    <h2 class="section-title">Professional Experience</h2>
+
+    <article class="experience-item">
+      <div class="experience-header">
+        <div>
+          <h3 class="job-title">Quality Manager (ISO 17025)</h3>
+          <p class="organisation">StrasGene Molecular Anthropology Laboratory</p>
+        </div>
+        <div class="dates">2024 &ndash; Present</div>
+      </div>
+      <div class="experience-meta">Strasbourg, France</div>
+      <ul class="bullets">
+        <li>Designed and implemented the quality management and document management systems for the forensic genetics laboratory.</li>
+        <li>Wrote and deployed SOPs, quality records, and compliance documentation aligned with ISO 17025 accreditation requirements.</li>
+        <li>Coordinated internal audits, corrective actions, and continuous improvement processes.</li>
+      </ul>
+    </article>
+
+    <article class="experience-item">
+      <div class="experience-header">
+        <div>
+          <h3 class="job-title">Post-doctoral Researcher &mdash; Bacterial and Cancer Genomics</h3>
+          <p class="organisation">BABEL Laboratory (CNRS UMR 8045), University Paris Cit&eacute;</p>
+        </div>
+        <div class="dates">2023 &ndash; Present</div>
+      </div>
+      <div class="experience-meta">Paris, France</div>
+      <ul class="bullets">
+        <li>Large-scale genomic characterisation of <em>Treponema pallidum</em> from archived FFPE samples in historical syphilis cases, coupled with histological and medical history study.</li>
+        <li>Analysis of a 37-marker panel in breast cancer cases and genomic exploration of endometriosis.</li>
+      </ul>
+    </article>
+
+    <article class="experience-item">
+      <div class="experience-header">
+        <div>
+          <h3 class="job-title">Post-doctoral Researcher &mdash; Ancient Bacterial Genomics</h3>
+          <p class="organisation">SAGE Laboratory (CNRS UMR 7363), University of Strasbourg</p>
+        </div>
+        <div class="dates">2020 &ndash; 2023</div>
+      </div>
+      <div class="experience-meta">Strasbourg, France</div>
+      <ul class="bullets">
+        <li>Genomics and evolutionary history of <em>T. pallidum</em> (syphilis) via high-throughput NGS sequencing of ancient paraffin-embedded samples; antibiotic resistance detection and phylogenetic analysis.</li>
+      </ul>
+    </article>
+
+    <article class="experience-item">
+      <div class="experience-header">
+        <div>
+          <h3 class="job-title">Post-doctoral Researcher &mdash; Forensic Identification</h3>
+          <p class="organisation">BABEL Laboratory (CNRS UMR 8045), University of Paris</p>
+        </div>
+        <div class="dates">2019 &ndash; 2020</div>
+      </div>
+      <div class="experience-meta">Paris, France</div>
+      <ul class="bullets">
+        <li>Forensic identification of unknown remains; mitochondrial and Y-chromosome lineage analysis; phenotypic and epigenetic marker profiling.</li>
+      </ul>
+    </article>
+  </section>
+
+  <div class="footer-note">Vincent Zvenigorosky, PhD &mdash; Page 1 of 2</div>
+</section>
+
+<!-- PAGE 2 -->
+<section class="page page2">
+
+  <section class="section">
+    <h2 class="section-title">Teaching Experience</h2>
+    <article class="experience-item">
+      <div class="experience-header">
+        <div>
+          <h3 class="job-title">Forensic Genetic Identification &amp; Genetic Kinship</h3>
+          <p class="organisation">Faculty of Medicine, University of Strasbourg</p>
+        </div>
+        <div class="dates">Ongoing &middot; 210 h total</div>
+      </div>
+      <ul class="bullets">
+        <li>9-week course (8 weeks online) for M1 and M2 students of the Forensic Medicine and Criminalistics Master&#39;s programme.</li>
+        <li>Topics: molecular biology methods, forensic STR markers, individual profiling, and Bayesian kinship determination.</li>
+        <li>Prepared and graded examinations for both year levels over three consecutive years.</li>
+      </ul>
+    </article>
+    <article class="experience-item">
+      <div class="experience-header">
+        <div>
+          <h3 class="job-title">Population Genetics</h3>
+          <p class="organisation">Faculty of Sciences, University of Strasbourg</p>
+        </div>
+        <div class="dates">Ongoing &middot; 16 h total</div>
+      </div>
+      <ul class="bullets">
+        <li>Five lectures on statistical methods and data visualisation in population genetics for M1 Ecology &amp; Evolution students.</li>
+        <li>Prepared and graded exam questions annually.</li>
+      </ul>
+    </article>
+  </section>
+
+  <section class="section">
+    <h2 class="section-title">Field Research</h2>
+    <article class="experience-item">
+      <div class="experience-header">
+        <div>
+          <h3 class="job-title">Expedition &mdash; North-Eastern Siberia</h3>
+          <p class="organisation">Sakha Republic (Yakutia), Russia</p>
+        </div>
+        <div class="dates">Feb &ndash; Apr 2019</div>
+      </div>
+      <div class="experience-meta">Collection of biological samples and anthropological data</div>
+    </article>
+    <article class="experience-item">
+      <div class="experience-header">
+        <div>
+          <h3 class="job-title">French Archaeological Mission in Eastern Siberia (MAFSO)</h3>
+          <p class="organisation">Yakutia (Sakha Republic), Russia</p>
+        </div>
+        <div class="dates">2017</div>
+      </div>
+      <div class="experience-meta">Archaeological excavation</div>
+    </article>
+    <article class="experience-item">
+      <div class="experience-header">
+        <div>
+          <h3 class="job-title">Expedition &mdash; North-Eastern Siberia</h3>
+          <p class="organisation">Sakha Republic (Yakutia), Russia</p>
+        </div>
+        <div class="dates">Sep &ndash; Dec 2016</div>
+      </div>
+      <div class="experience-meta">Collection of biological samples and anthropological data</div>
+    </article>
+  </section>
+
+  <section class="section">
+    <h2 class="section-title">Education</h2>
+    <article class="education-item">
+      <div class="education-header">
+        <div><h3 class="degree">PhD in Biological Anthropology</h3><p class="institution">Toulouse 3 University</p></div>
+        <div class="dates">2015 &ndash; 2018</div>
+      </div>
+    </article>
+    <article class="education-item">
+      <div class="education-header">
+        <div><h3 class="degree">M.Sc. Genetic Anthropology (Year 2) &mdash; <em>First in class</em></h3><p class="institution">Toulouse 3 University</p></div>
+        <div class="dates">2014 &ndash; 2015</div>
+      </div>
+    </article>
+    <article class="education-item">
+      <div class="education-header">
+        <div><h3 class="degree">M.Sc. Physical Anthropology and Prehistory (Year 1)</h3><p class="institution">Bordeaux 1 University</p></div>
+        <div class="dates">2013 &ndash; 2014</div>
+      </div>
+    </article>
+    <article class="education-item">
+      <div class="education-header">
+        <div><h3 class="degree">B.Sc. Biology &middot; University Diploma in English</h3><p class="institution">University of Caen Normandy / Montpellier 2 University</p></div>
+        <div class="dates">2009 &ndash; 2013</div>
+      </div>
+    </article>
+    <article class="education-item">
+      <div class="education-header">
+        <div><h3 class="degree">Teaching Certification, English Language</h3><p class="institution"></p></div>
+        <div class="dates">2014</div>
+      </div>
+    </article>
+  </section>
+
+  <section class="section">
+    <h2 class="section-title">Selected Publications &nbsp;<span style="font-weight:400;font-size:12px;color:var(--muted);text-transform:none;letter-spacing:0">18 internat. peer-reviewed articles &middot; 7 as first author &middot; 1 book chapter &middot; 3 under review</span></h2>
+
+    <p class="pub-year">2026</p>
+    <article class="publication-item">
+      <p class="publication-citation">Crub&eacute;zy, &Eacute;. et al. (incl. <strong>Zvenigorosky, V.</strong>). An ancient DNA perspective on the Russian conquest of Yakutia. <em>Nature</em> 650, 389&ndash;398. <a href="https://doi.org/10.1038/s41586-025-09856-5">doi:10.1038/s41586-025-09856-5</a> IF: 48.5</p>
+    </article>
+    <article class="publication-item">
+      <p class="publication-citation"><strong>Zvenigorosky, V.</strong>, Gonzalez, A., Fausser, J.L. et al. Genetic genealogy approach to identifying WWI and WWII victims using the Forenseq Kintelligence kit. <em>Forensic Science International: Genetics</em>. IF: 3.1</p>
+    </article>
+
+    <p class="pub-year">2024</p>
+    <article class="publication-item">
+      <p class="publication-citation"><strong>Zvenigorosky, V.</strong>, Gonzalez, A., Veith, G. et al. Whole-genome enrichment and sequencing of <em>T. pallidum</em> from 75-year-old FFPE samples. <em>iScience</em>. IF: 5.8</p>
+    </article>
+
+    <p class="pub-year">2020</p>
+    <article class="publication-item">
+      <p class="publication-citation"><strong>Zv&eacute;nigorosky, V.</strong>, Duchesne, S., Romanova, L. et al. The genetic legacy of legendary and historical Siberian chieftains. <em>Communications Biology</em> 3(1):581. IF: 5.489</p>
+    </article>
+    <article class="publication-item">
+      <p class="publication-citation">Keyser, C., <strong>Zv&eacute;nigorosky, V.</strong>, Gonzalez, A. et al. Genetic evidence of family, parity and conquest in Xiongnu Iron Age nomads of Mongolia. <em>Human Genetics</em>. IF: 5.331</p>
+    </article>
+
+    <p class="pub-year">2019</p>
+    <article class="publication-item">
+      <p class="publication-citation">Mary, L.*, <strong>Zv&eacute;nigorosky, V.*</strong>, Kovalev, A. et al. Genetic kinship and admixture in Iron Age Scytho-Siberians. <em>Human Genetics</em> 138(4), 411&ndash;423. IF: 5.331 <em>(*co-first authors)</em></p>
+    </article>
+
+    <p class="pub-year">2016</p>
+    <article class="publication-item">
+      <p class="publication-citation"><strong>Zv&eacute;nigorosky, V.</strong>, Crub&eacute;zy, E., Gibert, M. et al. The genetics of kinship in remote human groups. <em>Forensic Science International: Genetics</em> 25, 52&ndash;62. IF: 4.882</p>
+    </article>
+
+    <p class="orcid-note">Full publication list: <a href="https://www.researchgate.net/profile/Vincent-Zvenigorosky">researchgate.net/profile/Vincent-Zvenigorosky</a> &middot; 3 articles currently under review (Ethics in molecular anthropology; FFPE DNA quantification; Iron Age Mongolia burial study)</p>
+  </section>
+
+  <div class="footer-note">Vincent Zvenigorosky, PhD &mdash; Page 2 of 2</div>
+</section>
+
+</main>
+</body>
+</html>
